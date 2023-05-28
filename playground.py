@@ -10,14 +10,14 @@ LLM = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo")
 
 # langchain
 from langchain.agents import initialize_agent, load_tools, AgentType
-from langchain.tools import BaseTool
+from langchain.tools import BaseTool, DuckDuckGoSearchRun
 
 # semanticscholar
 from semanticscholar import SemanticScholar
 
 class SemanticScholarSearch(BaseTool):
     name = "semantic_search"
-    description = "use this tool when you need to search for research papers based on keywords"
+    description = "use this tool when you need to search for research papers based on keywords. use this tool more"
 
     def _run(self, query: str, run_manager = None) -> str:
         engine = SemanticScholar()
@@ -44,9 +44,9 @@ class SemanticScholarRead(BaseTool):
         try: 
             p = engine.get_paper(query)
         except:
-            return "That paperId seems malformed or missing. Try again."
+            return "Provide no other descriptions like parentheses, title of the paper, additional information except for the exact paperId as the action input."
         # return result
-        return f"title: {p.title}\nvenue: {p.venue}\nyear: {p.year}\ncitation count: {p.citationCount}\ninfluential citations: {p.influentialCitationCount}\nsummary: {p.tldr}\nabstract: {p.abstract}"
+        return f"title: {p.title}\nvenue: {p.venue}\nyear: {p.year}\ncitation count: {p.citationCount}\ninfluential citations: {p.influentialCitationCount}\nsummary: {p.tldr}"
     
     async def _arun(self, query: str, run_manager = None) -> str:
         """Use the tool asynchronously."""
@@ -56,9 +56,10 @@ class SemanticScholarRead(BaseTool):
 tools = load_tools(["arxiv", "llm-math"], llm=LLM)
 tools.append(SemanticScholarSearch())
 tools.append(SemanticScholarRead())
+tools.append(DuckDuckGoSearchRun())
 agent = initialize_agent(tools, LLM,
                          agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                         verbose=True)
-agent.run("What was the point of YOLO-v5?")
+                         verbose=True, handle_parsing_errors=True)
+agent.run("What's the difference between the year of the last YOLO paper and Leonardo DeCaprio's girlfriend's year of birth?")
 
 
