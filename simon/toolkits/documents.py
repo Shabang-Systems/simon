@@ -127,6 +127,12 @@ def store(doc:TikaDocument, es:Elasticsearch, embedding:Embeddings, user:str):
                      "metadata": doc.meta,
                      "hash": doc.hash,
                      "doc": i} for i in docs]
+    update_calls.append({"_op_type": "index",
+                         "_index": "simon-fulltext",
+                         "user": user,
+                         "metadata": doc.meta,
+                         "hash": doc.hash,
+                         "text": doc.main_document})
     bulk(es, update_calls)
 
 def _seed_schema(es:Elasticsearch, dim=1546):

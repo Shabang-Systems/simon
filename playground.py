@@ -32,37 +32,31 @@ embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
 UID = "test-uid"
 
+# serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
 
-
+# provision tools we need
 tool = Research(context, True)
 
+# and create the assistant.
 assistant = create_assistant(context, [tool])
-assistant.run("Hey Simon you are doing waayy too much.")
-# assistant
+# assistant.run("Hey Simon.")
 
-# AgentExecutor.from_agent_and_tools(agent, t, verbose=True, handle_parsing_errors=True)("What's so good about the state-of-the-art speech diarization model?")
+from simon.toolkits.documents import *
+hash = index_remote_file("https://arxiv.org/pdf/1706.03762.pdf", context.elastic, context.embedding, context.uid)
 
-# 
+es.search("simon-docs", query={})
+doc = es.search(index="simon-fulltext", query={"bool": {"must": [{"match": {"hash": hash}},
+                                                             {"match": {"user.keyword": context.uid}}]}},
+                fields=["text"], size=10000)
+hits = [i["fields"]["text"][0] for i in doc["hits"]["hits"]]
+hits
+text = "".join(hits)
+es.indices.delete(index="simon-cache")
+es.indices.delete(index="simon-docs")
 
-# fun!
-# tools = SemanticScholarToolkit().get_tools() + DocumentProcessingToolkit(es, embedding, UID).get_tools()
-# agent = initialize_agent(tools, llm,
-#                          agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-#                          verbose=True, handle_parsing_errors=True)
+from simon.toolkits.documents import _seed_schema
+_seed_schema(es)
 
-# agent()
-
-# # import
-# from simon.agents.research import 
-
-
-# # from simon.toolkits.documents import *
-# # hash = index_remote_file("https://arxiv.org/pdf/2105.13802.pdf", es, embedding, UID)
-# # res = nl_search("what's the abstract of this paper?", es, embedding, UID, hash)
-# # res1 = bm25_search("what's the abstract of this paper?", es, embedding, UID, hash)
-
-# # # tmp = embedding.embed_documents(["this is a test", "I am a test indeed"])
-# # # len(tmp[1])
 
 
