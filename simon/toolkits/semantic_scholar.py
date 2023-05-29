@@ -41,9 +41,18 @@ class SemanticScholarGet(BaseTool):
         # get only the paperid part
         query = query.split(":")[-1].strip()
         query = query.split("(")[0].strip()
+        query = query.split("=")[-1].strip()
         # get paper ID
         try: 
-            p = SCHOLAR.get_paper(query)
+            if "/" in query:
+                # DOI
+                p = SCHOLAR.get_paper(f"DOI:{query}")
+            elif "." in query:
+                # arxiv id
+                p = SCHOLAR.get_paper(f"ARXIV:{query}")
+            else:
+                # normal
+                p = SCHOLAR.get_paper(query)
             # if pdf, get pdf
             pdf = p.openAccessPdf
             # if pdf

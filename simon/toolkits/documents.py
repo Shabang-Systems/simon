@@ -1,5 +1,5 @@
 # langchain stuff
-from langchain.tools import BaseTool
+from langchain.tools import Tool, StructuredTool
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.schema import Document
 from langchain.embeddings.base import Embeddings
@@ -103,15 +103,15 @@ def parse_figures(target):
 
     return meta["figures"]
 
-def store(es:Elasticsearch, doc:TikaDocument, embedding:Embeddings, user:str):
+def store(doc:TikaDocument, es:Elasticsearch, embedding:Embeddings, user:str):
     """Utility to stored parsed document.
 
     Parameters
     ----------
-    es : Elasticsearch
-        Elastic search instance used to store the data.
     doc : TikaDocument
         The document to store into elastic.
+    es : Elasticsearch
+        Elastic search instance used to store the data.
     embedding : Embeddings
         Text embedding model to use.
     user : str
@@ -146,15 +146,15 @@ def _seed_schema(es:Elasticsearch, dim=1546):
                                                                                      "similarity": "cosine",
                                                                                      "index": "true"}}})
 
-def nl_search(es:Elasticsearch, query:str, embedding:Embeddings, user:str, doc_hash=None, k=5, threshold=0.9):
+def nl_search(query:str,es:Elasticsearch, embedding:Embeddings, user:str, doc_hash=None, k=5, threshold=0.9):
     """ElasticSearch the database based on natural language query!
 
     Parameters
     ----------
-    es : Elasticsearch
-        Elastic search instance used to store the data.
     query : str
         The query to ask.
+    es : Elasticsearch
+        Elastic search instance used to store the data.
     embedding : Embeddings
         Text embedding model to use.
     user : str
@@ -230,32 +230,46 @@ def index_remote_file(url:str, es:Elasticsearch, embedding:Embeddings, user:str)
                                                                     {"match": {"user.keyword": user}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
-        store(es, doc, embedding, user)
+        store(doc, es, embedding, user)
         es.indices.refresh(index="simon-docs")
 
     # retrun hash
     return hash
 
+class DocumentProcessingToolkit():
+    """A set of tools to process documents"""
+
+    def __init__(self, elastic:Elasticsearch, embedding:Embeddings, user:str):
+        self.es = elastic
+        self.em = embedding
+        self.uid = user
+
+    def get_tools(self):
+        # lookup = Tool.from_function(func=lambda q:"\n".join(nl_search(self.es, q, self.em, self.uid)),
+        #                             name="documents_lookup_all",
+        #                             description="Useful for when you need to answer a question using every file ever seen by the user. Do not use this tool before trying a more specific documents tool. Provide a properly-formed question to the tool.")
+
+        lookup_file =  Tool.from_function(func=lambda q:"\n".join(nl_search(q.split(",")[1].strip(), self.es, self.em, self.uid,
+                                                                            doc_hash=index_remote_file(q.split(",")[0].strip(),
+                                                                                                       self.es, self.em, self.uid))),
+                                    name="documents_lookup_file",
+                                    description="Useful for when you need to answer a question using a file on the internet. The input to this tool should be a comma seperated list of length two; the first element of that list should be the URL of the file you want to read, and the second element of that list should be question. For instance, `https://arxiv.org/pdf/1706.03762,What is self attention?` would be the input if you wanted to look up the answer to the question of \"What is self attention\" from the PDF located in the link https://arxiv.org/pdf/1706.03762. Provide a properly-formed question to the tool.")
+
+        # return [lookup, lookup_file]
+        return [lookup_file]
 
 
-# figs = parse_figures("../blagger/data/diarization.pdf")
-# figs[0]["caption"]
-os.chdir("/Users/houjun/Documents/Projects/simon")
-es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
-_seed_schema(es)
-
-hash = index_remote_file("https://arxiv.org/pdf/1706.03762", es, embedding, UID)
-hash1 = index_remote_file("https://www.shutterstock.com/image-vector/keep-simple-business-concept-lightbulbs-260nw-489515029.jpg",
-                          es, embedding, UID)
 
 
-hash1
-hash1
+# # figs = parse_figures("../blagger/data/diarization.pdf")
+# # figs[0]["caption"]
+# os.chdir("/Users/houjun/Documents/Projects/simon")
+# es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
+# _seed_schema(es)
+# DocumentProcessingToolkit(es, embedding, UID)
+
+# hash = index_remote_file("https://arxiv.org/pdf/1706.03762", es, embedding, UID)
+# hash1 = index_remote_file("https://www.shutterstock.com/image-vector/keep-simple-business-concept-lightbulbs-260nw-489515029.jpg",
+#                           es, embedding, UID)
 
 
-# doc = parse_document("../blagger/data/diarization.pdf")
-nl_search(es, "what's the best model for ASR?", embedding, UID, "29bb68e135736c5c9812b8ea9e3fc8c49c9c14a640143511ab7341ab74ff950e")
-# nl_search(
-
-
-.

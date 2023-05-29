@@ -16,7 +16,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from elasticsearch import Elasticsearch
 
 # our toolkits
-from simon.toolkits import SemanticScholarToolkit
+from simon.toolkits import SemanticScholarToolkit, DocumentProcessingToolkit
 
 # fun
 from langchain.agents import initialize_agent, load_tools, AgentType
@@ -31,12 +31,18 @@ UID = "test-uid"
 
 
 # fun!
-agent = initialize_agent(SemanticScholarToolkit().get_tools(), llm,
+tools = SemanticScholarToolkit().get_tools() + DocumentProcessingToolkit(es, embedding, UID).get_tools()
+agent = initialize_agent(tools, llm,
                          agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
                          verbose=True, handle_parsing_errors=True)
-# agent("what is the state-of-the-art model in speech diarization?")
+agent("What's the main point of this paper: https://arxiv.org/pdf/2105.13802.pdf?")
 
+
+from simon.toolkits.documents import *
+hash = index_remote_file("https://arxiv.org/pdf/2105.13802.pdf", es, embedding, UID)
+res = nl_search("what's the abstract of this paper?", es, embedding, UID, hash)
 
 # tmp = embedding.embed_documents(["this is a test", "I am a test indeed"])
 # len(tmp[1])
+
 
