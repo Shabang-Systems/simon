@@ -7,9 +7,20 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import hashlib
 
+# images and numpy
+import numpy as np
+from PIL import Image
+
 # mmm
 import os
+import time
+import json
+import shutil
+import subprocess
+from glob import glob
 from typing import List, Dict
+from urllib.request import urlretrieve
+from tempfile import TemporaryDirectory
 
 # tika
 from tika import parser
@@ -18,11 +29,12 @@ from tika import parser
 from dataclasses import dataclass
 
 # constants to identify the pdffigures executable
+# __file__ = "./simon/toolkits/documents.py"
 FILEDIR = os.path.dirname(os.path.abspath(__file__))
 # path to java
 # TODO change this at will or put in .env 
 JARDIR = os.path.abspath( 
-    os.path.join(FILEDIR, "../../opt/pdffigures2.jar"))
+    os.path.join(FILEDIR, "../opt/pdffigures2.jar"))
 JAVADIR = os.path.realpath(shutil.which("java"))
 
 @dataclass
@@ -50,49 +62,7 @@ def parse_document(uri) -> TikaDocument:
     # return!
     return TikaDocument(parsed_text, parsed_chunks, hash, meta)
 
-def store(es:Elasticsearch, doc:TikaDocument, embedding:Embeddings, user:str):
-    """Utility to stored parsed document.
-
-    Parameters
-    ----------
-    es : Elasticsearch
-        Elastic search instance used to store the data.
-    doc : TikaDocument
-        The document to store into elastic.
-    embedding : Embeddings
-        Text embedding model to use.
-    user : str
-        The UID.
-    """
-    embedded = embedding.embed_documents(doc.paragraphs)
-    docs = [{"embedding": a,
-             "text": b}
-            for a,b in zip(embedded, doc.paragraphs)]
-    update_calls = [{"_op_type": "index",
-                     "_index": "simon-docs",
-                     "user": user,
-                     "metadata": doc.meta,
-                     "hash": doc.hash,
-                     "doc": i} for i in docs]
-    bulk(es, update_calls)
-
-def _seed_schema(es:Elasticsearch, dim=1546):
-    """Hidden function to seed the index.
-
-    Parameters
-    ----------
-    es : Elasticsearch
-        Elastic search instance used to store the data.
-    dim : int
-        The dimension of the output.
-    """
-    es.indices.create(index="simon-docs", mappings={"properties": {"doc.embedding": {"type": "dense_vector",
-                                                                                     "dims": 1536,
-                                                                                     "similarity": "cosine",
-                                                                                     "index": "true"}}})
-
-
-def extract_figures(target):
+def parse_figures(target):
     """Extract figures from PDF file with pdffigures2.
 
     Parameters
@@ -133,29 +103,159 @@ def extract_figures(target):
 
     return meta["figures"]
 
-doc = parse_document("../blagger/data/diarization.pdf")
+def store(es:Elasticsearch, doc:TikaDocument, embedding:Embeddings, user:str):
+    """Utility to stored parsed document.
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    doc : TikaDocument
+        The document to store into elastic.
+    embedding : Embeddings
+        Text embedding model to use.
+    user : str
+        The UID.
+    """
+    embedded = embedding.embed_documents(doc.paragraphs)
+    docs = [{"embedding": a,
+             "text": b}
+            for a,b in zip(embedded, doc.paragraphs)]
+    update_calls = [{"_op_type": "index",
+                     "_index": "simon-docs",
+                     "user": user,
+                     "metadata": doc.meta,
+                     "hash": doc.hash,
+                     "doc": i} for i in docs]
+    bulk(es, update_calls)
+
+def _seed_schema(es:Elasticsearch, dim=1546):
+    """Hidden function to seed the index.
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    dim : int
+        The dimension of the output.
+    """
+    es.indices.create(index="simon-cache", mappings={"properties": {"uri": {"type": "keyword"},
+                                                                    "hash": {"type": "text"}}})
+    es.indices.create(index="simon-docs", mappings={"properties": {"doc.embedding": {"type": "dense_vector",
+                                                                                     "dims": 1536,
+                                                                                     "similarity": "cosine",
+                                                                                     "index": "true"}}})
+
+def nl_search(es:Elasticsearch, query:str, embedding:Embeddings, user:str, doc_hash=None, k=5, threshold=0.9):
+    """ElasticSearch the database based on natural language query!
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    query : str
+        The query to ask.
+    embedding : Embeddings
+        Text embedding model to use.
+    user : str
+        The UID to search.
+    doc_hash : str
+        The document (in hashed form) to limit search on.
+    k : optional, int
+        Number of values to return.
+    threshold : optional, float
+        Threshold of score before a value is returned.
+
+    Return
+    ------
+    List[str]
+        Results of the search.
+    """
+
+    # get results
+    q = embedding.embed_query(query)
+    kquery = {"field": "doc.embedding",
+              "query_vector": q,
+              "k": k,
+              "num_candidates": 800,
+              "filter": [{"term": {"user.keyword": user}}]}
+    if doc_hash:
+        kquery["filter"].append({"term": {"hash": doc_hash}})
+    results = es.search(index="simon-docs", knn=kquery)
+    # parcel out valid results
+    results = [i["_source"]["doc"]["text"] for i in results["hits"]["hits"] if i["_score"] > threshold]
+
+    return results 
+
+def index_remote_file(url:str, es:Elasticsearch, embedding:Embeddings, user:str):
+    """Read and index a remote file into Elastic by trying really hard not to actually read it.
+
+    Parameters
+    ----------
+    url : str
+        URL to read.
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    embedding : Embeddings
+        Text embedding model to use.
+    user : str
+        The UID to search.
+
+    Return
+    ------
+    str
+        Hash of the file we are reading, useful for searching, etc.
+    """
+
+    # Search for the URL in the cache if it exists
+    hash = None
+    results = es.search(index="simon-cache", query={"match": {"uri": url}})["hits"]
+    if results["total"]["value"] > 0:
+        hash = results["hits"][0]["_source"]["hash"]
+
+    # If there is no cache retrieve the doc
+    if not hash:
+        # Retrieve and parse the document
+        with TemporaryDirectory() as tmpdir:
+            f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
+            urlretrieve(url, f)
+            doc = parse_document(f)
+            hash = doc.hash
+
+        # and pop it into the cache
+        es.index(index="simon-cache", document={"uri": url, "hash": hash})
+
+    # And check if we have already indexed the doc
+    indicies = es.search(index="simon-docs", query={"bool": {"must": [{"match": {"hash": hash}},
+                                                                    {"match": {"user.keyword": user}}]}})["hits"]
+    # If not, do so!
+    if indicies["total"]["value"] == 0:
+        store(es, doc, embedding, user)
+        es.indices.refresh(index="simon-docs")
+
+    # retrun hash
+    return hash
+
+
+
+# figs = parse_figures("../blagger/data/diarization.pdf")
+# figs[0]["caption"]
+os.chdir("/Users/houjun/Documents/Projects/simon")
 es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
-
-
-# es.indices.delete(index="simon-docs")
 _seed_schema(es)
-store(es, doc, embedding, UID)
 
-em1 = embedding.embed_query("What is the best model for speech diarization?")
-em2 = embedding.embed_query("How does this model perform?")
-em3 = embedding.embed_query("diarization model performance")
-
-results = es.search(index="simon-docs", knn={"field": "doc.embedding",
-                                             "query_vector": em2,
-                                             "k": 5,
-                                             "num_candidates": 800})
-
-results["hits"]["hits"][0]["_source"]["doc"]["text"keys()
+hash = index_remote_file("https://arxiv.org/pdf/1706.03762", es, embedding, UID)
+hash1 = index_remote_file("https://www.shutterstock.com/image-vector/keep-simple-business-concept-lightbulbs-260nw-489515029.jpg",
+                          es, embedding, UID)
 
 
+hash1
+hash1
 
-tmp.paragraphs[14]
 
-ELASTIC
+# doc = parse_document("../blagger/data/diarization.pdf")
+nl_search(es, "what's the best model for ASR?", embedding, UID, "29bb68e135736c5c9812b8ea9e3fc8c49c9c14a640143511ab7341ab74ff950e")
+# nl_search(
 
-ElasticSearchBM25Retriever.
+
+.
