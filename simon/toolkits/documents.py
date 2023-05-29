@@ -187,6 +187,48 @@ def nl_search(query:str,es:Elasticsearch, embedding:Embeddings, user:str, doc_ha
 
     return results 
 
+def bm25_search(query:str,es:Elasticsearch, embedding:Embeddings, user:str, doc_hash=None, k=5, threshold=1):
+    """ElasticSearch the database based on natural language query!
+
+    Parameters
+    ----------
+    query : str
+        The query to ask.
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    embedding : Embeddings
+        Text embedding model to use.
+    user : str
+        The UID to search.
+    doc_hash : str
+        The document (in hashed form) to limit search on.
+    k : optional, int
+        Number of values to return.
+    threshold : optional, float
+        Threshold of score before a value is returned.
+
+    Return
+    ------
+    List[str]
+        Results of the search.
+    """
+
+    # get results
+    q = embedding.embed_query(query)
+    squery = {
+        "bool": {"must": [
+            {"term": {"user.keyword": user}},
+            {"match": {"doc.text": query}}
+        ]}
+    }
+    if doc_hash:
+        squery["bool"]["must"].append({"term": {"hash": doc_hash}})
+    results = es.search(index="simon-docs", query=squery, fields=["doc.text"], size=str(k))
+    # parcel out valid results
+    results = [i["fields"]["doc.text"][0] for i in results["hits"]["hits"] if i["_score"] > threshold]
+
+    return results 
+
 def index_remote_file(url:str, es:Elasticsearch, embedding:Embeddings, user:str):
     """Read and index a remote file into Elastic by trying really hard not to actually read it.
 
@@ -227,7 +269,7 @@ def index_remote_file(url:str, es:Elasticsearch, embedding:Embeddings, user:str)
 
     # And check if we have already indexed the doc
     indicies = es.search(index="simon-docs", query={"bool": {"must": [{"match": {"hash": hash}},
-                                                                    {"match": {"user.keyword": user}}]}})["hits"]
+                                                                      {"match": {"user.keyword": user}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
         store(doc, es, embedding, user)
@@ -245,12 +287,12 @@ class DocumentProcessingToolkit():
         self.uid = user
 
     def get_tools(self):
-        # lookup = Tool.from_function(func=lambda q:"\n".join(nl_search(self.es, q, self.em, self.uid)),
+        # lookup = Tool.from_function(func=lambda q:"\n".join(bm25_search(self.es, q, self.em, self.uid)),
         #                             name="documents_lookup_all",
         #                             description="Useful for when you need to answer a question using every file ever seen by the user. Do not use this tool before trying a more specific documents tool. Provide a properly-formed question to the tool.")
 
-        lookup_file =  Tool.from_function(func=lambda q:"\n".join(nl_search(q.split(",")[1].strip(), self.es, self.em, self.uid,
-                                                                            doc_hash=index_remote_file(q.split(",")[0].strip(),
+        lookup_file =  Tool.from_function(func=lambda q:"\n".join(nl_search(q.replace("`", "").split(",")[1].strip(), self.es, self.em, self.uid,
+                                                                            doc_hash=index_remote_file(q.replace("`", "").split(",")[0].strip(),
                                                                                                        self.es, self.em, self.uid))),
                                     name="documents_lookup_file",
                                     description="Useful for when you need to answer a question using a file on the internet. The input to this tool should be a comma seperated list of length two; the first element of that list should be the URL of the file you want to read, and the second element of that list should be question. For instance, `https://arxiv.org/pdf/1706.03762,What is self attention?` would be the input if you wanted to look up the answer to the question of \"What is self attention\" from the PDF located in the link https://arxiv.org/pdf/1706.03762. Provide a properly-formed question to the tool.")

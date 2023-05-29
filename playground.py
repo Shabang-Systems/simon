@@ -35,14 +35,15 @@ tools = SemanticScholarToolkit().get_tools() + DocumentProcessingToolkit(es, emb
 agent = initialize_agent(tools, llm,
                          agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
                          verbose=True, handle_parsing_errors=True)
-agent("What's the main point of this paper: https://arxiv.org/pdf/2105.13802.pdf?")
+agent("What is different about the best speech diarization model right now compared to its predecessors?")
 
 
-from simon.toolkits.documents import *
-hash = index_remote_file("https://arxiv.org/pdf/2105.13802.pdf", es, embedding, UID)
-res = nl_search("what's the abstract of this paper?", es, embedding, UID, hash)
+# from simon.toolkits.documents import *
+# hash = index_remote_file("https://arxiv.org/pdf/2105.13802.pdf", es, embedding, UID)
+# res = nl_search("what's the abstract of this paper?", es, embedding, UID, hash)
+# res1 = bm25_search("what's the abstract of this paper?", es, embedding, UID, hash)
 
-# tmp = embedding.embed_documents(["this is a test", "I am a test indeed"])
-# len(tmp[1])
+# # tmp = embedding.embed_documents(["this is a test", "I am a test indeed"])
+# # len(tmp[1])
 
 

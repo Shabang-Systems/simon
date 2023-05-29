@@ -34,7 +34,7 @@ class SemanticScholarSearch(BaseTool):
     
 class SemanticScholarGet(BaseTool):
     name = "semantic_paper_get"
-    description = "Uses the paperId as action input to get information about a paper."
+    description = "Uses the paperId as action input to get information about a paper. Provide nothing except for the exact paper ID. For instance, if the paper's ID is d696b35956e38351dd2eae67068aecff8d381cfe, provide literally `d696b35956e38351dd2eae67068aecff8d381cfe` If the paper's link is https://arxiv.org/abs/1706.03762, provide literally `1706.03762`. Do not add quotations, do not add special symbols like `. Do not include the word paperId."
 
     def _run(self, query: str, run_manager = None) -> str:
         engine = SemanticScholar()
@@ -42,6 +42,7 @@ class SemanticScholarGet(BaseTool):
         query = query.split(":")[-1].strip()
         query = query.split("(")[0].strip()
         query = query.split("=")[-1].strip()
+        query = query.replace("`", "")
         # get paper ID
         try: 
             if "/" in query:
