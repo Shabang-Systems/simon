@@ -32,9 +32,9 @@ class SemanticScholarSearch(BaseTool):
         """Use the tool asynchronously."""
         raise NotImplementedError("custom_search does not support async")
     
-class SemanticScholarRead(BaseTool):
-    name = "semantic_paper_read"
-    description = "Gets information about a paper based on its paperId."
+class SemanticScholarGet(BaseTool):
+    name = "semantic_paper_get"
+    description = "Uses the paperId as action input to get information about a paper."
 
     def _run(self, query: str, run_manager = None) -> str:
         engine = SemanticScholar()
@@ -44,6 +44,14 @@ class SemanticScholarRead(BaseTool):
         # get paper ID
         try: 
             p = SCHOLAR.get_paper(query)
+            # if pdf, get pdf
+            pdf = p.openAccessPdf
+            # if pdf
+            if pdf:
+                pdf = pdf["url"]
+            # otherwise, if arxiv, extract that
+            if not pdf and p.venue == "arXiv.org":
+                pdf = f'https://arxiv.org/pdf/{p["externalIds"]["ArXiv"]}'
         except:
             return "Provide no other descriptions like parentheses, title of the paper, additional information except for the exact paperId as the action input."
         # return result
@@ -55,7 +63,7 @@ year: {p.publicationDate}
 citation count: {p.citationCount}
 influential citations: {p.influentialCitationCount}
 summary: {p.tldr}
-pdf: {p.openAccessPdf}"""
+pdf: {pdf}"""
     
     async def _arun(self, query: str, run_manager = None) -> str:
         """Use the tool asynchronously."""
@@ -63,6 +71,6 @@ pdf: {p.openAccessPdf}"""
  
 class SemanticScholarToolkit(BaseToolkit):
     def get_tools(self):
-        return [SemanticScholarSearch(), SemanticScholarRead()]
+        return [SemanticScholarSearch(), SemanticScholarGet()]
 
 
