@@ -287,9 +287,13 @@ class DocumentProcessingToolkit():
         self.uid = user
 
     def get_tools(self):
-        # lookup = Tool.from_function(func=lambda q:"\n".join(bm25_search(self.es, q, self.em, self.uid)),
-        #                             name="documents_lookup_all",
-        #                             description="Useful for when you need to answer a question using every file ever seen by the user. Do not use this tool before trying a more specific documents tool. Provide a properly-formed question to the tool.")
+        keyword_lookup = Tool.from_function(func=lambda q:"\n".join(bm25_search(q, self.es, self.em, self.uid)),
+                                    name="documents_keyword_search",
+                                    description="Useful for when you need to lookup the user's knowledge base with keywords. Provide this tool only relavent keywords that would appear in the database. Do not use this tool unless absolutely need to.")
+
+        lookup = Tool.from_function(func=lambda q:"\n".join(nl_search(q, self.es, self.em, self.uid)),
+                                    name="documents_lookup_all",
+                                    description="Useful for when you need to answer a question using every file ever seen by the user. Do not use this tool before trying a more specific documents tool. Provide a properly-formed question to the tool.")
 
         lookup_file =  Tool.from_function(func=lambda q:"\n".join(nl_search(q.replace("`", "").split(",")[1].strip(), self.es, self.em, self.uid,
                                                                             doc_hash=index_remote_file(q.replace("`", "").split(",")[0].strip(),
@@ -297,21 +301,5 @@ class DocumentProcessingToolkit():
                                     name="documents_lookup_file",
                                     description="Useful for when you need to answer a question using a file on the internet. The input to this tool should be a comma seperated list of length two; the first element of that list should be the URL of the file you want to read, and the second element of that list should be question. For instance, `https://arxiv.org/pdf/1706.03762,What is self attention?` would be the input if you wanted to look up the answer to the question of \"What is self attention\" from the PDF located in the link https://arxiv.org/pdf/1706.03762. Provide a properly-formed question to the tool.")
 
-        # return [lookup, lookup_file]
-        return [lookup_file]
-
-
-
-
-# # figs = parse_figures("../blagger/data/diarization.pdf")
-# # figs[0]["caption"]
-# os.chdir("/Users/houjun/Documents/Projects/simon")
-# es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
-# _seed_schema(es)
-# DocumentProcessingToolkit(es, embedding, UID)
-
-# hash = index_remote_file("https://arxiv.org/pdf/1706.03762", es, embedding, UID)
-# hash1 = index_remote_file("https://www.shutterstock.com/image-vector/keep-simple-business-concept-lightbulbs-260nw-489515029.jpg",
-#                           es, embedding, UID)
-
+        return [lookup, keyword_lookup, lookup_file]
 
