@@ -22,8 +22,8 @@ def Research(context:AgentContext, verbose=False):
     executor = AgentExecutor.from_agent_and_tools(agent, tools, verbose=verbose, handle_parsing_errors=True)
 
     tool = Tool.from_function(func=lambda x:executor.run(x),
-                              name = "research",
-                              description="Useful when you need to answer questions about academic papers and scientific studies. Provide a natural language question, and the tool will return a natural language response.")
+                              name = "scientific-articles",
+                              description="Useful when you need to answer questions about academic papers and scientific studies. Provide a natural language question, and the tool will return a natural language response. Do not use this tool to answer questions that would require information about the user's interaction with the tool, as it retains no prior information. Only use this tool if you are looking up new, objective scientific facts.")
 
     return tool
 
