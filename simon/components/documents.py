@@ -20,9 +20,22 @@ from elasticsearch.helpers import bulk
 # tika
 from tika import parser
 
+# soup
+from bs4 import BeautifulSoup
+
 # utilities
 from ..utils.elastic import *
 from ..models import *
+
+#### SANITIZERS ####
+def __derenewline(text):
+    # clean the chunks
+    parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
+                     for i in text.split("\n\n") if i != '']
+    # and also create the bigger document
+    parsed_text = " ".join(parsed_chunks)
+
+    return parsed_chunks, parsed_text
 
 #### PARSERS ####
 def parse_tika(uri, title=None, source=None) -> ParsedDocument:
@@ -49,10 +62,42 @@ def parse_tika(uri, title=None, source=None) -> ParsedDocument:
         "title": title if title else parsed["metadata"].get("pdf:docinfo:title"),
     }
     # clean the chunks
-    parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
-                     for i in parsed["content"].split("\n\n") if i != '']
-    # and also create the bigger document
-    parsed_text = " ".join(parsed_chunks)
+    parsed_chunks, parsed_text = __derenewline(parsed["content"])
+    # hash the text
+    hash = hashlib.sha256(parsed_text.encode()).hexdigest()
+
+    # return!
+    return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
+
+def parse_web(html, title=None, source=None) -> ParsedDocument:
+    """Parse a web page using BeautifulSoup.
+
+    Parameters
+    ----------
+    html : str
+        The raw HTML to be parsed.
+    title : str
+        Force a specific title.
+    source : str 
+        Force a specific source.
+
+    Returns
+    -------
+    ParsedDocument
+        The parsed document.
+    """
+    # parse data
+    soup = BeautifulSoup(html)
+    text = soup.get_text()
+
+    meta = {
+        "source": source,
+        "title": title if title else soup.title.string,
+    }
+
+    # clean the chunks
+    parsed_chunks, parsed_text = __derenewline(text)
+    parsed_chunks = [i for i in parsed_chunks if len(i) > 150] # because most of <150s are buttons
     # hash the text
     hash = hashlib.sha256(parsed_text.encode()).hexdigest()
 
@@ -103,32 +148,6 @@ def get_fulltext(hash:str, context:AgentContext):
 
     doc = context.elastic.search(index="simon-fulltext",
                                  query={"bool": {"must": [{"term": {"hash": hash}},
-                                                          {"term": {"user":
-                                                                    context.uid}}]}},
-                                 fields=["text"], size=1)
-    hits = [i["fields"]["text"][0] for i in doc["hits"]["hits"]]
-
-    if len(hits) > 0: return hits[0]
-
-def search_cached(keywords:str, context:AgentContext):
-    """Search a document possibly stored in the cache.
-
-    Parameters
-    ----------
-    hash : str
-        The string hash to read.
-    context : AgentContext
-        The context pointer to use to perform parsing.
-    full : 
-
-    Return
-    ------
-    Optional[str]
-        str full text, or None.
-    """
-
-    doc = context.elastic.search(index="simon-fulltext",
-                                 query={"bool": {"must": [{"match": {"hash": hash}},
                                                           {"term": {"user":
                                                                     context.uid}}]}},
                                  fields=["text"], size=1)
@@ -233,8 +252,34 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
         bulk(context.elastic, update_calls)
 
+        context.elastic.indices.refresh(index="simon-paragraphs")
+
 #### SPECIAL SETTERS ####
-def index_remote_file(url:str, context:AgentContext):
+def __index_remote_helper__DOCUMENT(url):
+    # Retrieve and parse the document
+    with TemporaryDirectory() as tmpdir:
+        f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
+        headers = {'user-agent': 'Mozilla/5.0'}
+        r = requests.get(url, headers=headers)
+        with open(f, 'wb') as fp:
+            fp.write(r.content)
+            doc = parse_tika(f, source=url)
+            hash = doc.hash
+
+    return doc
+
+def __index_remote_helper__WEBPAGE(url):
+    # download page
+    headers = {'user-agent': 'Mozilla/5.0'}
+    r = requests.get(url, headers=headers)
+
+    # parse!
+    doc = parse_web(r.content, source=url)
+    hash = doc.hash
+
+    return doc
+
+def index_remote(url:str, context:AgentContext, media:MediaType):
     """Read and index a remote file into Elastic by trying really hard not to actually read it.
 
     Parameters
@@ -243,6 +288,8 @@ def index_remote_file(url:str, context:AgentContext):
         URL to read.
     context : AgentContext
         Context to use.
+    media : MediaType
+        What are we indexing?? File? Webpage?
 
     Return
     ------
@@ -255,21 +302,18 @@ def index_remote_file(url:str, context:AgentContext):
 
     # If there is no cache retrieve the doc
     if not hash:
-        # Retrieve and parse the document
-        with TemporaryDirectory() as tmpdir:
-            f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
-            headers = {'user-agent': 'Mozilla/5.0'}
-            r = requests.get(url, headers=headers)
-            with open(f, 'wb') as fp:
-                fp.write(r.content)
-                doc = parse_tika(f, source=url)
-                hash = doc.hash
+        if media == MediaType.DOCUMENT:
+            doc = __index_remote_helper__DOCUMENT(url)
+        elif media == MediaType.WEBPAGE:
+            doc = __index_remote_helper__WEBPAGE(url)
 
-        # and pop it into the cache
+        # read hash off of the doc
+        hash = doc.hash
+
+        # and pop it into the cache and index
         context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash,
                                                              "user": context.uid})
         context.elastic.indices.refresh(index="simon-cache")
-
         index_document(doc, context)
 
     # retrun hash
