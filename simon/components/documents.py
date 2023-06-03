@@ -25,13 +25,17 @@ from ..utils.elastic import *
 from ..models import *
 
 #### PARSERS ####
-def parse_tika(uri) -> ParsedDocument:
+def parse_tika(uri, title=None, source=None) -> ParsedDocument:
     """Parse a local document using Tika and Tesseract
 
     Parameters
     ----------
     uri : str
         The LOCAL URI where the document lives to be parsed.
+    title : str
+        Force a specific title.
+    source : str 
+        Force a specific source.
 
     Returns
     -------
@@ -41,8 +45,8 @@ def parse_tika(uri) -> ParsedDocument:
     # parse data
     parsed = parser.from_file(uri)
     meta = {
-        "source": parsed["metadata"]["resourceName"],
-        "title": parsed["metadata"].get("pdf:docinfo:title"),
+        "source": source if source else arsed["metadata"]["resourceName"],
+        "title": title if title else parsed["metadata"].get("pdf:docinfo:title"),
     }
     # clean the chunks
     parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
@@ -56,7 +60,7 @@ def parse_tika(uri) -> ParsedDocument:
     return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
 
 #### GETTERS ####
-def get_cached_hash(uri:str, context:AgentContext):
+def get_hash(uri:str, context:AgentContext):
     """Get the hash of a possibly indexed document.
 
     Parameters
@@ -75,13 +79,13 @@ def get_cached_hash(uri:str, context:AgentContext):
     hash = None
     results = context.elastic.search(index="simon-cache",
                                      query={"bool": {"must": [{"term": {"uri": uri}},
-                                                              {"term": {"user.keyword":
+                                                              {"term": {"user":
                                                                         context.uid}}]}})["hits"]
     if results["total"]["value"] > 0:
         hash = results["hits"][0]["_source"]["hash"]
     return hash
 
-def get_cached_fulltext(hash:str, context:AgentContext):
+def get_fulltext(hash:str, context:AgentContext):
     """Read a document possibly stored in the cache.
 
     Parameters
@@ -99,8 +103,8 @@ def get_cached_fulltext(hash:str, context:AgentContext):
 
     doc = context.elastic.search(index="simon-fulltext",
                                  query={"bool": {"must": [{"term": {"hash": hash}},
-                                                          {"term": {"user.keyword":
-                                                                     context.uid}}]}},
+                                                          {"term": {"user":
+                                                                    context.uid}}]}},
                                  fields=["text"], size=1)
     hits = [i["fields"]["text"][0] for i in doc["hits"]["hits"]]
 
@@ -125,8 +129,8 @@ def search_cached(keywords:str, context:AgentContext):
 
     doc = context.elastic.search(index="simon-fulltext",
                                  query={"bool": {"must": [{"match": {"hash": hash}},
-                                                          {"term": {"user.keyword":
-                                                                     context.uid}}]}},
+                                                          {"term": {"user":
+                                                                    context.uid}}]}},
                                  fields=["text"], size=1)
     hits = [i["fields"]["text"][0] for i in doc["hits"]["hits"]]
 
@@ -134,7 +138,7 @@ def search_cached(keywords:str, context:AgentContext):
 
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
            doc_hash=None, k=5, threshold=1):
-    """ElasticSearch the database based on a query!
+    """ElasticSearch the database based on a keyword query!
 
     Parameters
     ----------
@@ -161,17 +165,16 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
     # get results
     squery = {
         "bool": {"must": [
-            {"term": {"user.keyword": context.uid}},
+            {"term": {"user": context.uid}},
             {"match": {"text": query}}
         ]}
     }
     if doc_hash:
         squery["bool"]["must"].append({"term": {"hash": doc_hash}})
 
-    results = context.elastic.search(index=search_type.value, query=squery,
-                                     fields=["text", "metadata"], size=str(k))
-    results = [{"text": i["fields"]["text"][0],
-                "metadata": i["fields"]["metadata"][0]}
+    results = context.elastic.search(index=search_type.value, query=squery, size=str(k))
+    results = [{"text": i["_source"]["text"],
+                "metadata": i["_source"]["metadata"]}
                for i in results["hits"]["hits"] if i["_score"] > threshold]
 
     return results
@@ -199,13 +202,14 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # And check if we have already indexed the doc
     indicies = context.elastic.search(index="simon-fulltext",
                                       query={"bool": {"must": [{"term": {"hash": doc.hash}},
-                                                               {"term": {"user.keyword":
+                                                               {"term": {"user":
                                                                          context.uid}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
         context.elastic.index(index="simon-fulltext",
                               document={"user": context.uid,
-                                        "metadata": doc.meta,
+                                        "metadata": {"title": doc.meta.get("title"),
+                                                     "source": doc.meta.get("source")},
                                         "hash": doc.hash,
                                         "text": doc.main_document})
         context.elastic.indices.refresh(index="simon-fulltext")
@@ -213,16 +217,19 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # And check if we have already indexed the doc
     indicies = context.elastic.search(index="simon-paragraphs",
                                       query={"bool": {"must": [{"term": {"hash": doc.hash}},
-                                                               {"term": {"user.keyword":
+                                                               {"term": {"user":
                                                                          context.uid}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
         update_calls = [{"_op_type": "index",
-                        "_index": "simon-paragraphs",
-                        "user": context.uid,
-                        "metadata": doc.meta,
-                        "hash": doc.hash,
-                        "text": i} for i in doc.paragraphs]
+                         "_index": "simon-paragraphs",
+                         "user": context.uid,
+                         "metadata": {"title": doc.meta.get("title"),
+                                      "source": doc.meta.get("source"),
+                                      "seq": indx,
+                                      "total": len(doc.paragraphs)},
+                         "hash": doc.hash,
+                         "text": i} for indx,i in enumerate(doc.paragraphs)]
 
         bulk(context.elastic, update_calls)
 
@@ -244,7 +251,7 @@ def index_remote_file(url:str, context:AgentContext):
     """
 
     # Search for the URL in the cache if it exists
-    hash = get_cached_hash(url, context)
+    hash = get_hash(url, context)
 
     # If there is no cache retrieve the doc
     if not hash:
@@ -255,14 +262,15 @@ def index_remote_file(url:str, context:AgentContext):
             r = requests.get(url, headers=headers)
             with open(f, 'wb') as fp:
                 fp.write(r.content)
-            doc = parse_tika(f)
-            hash = doc.hash
+                doc = parse_tika(f, source=url)
+                hash = doc.hash
 
         # and pop it into the cache
-        context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash})
+        context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash,
+                                                             "user": context.uid})
         context.elastic.indices.refresh(index="simon-cache")
 
-        index_doc(doc, context)
+        index_document(doc, context)
 
     # retrun hash
     return hash
