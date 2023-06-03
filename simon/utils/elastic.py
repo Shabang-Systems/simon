@@ -1,0 +1,114 @@
+from elasticsearch import Elasticsearch
+
+def _seed_schema(es:Elasticsearch, dim=1546):
+    """Hidden function to seed the index.
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    dim : int
+        The dimension of the output.
+    """
+    es.indices.create(index="simon-cache", mappings={"properties": {"uri": {"type": "keyword"},
+                                                                    "hash": {"type": "keyword"},
+                                                                    "user": {"type": "keyword"}}})
+    es.indices.create(index="simon-fulltext", mappings={"properties": {"hash": {"type": "keyword"},
+                                                                       "metadata.source": {"type": "text"},
+                                                                       "metadata.title": {"type": "text"},
+                                                                       "text": {"type": "text"},
+                                                                       "user": {"type": "keyword"}}})
+    es.indices.create(index="simon-paragraphs", mappings={"properties": {"hash": {"type": "keyword"},
+                                                                         "metadata.source": {"type": "text"},
+                                                                         "metadata.title": {"type": "text"},
+                                                                         # paragraph number (seq / total)
+                                                                         "metadata.seq": {"type": "unsigned_long"},
+                                                                         "metadata.total": {"type": "unsigned_long"},
+                                                                         "text": {"type": "text"},
+                                                                         "user": {"type": "keyword"}}})
+    es.indices.create(index="simon-kv", mappings={"properties": {"key": {"type": "keyword"},
+                                                                 "value": {"type": "text"},
+                                                                 "user": {"type": "keyword"}}})
+
+def _nuke_scema(es:Elasticsearch):
+    """Gets rid of everything.
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        Elastic search instance used to store the data.
+    """
+
+    es.indices.delete(index="simon-cache")
+    es.indices.delete(index="simon-kv")
+    es.indices.delete(index="simon-fulltext")
+    es.indices.delete(index="simon-paragraphs")
+
+def kv_get(key:str, es:Elasticsearch, user:str, return_id=False):
+    """Performs a key-value search on the Elastic store
+
+    Parameters
+    ----------
+    key : str
+        The key to search for. 
+    es : Elasticsearch
+        The Elastic instance.
+    user : str
+        UID.
+    return_id : bool
+        Whether to return ID or just return result.
+
+    Return
+    ------
+    Optional[str] or Optional[Tuple[str, str]]
+        None if not found, value, or (value, id).
+    """
+
+    results = es.search(index="simon-kv", query={"bool":
+                                                 {"must": [{"term": {"key": key}},
+                                                           {"term": {"user.keyword": user}}]}}, size=1)
+    if len(results["hits"]["hits"]) == 0:
+        return (None,None) if return_id else None
+
+    result = results["hits"]["hits"][0]
+
+    if return_id: return result["_source"]["value"], result["_id"]
+    else: return result["_source"]["value"]
+
+def kv_set(key:str, value:str, es:Elasticsearch, user:str):
+    """Performs a key-value search on the Elastic store
+
+    Parameters
+    ----------
+    key : str
+        The key 
+    key : str
+        The desired value.
+    es : Elasticsearch
+        Elastic.
+    user : str
+        UID
+    """
+
+    _,id = kv_get(key, es, user, True)
+    if id:
+        es.update(index="simon-kv", id=id, doc={"key": key,
+                                                "value": value,
+                                                "user": user})
+    else:
+        es.index(index="simon-kv", document={"key": key,
+                                             "value": value,
+                                             "user": user})
+        es.indices.refresh(index="simon-kv")
+
+def kv_delete(key:str, es:Elasticsearch, user:str):
+    """Delete a key-value"""
+
+    _,id = kv_get(key, es, user, True)
+    if id:
+        es.delete(index="simon-kv", id=id)
+        es.indices.refresh(index="simon-kv")
+
+# _nuke_scema(es)
+# _seed_schema(es)
+

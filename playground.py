@@ -18,7 +18,7 @@ from langchain.tools import DuckDuckGoSearchRun
 from elasticsearch import Elasticsearch
 
 # our toolkits
-from simon.agents import Research, Catalog
+# from simon.agents import Research, Catalog
 from simon.models import *
 
 from simon.assistant import create_assistant
@@ -34,24 +34,37 @@ embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
 UID = "test-uid"
 
-# serialize all of the above together
-context = AgentContext(llm, embedding, es, UID)
+# # serialize all of the above together
+# context = AgentContext(llm, embedding, es, UID)
 
-# provision tools we need
-research = Research(context, True)
-# catalog = Catalog(context, True)
-# internet = DuckDuckGoSearchRun()
-human = load_tools(["human"])[0]
+# # provision tools we need
+# research = Research(context, True)
+# # catalog = Catalog(context, True)
+# # internet = DuckDuckGoSearchRun()
+# human = load_tools(["human"])[0]
 
-# and create the assistant,.
-# , catalog
+# # and create the assistant,.
+# # , catalog
 
-from simon.toolkits.documents import *
+# from simon.toolkits.documents import *
 
-index_remote_file
+# index_remote_file
 
-# index_remote_file("https://www.mdpi.coaoenustahom/1996-1944/15/18/6283/pdf?version=1663048430", es, embedding, UID)
+# # index_remote_file("https://www.mdpi.coaoenustahom/1996-1944/15/18/6283/pdf?version=1663048430", es, embedding, UID)
 
-assistant = create_assistant(context, [research, human], True)
-# print(assistant.run("what are the drug target of wilms tumor?"))
-print(assistant.run("What are the state-of-the-art speech diarization models?"))
+# assistant = create_assistant(context, [research, human], True)
+# # print(assistant.run("what are the drug target of wilms tumor?"))
+# print(assistant.run("What are the state-of-the-art speech diarization models?"))
+def nah(doc, context):
+    embedded = context.embedding.embed_documents(doc.paragraphs)
+    docs = [{"embedding": a,
+             "text": b}
+            for a,b in zip(embedded, doc.paragraphs)]
+    update_calls = [{"_op_type": "index",
+                     "_index": "simon-embeddings",
+                     "user": context.uid,
+                     "metadata": doc.meta,
+                     "hash": doc.hash,
+                     "doc": i} for i in docs]
+    bulk(context.elastic, update_calls)
+
