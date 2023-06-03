@@ -39,8 +39,8 @@ context = AgentContext(llm, embedding, es, UID)
 
 # provision tools we need
 research = Research(context, True)
-catalog = Catalog(context, True)
-internet = DuckDuckGoSearchRun()
+# catalog = Catalog(context, True)
+# internet = DuckDuckGoSearchRun()
 human = load_tools(["human"])[0]
 
 # and create the assistant,.
@@ -52,38 +52,6 @@ index_remote_file
 
 # index_remote_file("https://www.mdpi.coaoenustahom/1996-1944/15/18/6283/pdf?version=1663048430", es, embedding, UID)
 
-assistant = create_assistant(context, [research, catalog, internet, human], True)
-print(assistant.run("Yes, please write that as an email."))
-# assistant.run("Sure. Mason's ")
-# assistant.run("Without using tools, can you write an email about the topic?")
-# assistant.run("Can you summarize what we did together today?")
-# assistant.run("Have Simon ever read a document written by Vaswani?")
-
-
-# # from simon.toolkits.documents import *
-
-
-# # key="key"
-# # value="value"
-# # uid=UID
-# # user = uid
-
-# # es.index(index="simon-kv", document={"key":key,
-# #                                      "value":value,
-# #                                      "user": uid})
-    
-# # hash = index_remote_file("https://cdn.icyflamestudio.com/wp-content/uploads/download-test-file.jpg", context.elastic, context.embedding, context.uid)
-# # hash
-# # doc = read(hash, context.elastic, context.uid)
-# # doc
-
-# # es.search("simon-docs", query={})
-# # text = "".join(hits)
-# # es.indices.delete(index="simon-cache")
-# # es.indices.delete(index="simon-docs")
-
-# # from simon.toolkits.documents import _seed_schema
-# # _seed_schema(es)
-
-
-
+assistant = create_assistant(context, [research, human], True)
+# print(assistant.run("what are the drug target of wilms tumor?"))
+print(assistant.run("What are the state-of-the-art speech diarization models?"))

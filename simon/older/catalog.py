@@ -20,7 +20,7 @@ def Catalog(context:AgentContext, verbose=False):
     executor = AgentExecutor.from_agent_and_tools(agent, tools, verbose=verbose, handle_parsing_errors=True)
 
     tool = Tool.from_function(func=lambda x:executor.run(x),
-                              name = "knowledge-database",
+                              name = "document-catalog",
                               description="Useful when you need to answer questions using prior knowledge using documents you have seen before, including papers, emails, articles, websites, etc. Provide with tool with a natural language statement or question, and it will return a natural language answer. Do not use this tool if you are looking for new information. This tool can only tell you information using facts gathered from the documents.")
 
     return tool
