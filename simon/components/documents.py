@@ -58,7 +58,7 @@ def parse_tika(uri, title=None, source=None) -> ParsedDocument:
     # parse data
     parsed = parser.from_file(uri)
     meta = {
-        "source": source if source else arsed["metadata"]["resourceName"],
+        "source": source if source else parsed["metadata"]["resourceName"],
         "title": title if title else parsed["metadata"].get("pdf:docinfo:title"),
     }
     # clean the chunks
@@ -97,7 +97,7 @@ def parse_web(html, title=None, source=None) -> ParsedDocument:
 
     # clean the chunks
     parsed_chunks, parsed_text = __derenewline(text)
-    parsed_chunks = [i for i in parsed_chunks if len(i) > 150] # because most of <150s are buttons
+    parsed_chunks = [i for i in parsed_chunks] 
     # hash the text
     hash = hashlib.sha256(parsed_text.encode()).hexdigest()
 
@@ -156,7 +156,7 @@ def get_fulltext(hash:str, context:AgentContext):
     if len(hits) > 0: return hits[0]
 
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
-           doc_hash=None, k=5, threshold=1):
+           doc_hash=None, k=5, threshold=0.9):
     """ElasticSearch the database based on a keyword query!
 
     Parameters
@@ -188,15 +188,56 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
             {"match": {"text": query}}
         ]}
     }
+
+    kquery = {"field": "embedding",
+              "query_vector": context.embedding.embed_query(query),
+              "k": k,
+              "num_candidates": 800,
+              "filter": [{"term": {"user": context.uid}}]}
+
     if doc_hash:
         squery["bool"]["must"].append({"term": {"hash": doc_hash}})
+        kquery["filter"].append({"term": {"hash": doc_hash}})
 
-    results = context.elastic.search(index=search_type.value, query=squery, size=str(k))
+    if search_type == IndexClass.CHUNK:
+        results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k))
+    else:
+        results = context.elastic.search(index=search_type.value, query=squery, size=str(k))
+
     results = [{"text": i["_source"]["text"],
                 "metadata": i["_source"]["metadata"]}
                for i in results["hits"]["hits"] if i["_score"] > threshold]
 
     return results
+
+#### DELETERS ####
+def delete_document(hash:str, context:AgentContext):
+    """Removes an indexed document
+
+    Parameters
+    ----------
+    hash : str
+        The string document to delete
+    context : AgentContext
+        Information about data stores, etc. which determines
+        the context.
+    """
+
+    context.elastic.delete_by_query(index="simon-fulltext",
+                                    query={"bool": {"must": [{"term": {"hash": hash}},
+                                                         {"term": {"user":
+                                                                   context.uid}}]}})
+
+    context.elastic.delete_by_query(index="simon-paragraphs",
+                                    query={"bool": {"must": [{"term": {"hash": hash}},
+                                                         {"term": {"user":
+                                                                   context.uid}}]}})
+
+    context.elastic.delete_by_query(index="simon-cache",
+                                    query={"bool": {"must": [{"term": {"hash": hash}},
+                                                         {"term": {"user":
+                                                                   context.uid}}]}})
+
 
 #### SETTERS ####
 def index_document(doc:ParsedDocument, context:AgentContext):
@@ -248,14 +289,17 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                       "seq": indx,
                                       "total": len(doc.paragraphs)},
                          "hash": doc.hash,
-                         "text": i} for indx,i in enumerate(doc.paragraphs)]
+                         "text": i,
+                         "embedding": e} for indx,(i,e) in
+                        enumerate(zip(doc.paragraphs,
+                                      context.embedding.embed_documents(doc.paragraphs)))]
 
         bulk(context.elastic, update_calls)
 
         context.elastic.indices.refresh(index="simon-paragraphs")
 
 #### SPECIAL SETTERS ####
-def __index_remote_helper__DOCUMENT(url):
+def __read_remote_helper__DOCUMENT(url):
     # Retrieve and parse the document
     with TemporaryDirectory() as tmpdir:
         f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
@@ -268,7 +312,7 @@ def __index_remote_helper__DOCUMENT(url):
 
     return doc
 
-def __index_remote_helper__WEBPAGE(url):
+def __read_remote_helper__WEBPAGE(url):
     # download page
     headers = {'user-agent': 'Mozilla/5.0'}
     r = requests.get(url, headers=headers)
@@ -279,7 +323,7 @@ def __index_remote_helper__WEBPAGE(url):
 
     return doc
 
-def index_remote(url:str, context:AgentContext, media:MediaType):
+def read_remote(url:str, context:AgentContext, media:MediaType, mappings=None):
     """Read and index a remote file into Elastic by trying really hard not to actually read it.
 
     Parameters
@@ -290,6 +334,8 @@ def index_remote(url:str, context:AgentContext, media:MediaType):
         Context to use.
     media : MediaType
         What are we indexing?? File? Webpage?
+    mappings : Mapping
+        How the media is mapped to fields to be indexed.
 
     Return
     ------
@@ -303,9 +349,9 @@ def index_remote(url:str, context:AgentContext, media:MediaType):
     # If there is no cache retrieve the doc
     if not hash:
         if media == MediaType.DOCUMENT:
-            doc = __index_remote_helper__DOCUMENT(url)
+            doc = __read_remote_helper__DOCUMENT(url)
         elif media == MediaType.WEBPAGE:
-            doc = __index_remote_helper__WEBPAGE(url)
+            doc = __read_remote_helper__WEBPAGE(url)
 
         # read hash off of the doc
         hash = doc.hash
@@ -318,3 +364,16 @@ def index_remote(url:str, context:AgentContext, media:MediaType):
 
     # retrun hash
     return hash
+
+# def ingest_jso
+
+read_remote("https://www.jemoka.com/posts/kbhlanguage/", context, MediaType.WEBPAGE)
+read_remote("https://en.wikipedia.org/wiki/Review_aggregator", context, MediaType.WEBPAGE)
+read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
+
+search("what is the transformer architecture?", context)
+
+headers = {'user-agent': 'Mozilla/5.0'}
+r = requests.get("https://www.jemoka.com/index.json", headers=headers)
+res = r.json()
+res[0]

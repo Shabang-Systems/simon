@@ -27,5 +27,37 @@ class IndexClass(Enum):
 class MediaType(Enum):
     DOCUMENT = 0
     WEBPAGE = 1
+    JSON = 2
+
+class MappingTarget(Enum):
+    TITLE = "title"
+    SOURCE = "source"
+    TEXT = "text"
+
+# Engineered at 12AM, future jack excuse me
+
+@dataclass
+class MappingField:
+    src: any
+    dest: MappingTarget
+
+@dataclass
+class Mapping:
+    mappings: List[MappingField]
+
+    def encode(self):
+        return {res.src:res.dest.value for res in self.mappings}
+
+@dataclass
+class StringMappingField(MappingField):
+    src: str
+    dest: MappingTarget
+    
+@dataclass
+class JSONMapping(Mapping):
+    mappings: List[StringMappingField]
+
+
+# JSONMapping([StringMappingField("tmp", MappingTarget.SOURCE)]).encode()
 
 

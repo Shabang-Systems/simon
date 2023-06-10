@@ -25,12 +25,16 @@ def _seed_schema(es:Elasticsearch, dim=1546):
                                                                          "metadata.seq": {"type": "unsigned_long"},
                                                                          "metadata.total": {"type": "unsigned_long"},
                                                                          "text": {"type": "text"},
+                                                                         "embedding": {"type": "dense_vector",
+                                                                                       "dims": 1536,
+                                                                                       "similarity": "cosine",
+                                                                                       "index": "true"},
                                                                          "user": {"type": "keyword"}}})
     es.indices.create(index="simon-kv", mappings={"properties": {"key": {"type": "keyword"},
                                                                  "value": {"type": "text"},
                                                                  "user": {"type": "keyword"}}})
 
-def _nuke_scema(es:Elasticsearch):
+def _nuke_schema(es:Elasticsearch):
     """Gets rid of everything.
 
     Parameters
@@ -109,6 +113,7 @@ def kv_delete(key:str, es:Elasticsearch, user:str):
         es.delete(index="simon-kv", id=id)
         es.indices.refresh(index="simon-kv")
 
-# _nuke_scema(es)
+# _nuke_schema(es)
 # _seed_schema(es)
+
 
