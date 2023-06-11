@@ -116,4 +116,3 @@ def kv_delete(key:str, es:Elasticsearch, user:str):
 # _nuke_schema(es)
 # _seed_schema(es)
 
-

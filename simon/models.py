@@ -27,14 +27,14 @@ class IndexClass(Enum):
 class MediaType(Enum):
     DOCUMENT = 0
     WEBPAGE = 1
-    JSON = 2
+
+class DataType(Enum):
+    JSON = 0
 
 class MappingTarget(Enum):
     TITLE = "title"
     SOURCE = "source"
     TEXT = "text"
-
-# Engineered at 12AM, future jack excuse me
 
 @dataclass
 class MappingField:
@@ -48,6 +48,10 @@ class Mapping:
     def encode(self):
         return {res.src:res.dest.value for res in self.mappings}
 
+    def check(self):
+        targets = [i.dest for i in self.mappings]
+        assert MappingTarget.TEXT in targets, "Text target not found in mapping."
+
 @dataclass
 class StringMappingField(MappingField):
     src: str
@@ -56,8 +60,4 @@ class StringMappingField(MappingField):
 @dataclass
 class JSONMapping(Mapping):
     mappings: List[StringMappingField]
-
-
-# JSONMapping([StringMappingField("tmp", MappingTarget.SOURCE)]).encode()
-
 

@@ -7,6 +7,7 @@ Components for document parsing.
 import os
 import time
 import hashlib
+from itertools import groupby
 from tempfile import TemporaryDirectory
 
 # Networking
@@ -28,16 +29,49 @@ from ..utils.elastic import *
 from ..models import *
 
 #### SANITIZERS ####
-def __derenewline(text):
+def __chunk(text, delim="\n\n"):
     # clean the chunks
     parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
-                     for i in text.split("\n\n") if i != '']
+                     for i in text.split(delim) if i != '']
     # and also create the bigger document
     parsed_text = " ".join(parsed_chunks)
+    # hash the text
+    hash = hashlib.sha256(parsed_text.encode()).hexdigest()
 
-    return parsed_chunks, parsed_text
+    return parsed_chunks, parsed_text, hash
 
 #### PARSERS ####
+def parse_text(text, title=None, source=None, delim="\n\n") -> ParsedDocument:
+    """Base parser. Just chunk the text and be done.
+
+    Parameters
+    ----------
+    text : str
+        The raw text to be parsed.
+    title : str
+        Force a specific title.
+    source : str 
+        Force a specific source.
+    delim : optional, str
+        An optional delimiter, if needed.
+
+    Returns
+    -------
+    ParsedDocument
+        The parsed document.
+    """
+
+    meta = {
+        "source": source,
+        "title": title,
+    }
+
+    # clean the chunks
+    parsed_chunks, parsed_text, hash = __chunk(text, delim)
+
+    # return!
+    return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
+
 def parse_tika(uri, title=None, source=None) -> ParsedDocument:
     """Parse a local document using Tika and Tesseract
 
@@ -57,17 +91,12 @@ def parse_tika(uri, title=None, source=None) -> ParsedDocument:
     """
     # parse data
     parsed = parser.from_file(uri)
-    meta = {
-        "source": source if source else parsed["metadata"]["resourceName"],
-        "title": title if title else parsed["metadata"].get("pdf:docinfo:title"),
-    }
-    # clean the chunks
-    parsed_chunks, parsed_text = __derenewline(parsed["content"])
-    # hash the text
-    hash = hashlib.sha256(parsed_text.encode()).hexdigest()
 
-    # return!
-    return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
+    # get metadata
+    source = source if source else parsed["metadata"]["resourceName"]
+    title = title if title else parsed["metadata"].get("pdf:docinfo:title")
+
+    return parse_text(parsed["content"], title, source)
 
 def parse_web(html, title=None, source=None) -> ParsedDocument:
     """Parse a web page using BeautifulSoup.
@@ -90,19 +119,10 @@ def parse_web(html, title=None, source=None) -> ParsedDocument:
     soup = BeautifulSoup(html)
     text = soup.get_text()
 
-    meta = {
-        "source": source,
-        "title": title if title else soup.title.string,
-    }
+    # meta!
+    title = title if title else soup.title.string
 
-    # clean the chunks
-    parsed_chunks, parsed_text = __derenewline(text)
-    parsed_chunks = [i for i in parsed_chunks] 
-    # hash the text
-    hash = hashlib.sha256(parsed_text.encode()).hexdigest()
-
-    # return!
-    return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
+    return parse_text(text, title, source)
 
 #### GETTERS ####
 def get_hash(uri:str, context:AgentContext):
@@ -155,6 +175,75 @@ def get_fulltext(hash:str, context:AgentContext):
 
     if len(hits) > 0: return hits[0]
 
+def get_nth_chunk(hash, n, context):
+    """Read a document possibly stored in the cache by chunk.
+
+    Parameters
+    ----------
+    hash : str
+        The string hash to read.
+    n : int
+        The nth chunk to read.
+    context : AgentContext
+        The context pointer to use to perform parsing.
+
+    Return
+    ------
+    Optional[str]
+        str full text, or None.
+    """
+    res = context.elastic.search(index="simon-paragraphs",
+                                query={"bool":
+                                        {"must": [
+                                            {"term": {"user": context.uid}},
+                                            {"term": {"hash": hash}},
+                                            {"term": {"metadata.seq": n}},
+                                        ]}},
+                                fields=["text"],
+                                size=1)
+
+    if res["hits"]["total"]["value"] == 0: return None
+    res = [i["fields"]["text"][0] for i in res["hits"]["hits"]][0]
+
+    return res
+
+def get_range_chunk(hash, start, end, context):
+    """Read a document possibly stored in the cache by chunk.
+
+    Parameters
+    ----------
+    hash : str
+        The string hash to read.
+    start : int
+        Get chunk starting seq.
+    end : int
+        Get chunk end seq.
+    context : AgentContext
+        The context pointer to use to perform parsing.
+
+    Return
+    ------
+    Optional[List[str]]
+        list of results, or None.
+    """
+    res = context.elastic.search(index="simon-paragraphs",
+                                 query={"bool":
+                                        {"must": [
+                                            {"term": {"user": context.uid}},
+                                            {"term": {"hash": hash}},
+                                            {"range": {"metadata.seq": {"gte": start,
+                                                                        "lte": end}}},
+                                        ]}},
+                                 fields=["text", "metadata.seq"])
+
+    if res["hits"]["total"]["value"] == 0: return None
+
+    # we get the sequence and re-sort it in case sequences are indexed in an unexpected order
+    res = sorted([(i["fields"]["metadata.seq"][0],
+                   i["fields"]["text"][0]) for i in res["hits"]["hits"]], key=(lambda x:x[0]))
+
+    return [i[1] for i in res]
+
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
            doc_hash=None, k=5, threshold=0.9):
     """ElasticSearch the database based on a keyword query!
@@ -205,7 +294,8 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
         results = context.elastic.search(index=search_type.value, query=squery, size=str(k))
 
     results = [{"text": i["_source"]["text"],
-                "metadata": i["_source"]["metadata"]}
+                "metadata": i["_source"]["metadata"],
+                "hash": i["_source"]["hash"]}
                for i in results["hits"]["hits"] if i["_score"] > threshold]
 
     return results
@@ -299,6 +389,10 @@ def index_document(doc:ParsedDocument, context:AgentContext):
         context.elastic.indices.refresh(index="simon-paragraphs")
 
 #### SPECIAL SETTERS ####
+
+### Read Remote Helpers ###
+# These helpers should take a URL, and return an
+# object of class ParsedDocument
 def __read_remote_helper__DOCUMENT(url):
     # Retrieve and parse the document
     with TemporaryDirectory() as tmpdir:
@@ -323,8 +417,15 @@ def __read_remote_helper__WEBPAGE(url):
 
     return doc
 
-def read_remote(url:str, context:AgentContext, media:MediaType, mappings=None):
-    """Read and index a remote file into Elastic by trying really hard not to actually read it.
+### Read Remote Function ###
+def read_remote(url:str, context:AgentContext, type:MediaType):
+    """Read and index a remote file into Elastic.
+
+    Note
+    ----
+    This function is useful for single FILES/WEB PAGES. Filled with TEXT. For DATA,
+    use `ingest_remote`
+    
 
     Parameters
     ----------
@@ -332,10 +433,8 @@ def read_remote(url:str, context:AgentContext, media:MediaType, mappings=None):
         URL to read.
     context : AgentContext
         Context to use.
-    media : MediaType
+    type : MediaType
         What are we indexing?? File? Webpage?
-    mappings : Mapping
-        How the media is mapped to fields to be indexed.
 
     Return
     ------
@@ -348,9 +447,9 @@ def read_remote(url:str, context:AgentContext, media:MediaType, mappings=None):
 
     # If there is no cache retrieve the doc
     if not hash:
-        if media == MediaType.DOCUMENT:
+        if type == MediaType.DOCUMENT:
             doc = __read_remote_helper__DOCUMENT(url)
-        elif media == MediaType.WEBPAGE:
+        elif type == MediaType.WEBPAGE:
             doc = __read_remote_helper__WEBPAGE(url)
 
         # read hash off of the doc
@@ -365,15 +464,136 @@ def read_remote(url:str, context:AgentContext, media:MediaType, mappings=None):
     # retrun hash
     return hash
 
-# def ingest_jso
+### Ingest Remote Helpers ###
+# These helpers should take a URL, and return an
+# array of flat dictionaries with flat data fields.
+# Like [ {"this": 1, "that": "two"}, {"what": 1, "the": "hell"} ]
+def __ingest_remote_helper__JSON(url):
+    # download page
+    headers = {'user-agent': 'Mozilla/5.0'}
+    r = requests.get(url, headers=headers)
 
-read_remote("https://www.jemoka.com/posts/kbhlanguage/", context, MediaType.WEBPAGE)
-read_remote("https://en.wikipedia.org/wiki/Review_aggregator", context, MediaType.WEBPAGE)
-read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
+    return r.json()
 
-search("what is the transformer architecture?", context)
+### Ingest Remote Function ###
+def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, delim="\n"):
+    """Read and index a remote resource into Elastic with a field mapping
 
-headers = {'user-agent': 'Mozilla/5.0'}
-r = requests.get("https://www.jemoka.com/index.json", headers=headers)
-res = r.json()
-res[0]
+    Note
+    ----
+    This function is useful for STRUCTURED DATA. For SINGLE FILES/PAGES,
+    use `ingest_remote`
+
+
+    Parameters
+    ----------
+    url : str
+        URL to read.
+    context : AgentContext
+        Context to use.
+    type : DataType
+        What are we indexing?? JSON? SQL?
+    mappings : Mapping
+        Which fields match with what index? 
+    delim : optional, str
+        How do we deliminate chunks? Perhaps smarter in the future but
+        for now we are just splitting by a character.
+    
+    Return
+    ------
+    List[str]
+        List of hashes of the data we have read
+    """
+
+    # check mappings
+    mappings.check()
+
+    # get the data with the right parser
+    if type == DataType.JSON:
+        data = __ingest_remote_helper__JSON(url)
+
+    # create documents
+    docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
+                    delim=delim)
+            for i in data]
+
+    # pop each into the index
+    # and pop each into the cache and index
+    for i in docs:
+        index_document(i, context)
+        source = i.meta.get("source")
+        if source and source.strip() != "":
+            context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
+                                                                "user": context.uid})
+    # refresh
+    context.elastic.indices.refresh(index="simon-cache")
+
+    # return hashes
+    return [i.hash for i in docs]
+
+
+#### GLUE ####
+# A function to assemble CHUNK-type search results
+
+def assemble_chunks(results, padding=2):
+    # otherwise it'd be empty!
+    if len(results) == 0:
+        return ""
+
+    # group by source, parsing each one at a time
+    groups = groupby(results, lambda x:x.get("metadata", {}).get("source", ""))
+    stitched_ranges = []
+
+    for _, group in groups:
+        # get the context groups
+        group = sorted(group, key=lambda x:x.get("metadata", {}).get("seq", 10000))
+        total = group[0].get("metadata", {}).get("total", 10000)
+        title = group[0].get("metadata", {}).get("title", "")
+        source = group[0].get("metadata", {}).get("source", "")
+        hash = group[0].get("hash", "")
+
+        # generate the chunk regions
+        chunks = [(max(0, i.get("metadata", {}).get("seq", 0)-padding),
+                min(total, i.get("metadata", {}).get("seq", 10000)+padding))
+                for i in group]
+        # smooth out overlapping chunks (if two chunks overlap, we create a bigger one
+        # encompassing both)
+        smooth_chunks = []
+        # if the current ending is after the next starting, we take
+        # the next ending chunk instead
+        start, end = chunks.pop(0)
+        while len(chunks) != 0:
+            new_start, new_end = chunks.pop(0)
+
+            if end <= new_start:
+                smooth_chunks.append((start, end))
+                start = new_start
+                end = new_end
+            else:
+                end = max(end, new_end)
+        smooth_chunks.append((start, end))
+        # now, get these actual chunks + stich them together with "..."
+        range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
+                                for i,j in smooth_chunks])
+        # metadat
+        metadata_text = f"=== Title: {title}, Source: {source} === \n\n"
+        stitched_ranges.append(metadata_text+range_text)
+
+    # and now, assemble everything with slashes between and return
+    return "\n\n---------\n\n".join(stitched_ranges)
+
+results = search("eigenvalues", context)
+
+print(assemble_chunks(results, 2))
+
+# headers = {'user-agent': 'Mozilla/5.0'}
+# r = requests.get(url, headers=headers)
+
+
+
+
+
+# # clean the chunks
+# parsed_chunks, parsed_text = __chunk(parsed["content"])
+
+
