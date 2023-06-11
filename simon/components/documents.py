@@ -245,7 +245,7 @@ def get_range_chunk(hash, start, end, context):
     return [i[1] for i in res]
 
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
-           doc_hash=None, k=5, threshold=0.9):
+           doc_hash=None, k=3, threshold=0.9):
     """ElasticSearch the database based on a keyword query!
 
     Parameters
@@ -295,7 +295,8 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
 
     results = [{"text": i["_source"]["text"],
                 "metadata": i["_source"]["metadata"],
-                "hash": i["_source"]["hash"]}
+                "hash": i["_source"]["hash"],
+                "score": i["_score"]}
                for i in results["hits"]["hits"] if i["_score"] > threshold]
 
     return results
@@ -516,6 +517,8 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
     docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
                     delim=delim)
             for i in data]
+    # filter for those that are indexed
+    docs = filter(lambda x:(get_fulltext(x.hash, context)==None), docs)
 
     # pop each into the index
     # and pop each into the cache and index
@@ -535,13 +538,32 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
 #### GLUE ####
 # A function to assemble CHUNK-type search results
 
-def assemble_chunks(results, padding=2):
+def assemble_chunks(results, context, padding=1):
+    """Assemble CHUNK type results into a string
+
+    Parameters
+    ----------
+    results : str
+        Output of search().
+    context : AgentContext
+        Context to use.
+    padding : optional,int
+        The context padding to provide the model.
+        
+    Return
+    ------
+    str
+        String containing the assembled results.
+    """
+
+
     # otherwise it'd be empty!
     if len(results) == 0:
         return ""
 
     # group by source, parsing each one at a time
-    groups = groupby(results, lambda x:x.get("metadata", {}).get("source", ""))
+    groups = groupby(sorted(results, key=lambda x:x.get("metadata", {}).get("source", "")),
+                     lambda x:x.get("metadata", {}).get("source", ""))
     stitched_ranges = []
 
     for _, group in groups:
@@ -551,6 +573,7 @@ def assemble_chunks(results, padding=2):
         title = group[0].get("metadata", {}).get("title", "")
         source = group[0].get("metadata", {}).get("source", "")
         hash = group[0].get("hash", "")
+        mean_score = sum([i.get("score", 0) for i in group])/len(group)
 
         # generate the chunk regions
         chunks = [(max(0, i.get("metadata", {}).get("seq", 0)-padding),
@@ -576,24 +599,24 @@ def assemble_chunks(results, padding=2):
         range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
                                 for i,j in smooth_chunks])
         # metadat
-        metadata_text = f"=== Title: {title}, Source: {source} === \n\n"
-        stitched_ranges.append(metadata_text+range_text)
+        metadata_text = f"=== Title: {title}, Source: {source}, Score: {mean_score} === \n\n"
+        stitched_ranges.append((mean_score, metadata_text+range_text))
+
+    stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 
     # and now, assemble everything with slashes between and return
-    return "\n\n---------\n\n".join(stitched_ranges)
+    return "\n\n---------\n\n".join([i[1] for i in stitched_ranges])
 
-results = search("eigenvalues", context)
+# read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
 
-print(assemble_chunks(results, 2))
+# results = search("who is benjamin wilkins?", context, k=3)
+# print(assemble_chunks(results, context, 1))
 
-# headers = {'user-agent': 'Mozilla/5.0'}
-# r = requests.get(url, headers=headers)
-
-
-
-
-
-# # clean the chunks
-# parsed_chunks, parsed_text = __chunk(parsed["content"])
-
+# ingest_remote("https://www.jemoka.com/index.json",
+#               context,
+#               DataType.JSON,
+#               JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
+#                            StringMappingField("contents", MappingTarget.TEXT),
+#                            StringMappingField("title", MappingTarget.TITLE)]))
+              
 

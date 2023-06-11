@@ -20,6 +20,7 @@ from elasticsearch import Elasticsearch
 # our toolkits
 # from simon.agents import Research, Catalog
 from simon.models import *
+from simon.toolkits import KnowledgebaseToolkit
 
 from simon.assistant import create_assistant
 
@@ -37,11 +38,18 @@ UID = "test-uid"
 # # serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
 
-# # # provision tools we need
-# # research = Research(context, True)
-# # # catalog = Catalog(context, True)
-# # # internet = DuckDuckGoSearchRun()
-# # human = load_tools(["human"])[0]
+# provision tools we need
+kb = KnowledgebaseToolkit(context).get_tools()
+human = load_tools(["human"])[0]
+
+# create assistant
+assistant = create_assistant(context, [kb, human], True)
+print(assistant.run("Where did you find that link??"))
+
+
+# research = Research(context, True)
+# # catalog = Catalog(context, True)
+# # internet = DuckDuckGoSearchRun()
 
 # # # and create the assistant,.
 # # # , catalog
@@ -52,8 +60,6 @@ context = AgentContext(llm, embedding, es, UID)
 
 # # # index_remote_file("https://www.mdpi.coaoenustahom/1996-1944/15/18/6283/pdf?version=1663048430", es, embedding, UID)
 
-# # assistant = create_assistant(context, [research, human], True)
-# # # print(assistant.run("what are the drug target of wilms tumor?"))
 # # print(assistant.run("What are the state-of-the-art speech diarization models?"))
 # def nah(doc, context):
 #     embedded = context.embedding.embed_documents(doc.paragraphs)
