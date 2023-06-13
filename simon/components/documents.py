@@ -525,9 +525,9 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
     for i in docs:
         index_document(i, context)
         source = i.meta.get("source")
-        if source and source.strip() != "":
+        if source and source.strip() != "" and not get_hash(source, context):
             context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
-                                                                "user": context.uid})
+                                                                 "user": context.uid})
     # refresh
     context.elastic.indices.refresh(index="simon-cache")
 
