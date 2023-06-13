@@ -1,10 +1,9 @@
-from langchain.memory import ConversationBufferWindowMemory, ConversationEntityMemory, CombinedMemory
+from langchain.memory import ConversationEntityMemory, CombinedMemory
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.chains import LLMChain
-from langchain.agents import AgentOutputParser, LLMSingleActionAgent
+from langchain.agents import AgentOutputParser, LLMSingleActionAgent, AgentExecutor
 from langchain.schema import AgentAction, AgentFinish, HumanMessage
-from langchain.tools import Tool, BaseTool
-from langchain.chains import LLMChain
+from langchain.tools import BaseTool
 
 import re
 from typing import List, Union

@@ -10,6 +10,7 @@ ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
 
 # LLM
 from langchain.agents import load_tools
+from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.tools import DuckDuckGoSearchRun
@@ -44,7 +45,7 @@ human = load_tools(["human"])[0]
 
 # create assistant
 assistant = create_assistant(context, [kb, human], True)
-print(assistant.run("Where did you find that link??"))
+# print(assistant.run("Where did you find that link??"))
 
 
 # research = Research(context, True)
