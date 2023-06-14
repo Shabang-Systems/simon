@@ -19,17 +19,17 @@ from langchain.tools import DuckDuckGoSearchRun
 from elasticsearch import Elasticsearch
 
 # our toolkits
-# from simon.agents import Research, Catalog
 from simon.models import *
 from simon.toolkits import KnowledgebaseToolkit
 
-from simon.assistant import create_assistant
+from simon.assistant import Assistant
 
 # fun
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
+# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
@@ -40,13 +40,20 @@ UID = "test-uid"
 context = AgentContext(llm, embedding, es, UID)
 
 # provision tools we need
-kb = KnowledgebaseToolkit(context).get_tools()
-human = load_tools(["human"])[0]
+tools = KnowledgebaseToolkit(context).get_tools()
+tools += [DuckDuckGoSearchRun()]
 
 # create assistant
-assistant = create_assistant(context, [kb, human], True)
-# print(assistant.run("Where did you find that link??"))
+assistant = Assistant(context, tools, True)
 
+print(assistant("Can you draft an email describing DementiaBank to my friend Robert?"))
+# assistant.knowledge
+
+
+# "Thanks so much! Bob's email is bob@bob.com. Can you draft a funny email to him explaining what TalkBank is?"
+
+
+# assistant.memory.entity_store.store
 
 # research = Research(context, True)
 # # catalog = Catalog(context, True)

@@ -70,7 +70,7 @@ def kv_get(key:str, es:Elasticsearch, user:str, return_id=False):
 
     results = es.search(index="simon-kv", query={"bool":
                                                  {"must": [{"term": {"key": key}},
-                                                           {"term": {"user.keyword": user}}]}}, size=1)
+                                                           {"term": {"user": user}}]}}, size=1)
     if len(results["hits"]["hits"]) == 0:
         return (None,None) if return_id else None
 
@@ -78,6 +78,27 @@ def kv_get(key:str, es:Elasticsearch, user:str, return_id=False):
 
     if return_id: return result["_source"]["value"], result["_id"]
     else: return result["_source"]["value"]
+
+def kv_getall(es:Elasticsearch, user:str):
+    """Get all key-value store
+
+    Parameters
+    ----------
+    es : Elasticsearch
+        The Elastic Instance
+    user : str
+        UID
+
+    Return
+    ------
+    Dict
+        All kv info on that user
+    """
+
+
+    results = es.search(index="simon-kv", query={"bool":
+                                                {"must": [{"term": {"user": user}}]}})
+    return {i["_source"]["key"]:i["_source"]["value"] for i in results["hits"]["hits"]}
 
 def kv_set(key:str, value:str, es:Elasticsearch, user:str):
     """Performs a key-value search on the Elastic store
