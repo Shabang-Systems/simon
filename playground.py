@@ -45,7 +45,7 @@ tools = KnowledgebaseToolkit(context).get_tools()
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("Oh. So cool! Can you write this info as a gasta rap?"))
+# print(assistant("Give me a link please. That's still not a link."))
 # assistant.knowledge
 
 

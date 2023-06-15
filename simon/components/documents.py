@@ -518,14 +518,19 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
                     delim=delim)
             for i in data]
     # filter for those that are indexed
-    docs = filter(lambda x:(get_fulltext(x.hash, context)==None), docs)
+    docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
 
     # pop each into the index
     # and pop each into the cache and index
     for i in docs:
         index_document(i, context)
         source = i.meta.get("source")
-        if source and source.strip() != "" and not get_hash(source, context):
+        if source and source.strip() != "":
+            # remove docs surrounding old hash 
+            oldhash = get_hash(source, context)
+            if oldhash:
+                delete_document(oldhash, context)
+            # index new one
             context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
                                                                  "user": context.uid})
     # refresh
@@ -609,8 +614,8 @@ def assemble_chunks(results, context, padding=1):
 
 # read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
 
-# results = search("who is benjamin wilkins?", context, k=3)
-# print(assemble_chunks(results, context, 1))
+# results = search("what's a linear map?", context, k=3)
+# print(assemble_chunks(results, context))
 
 # ingest_remote("https://www.jemoka.com/index.json",
 #               context,

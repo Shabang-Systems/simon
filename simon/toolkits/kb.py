@@ -32,6 +32,6 @@ class KnowledgebaseToolkit():
 
         lookup = Tool.from_function(func=lambda q:__lookup(q, self.context),
                                     name="knowledgebase_lookup",
-                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language question, using specific keywords that may already appear in the knowledge base. For instance, if you want to know about self attention, ask \"what is self attention?\" Provide this tool only the question. Do not add qualifications. This tool does not remember the past, so when asking a follow up question, provide the entire context for previous questions in your new question.")
+                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement, using specific keywords that may already appear in the knowledge base. For instance, if you want to know about self attention, ask \"self attention definition\" Provide this tool only the statement. Do not ask the tool a question. This tool does not remember the past, so when asking a follow up question, provide the entire context for previous questions in your new question.")
 
         return [lookup]
