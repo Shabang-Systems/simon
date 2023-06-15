@@ -7,6 +7,7 @@ from langchain.tools import BaseTool, Tool
 
 import re
 from typing import List, Union
+from datetime import datetime
 
 from .models import AgentContext
 from .utils.elastic import kv_set, kv_getall
@@ -40,6 +41,8 @@ For your reference, here are the past conversations between you and the human:
 
 {history}
 
+Lastly, today's date is {date}. It is currently {time}.
+
 Begin!
 
 Question: {input}
@@ -66,6 +69,10 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
             thoughts += f"\nObservation: {observation}\nThought: "
         # pop out the entities, and append
         entities = kwargs.pop("entities")
+
+        kwargs["date"] = datetime.now().strftime("%A, %B %d, %Y")
+        kwargs["time"] = datetime.now().strftime("%H:%M:%S")
+
         kwargs["entities"] = "\n".join([f"{key}: {value}" for key, value in entities.items()]).strip()
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
