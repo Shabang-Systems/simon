@@ -658,6 +658,7 @@ def assemble_chunks(results, context, padding=1):
     # and now, assemble everything with slashes between and return
     return "\n\n---------\n\n".join([i[1] for i in stitched_ranges])
 
+# context = ""
 # hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context)
 # delete_document(hash, context)
 
