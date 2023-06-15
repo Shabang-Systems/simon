@@ -18,6 +18,9 @@ from langchain.embeddings.base import Embeddings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
+# nltk
+from nltk import sent_tokenize
+
 # tika
 from tika import parser
 
@@ -33,8 +36,15 @@ from ..models import *
 
 #### SANITIZERS ####
 def __chunk(text, delim="\n\n"):
-    # clean the chunks
-    parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
+    # if there are no delimters, we do a dumb thing:
+    if delim not in text:
+        sentences = sent_tokenize(text)
+        # makes groups of 5 sentences, joined, as the chunks
+        parsed_chunks = [" ".join(sentences[i:i+5]).strip()
+                         for i in range(0, len(sentences), 5)]
+    else:
+        # clean the chunks
+        parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
                      for i in text.split(delim) if i != '']
     # and also create the bigger document
     parsed_text = " ".join(parsed_chunks)

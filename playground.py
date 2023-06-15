@@ -20,6 +20,7 @@ from elasticsearch import Elasticsearch
 
 # our toolkits
 from simon.models import *
+from simon.components.documents import *
 from simon.toolkits import KnowledgebaseToolkit
 
 from simon.assistant import Assistant
@@ -28,7 +29,7 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -45,7 +46,10 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("Go do it. Make the email less serious."))
+print(assistant("What's the difference between HyperDETR and previous approaches?"))
+
+# get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
+# delete_document("6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6", context)
 
 # Can you write an email asking for my friend Kian's schedule next Tuesday? I want to have lunch with him.
 # Great. Can you pop in some recommendations to Mediterranean places in Mountain View 

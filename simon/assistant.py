@@ -16,8 +16,12 @@ You are Simon, an assistant made by Shabang Systems. Simon uses information whic
 
 To help answer questions from the user, you have access from to the following tools:
 
-{tools} Currently, this tool has information about {entities}.
+{tools}
 finish: finish is ALWAYS the final action you should perform. This tool provides the input you provide back to the human. The input to this tool should be the answer to the human's question.
+
+Here are some infromation that maybe helpful to you to answer the user's questions:
+
+{entities}
 
 During your conversation, use the following format:
 
@@ -62,7 +66,7 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
             thoughts += f"\nObservation: {observation}\nThought: "
         # pop out the entities, and append
         entities = kwargs.pop("entities")
-        kwargs["entities"] = ", ".join(entities.keys()).strip()
+        kwargs["entities"] = "\n".join([f"{key}: {value}" for key, value in entities.items()]).strip()
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
@@ -127,17 +131,17 @@ class Assistant:
         # create the entity memory
         memory = ConversationEntityMemory(llm=context.llm,
                                           input_key="input")
-        memory_tool = Tool.from_function(func = lambda q: "\n".join([f"{key}: {value}"
-                                                                     for key, value
-                                                                     in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
-                                         name="entity_retrieval",
-                                         description="Retrieve information about an entity (person, location, etc.) that may have came up in conversations with the user. This tool only has information about a few entities. Provide this tool the name of the entity you want information about.")
+        # memory_tool = Tool.from_function(func = lambda q: "\n".join([f"{key}: {value}"
+        #                                                              for key, value
+        #                                                              in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
+        #                                  name="entity_retrieval",
+        #                                  description="Retrieve information about an entity (person, location, etc.) that may have came up in conversations with the user. This tool only has information about a few entities. Provide this tool the name of the entity you want information about.")
         
         human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
                                         name="human",
-                                        description="You can ask the human for clarification regarding the question. Do not ask questions about facts or ask the human to do anything. Do not ask factual questions. Only ask the human for help to get more info and clarification. N/A is not a valid input to this tool. Provide this tool a fully-formatted question for a human to answer.")
+                                        description="You can ask a human a follow up question using this tool when you are stuck. Do NOT ask factual questions. Supply a question you would ask a human to this tool. Always begin your questions with \"I didn't understand your question; can you clarify what you meant when you said\"")
 
-        tools_packaged = tools + [human_tool, memory_tool]
+        tools_packaged = tools + [human_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,
