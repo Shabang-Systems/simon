@@ -43,28 +43,6 @@ class KnowledgebaseToolkit(SimonToolkit):
             self.__lastdoc = hash
             return f"=== URL: {url}, hash: `{hash}` ===\n"+"\n".join(top)
 
-        # read_doc = Tool.from_function(func=lambda q:__read(q.strip("\"").strip(), MediaType.DOCUMENT),
-        #                             name="knowledgebase_summarize_doc",
-        #                             description="Useful for when you need to read the main idea of an online document. Provide this tool a URL link to the document you wish to read. So, your input to this tool should begin with http, and include ONLY the full URL to the document and nothing else. This tool accepts PDF documents, text documents, as well as most types of images. It will return the most important passages of the document, as well as a hash identifying the document surrounded by backtics like this: `{hash here}`. This tool does NOT return the full document; so, to ask follow-up questions in the document, pass your follow up and the hash to knowledgebase_answer_question_with_doc tool and follow the instructions there.")
-
-        # read_web = Tool.from_function(func=lambda q:__read(q.strip("\"").strip(), MediaType.WEBPAGE),
-        #                             name="knowledgebase_summarize_webpage",
-        #                             description="Useful for when you need to read the main idea of an online webpage. Provide this tool a URL link to the webpage you wish to read. So, your input to this tool should begin with http, and include ONLY the full URL to the webpage and nothing else. This tool accepts web URLs with text. It will return the most important passages of the webpage, as well as a hash identifying the webpage surrounded by backtics like this: `{hash here}`. This tool does NOT return the full webpage; so, to ask follow-up questions in the webpage, pass your follow up and the hash to knowledgebase_answer_question_with_doc tool and follow the instructions there.")
-
-
-        # def __followup(q):
-        #     if self.__lastdoc:
-        #         return "You didn't read a document first using knowledgebase_summarize_doc! We don't know what document you are talking about." 
-        #     q = q.strip("`").strip("\"").strip()
-        #     results = search(q, self.context, doc_hash=self.__lastdoc)
-        #     if len(results) == 0:
-        #         return "Nothing relating to your question is found regarding your question."
-        #     return assemble_chunks(results, self.context)
-
-        # followup = Tool.from_function(func=lambda q:__followup(q),
-        #                             name="knowledgebase_followup_doc",
-        #                             description="Useful for when you need to look up more specific information about the document you just read using knowledgebase_summarize_doc or knowledgebase_summarize_webpage. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the document. Do not use this tool before using knowledgebase_summarize_doc first to read a document, otherwise we won't know what document you are talking about.")
-
         def __store(q):
             res = q.split("|||")
             key = res[0]
@@ -84,4 +62,3 @@ class KnowledgebaseToolkit(SimonToolkit):
                                                description="Use this tool to store a piece of information into memory. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup\nCold water to fill PureFizz Soda Maker to proper level\nAdd ingredients to soda maker.")
 
         return [lookup, memory_store_tool]
-# read_doc, read_web, followup, 

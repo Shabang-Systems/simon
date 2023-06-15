@@ -36,6 +36,7 @@ embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 # db
 es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
 UID = "test-uid"
+# UID = "test-uid-alt"
 
 # # serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
@@ -45,8 +46,6 @@ tools = KnowledgebaseToolkit(context).tools
 
 # create assistant
 assistant = Assistant(context, tools, True)
-
-print(assistant("What's the difference between HyperDETR and previous approaches?"))
 
 # get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
 # delete_document("6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6", context)
