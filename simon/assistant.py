@@ -16,7 +16,7 @@ You are Simon, an assistant made by Shabang Systems. Simon uses information whic
 
 To help answer questions from the user, you have access from to the following tools:
 
-{tools}
+{tools} Currently, this tool has information about {entities}.
 finish: finish is ALWAYS the final action you should perform. This tool provides the input you provide back to the human. The input to this tool should be the answer to the human's question.
 
 During your conversation, use the following format:
@@ -62,7 +62,7 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
             thoughts += f"\nObservation: {observation}\nThought: "
         # pop out the entities, and append
         entities = kwargs.pop("entities")
-        kwargs["entities"] = " ".join(entities.keys()).strip()
+        kwargs["entities"] = ", ".join(entities.keys()).strip()
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
@@ -124,9 +124,6 @@ class Assistant:
         """
 
 
-        kv = kv_getall(context.elastic, context.uid)
-
-
         # create the entity memory
         memory = ConversationEntityMemory(llm=context.llm,
                                           input_key="input")
@@ -134,7 +131,7 @@ class Assistant:
                                                                      for key, value
                                                                      in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
                                          name="memory_retrieval",
-                                         description=f"Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user have mentioned before. Currently, this tool only has information about {', '.join(kv.keys())}")
+                                         description="Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user have mentioned before.")
 
         tools_packaged = tools + [memory_tool]
         # Creating the actual chain
@@ -146,6 +143,7 @@ class Assistant:
             input_variables=["input", "intermediate_steps", "entities", "history"]
         )
         output_parser = SimonOutputParser()
+        kv = kv_getall(context.elastic, context.uid)
         memory.entity_store.store = kv
         chain = LLMChain(
             llm=context.llm, 

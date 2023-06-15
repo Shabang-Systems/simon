@@ -45,7 +45,8 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("Ah. Can you get me a link to circular 67?"))
+print(assistant("No."))
+# assistant.knowledge
 
 
 # from langchain.memory import ConversationKGMemory
