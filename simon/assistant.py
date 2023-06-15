@@ -19,8 +19,6 @@ To help answer questions from the user, you have access from to the following to
 {tools}
 finish: finish is ALWAYS the final action you should perform. This tool provides the input you provide back to the human. The input to this tool should be the answer to the human's question.
 
-For your information, the memory_retrieval tool currently has access to information regarding: {entities}
-
 During your conversation, use the following format:
 
 Question: the input question you must answer
@@ -125,18 +123,18 @@ class Assistant:
             The executor for the created agents.
         """
 
+
+        kv = kv_getall(context.elastic, context.uid)
+
+
         # create the entity memory
         memory = ConversationEntityMemory(llm=context.llm,
                                           input_key="input")
         memory_tool = Tool.from_function(func = lambda q: "\n".join([f"{key}: {value}"
                                                                      for key, value
-                                                                     in memory.load_memory_variables({"input":q})["entities"].items()]),
+                                                                     in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
                                          name="memory_retrieval",
-                                         description="Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user may have mentioned before.")
-
-        # human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
-        #                                  name="human",
-        #                                  description="You can ask the human for clarification regarding Question:. Do not ask questions about facts or ask the human to do anything.")
+                                         description=f"Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user have mentioned before. Currently, this tool only has information about {', '.join(kv.keys())}")
 
         tools_packaged = tools + [memory_tool]
         # Creating the actual chain
@@ -148,9 +146,7 @@ class Assistant:
             input_variables=["input", "intermediate_steps", "entities", "history"]
         )
         output_parser = SimonOutputParser()
-        kv = kv_getall(context.elastic, context.uid)
-        for key,value in kv.items():
-            memory.entity_store.set(key, value)
+        memory.entity_store.store = kv
         chain = LLMChain(
             llm=context.llm, 
             verbose=True, 
@@ -174,8 +170,6 @@ class Assistant:
 
         # store memory context key value in elastic
         for key,value in kv.items():
-            # TODO this is broken!!!!!!
-            # it LOADS new values instead!!!!
             kv_set(key, value, self.__context.elastic, self.__context.uid)
 
         return result.get("output", "")

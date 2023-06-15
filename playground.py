@@ -45,7 +45,18 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("Mmmmm... Ok. Good night"))
+print(assistant("Ah. Can you get me a link to circular 67?"))
+
+
+# from langchain.memory import ConversationKGMemory
+# memory = ConversationKGMemory(llm=context.llm)
+# memory.save_context({"input": "say hi to sam"}, {"output": "who is sam"})
+# memory.save_context({"input": "sam is a friend"}, {"output": "okay"})
+# memory.load_memory_variables({"input": 'who is sam'})
+# context.llm 
+
+
+
 # assistant.knowledge
 
 ## REMINDER: assistant's kv loading is broken. instead of reading old ones
