@@ -35,7 +35,7 @@ class KnowledgebaseToolkit(SimonToolkit):
 
         lookup = Tool.from_function(func=lambda q:__lookup(q, self.context),
                                     name="knowledgebase_lookup",
-                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. This tool does not remember the past, so when asking a follow up question, provide the entire context for previous questions in your new question.")
+                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you.")
 
         def __read(url, type):
             hash = read_remote(url, self.context, type)
@@ -60,4 +60,22 @@ class KnowledgebaseToolkit(SimonToolkit):
                                     name="knowledgebase_followup_doc",
                                     description="Useful for when you need to look up more specific information about the document you just read using knowledgebase_summarize_doc. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the document. Do not use this tool before using knowledgebase_summarize_doc first to read a document, otherwise we won't know what document you are talking about.")
 
-        return [lookup, read_doc, followup]
+        def __store(q):
+            res = q.split("|||")
+            key = res[0]
+            source = res[1]
+            value = res[2]
+            key = key.strip("|").strip("\"").strip()
+            source = source.strip("|").strip("\"").strip()
+            value = value.strip("|").strip("\"").strip()
+
+            document = parse_text(value, key, source)
+            hash = index_document(document, self.context)
+
+            return f"Done! We now remember {key}."
+
+        memory_store_tool = Tool.from_function(func = lambda q: __store(q),
+                                               name="knowledgebase_store",
+                                               description="Use this tool to store a piece of information into memory. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup\nCold water to fill PureFizz Soda Maker to proper level\nAdd ingredients to soda maker.")
+
+        return [lookup, read_doc, followup, memory_store_tool]

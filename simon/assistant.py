@@ -130,10 +130,14 @@ class Assistant:
         memory_tool = Tool.from_function(func = lambda q: "\n".join([f"{key}: {value}"
                                                                      for key, value
                                                                      in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
-                                         name="memory_retrieval",
-                                         description="Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user have mentioned before.")
+                                         name="entity_retrieval",
+                                         description="Retrieve information about an entity (person, location, etc.) that may have came up in conversations with the user. This tool only has information about a few entities. Provide this tool the name of the entity you want information about.")
+        
+        human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
+                                        name="human",
+                                        description="You can ask the human for clarification regarding the question. Do not ask questions about facts or ask the human to do anything. Do not ask factual questions. Only ask the human for help to get more info and clarification. N/A is not a valid input to this tool. Provide this tool a fully-formatted question for a human to answer.")
 
-        tools_packaged = tools + [memory_tool]
+        tools_packaged = tools + [human_tool, memory_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,

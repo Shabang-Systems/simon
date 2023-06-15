@@ -643,7 +643,7 @@ def assemble_chunks(results, context, padding=1):
         range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
                                 for i,j in smooth_chunks])
         # metadat
-        metadata_text = f"=== Title: {title}, Source: {source}, Score: {mean_score} === \n\n"
+        metadata_text = f"=== Title: {title} === \n\n"
         stitched_ranges.append((mean_score, metadata_text+range_text))
 
     stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)

@@ -45,7 +45,11 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("No."))
+print(assistant("Go do it. Make the email less serious."))
+
+# Can you write an email asking for my friend Kian's schedule next Tuesday? I want to have lunch with him.
+# Great. Can you pop in some recommendations to Mediterranean places in Mountain View 
+
 # assistant.knowledge
 
 

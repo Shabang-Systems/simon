@@ -125,7 +125,7 @@ def kv_set(key:str, value:str, es:Elasticsearch, user:str):
         es.index(index="simon-kv", document={"key": key,
                                              "value": value,
                                              "user": user})
-        es.indices.refresh(index="simon-kv")
+    es.indices.refresh(index="simon-kv")
 
 def kv_delete(key:str, es:Elasticsearch, user:str):
     """Delete a key-value"""
