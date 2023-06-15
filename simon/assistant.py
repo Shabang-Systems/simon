@@ -134,11 +134,11 @@ class Assistant:
                                          name="memory_retrieval",
                                          description="Retrieve a piece of memory from previous conversations with the user. Use this tool if you need to recall specific proper nouns like names or locations that the user may have mentioned before.")
 
-        human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
-                                         name="human",
-                                         description="You can ask the human for clarification regarding Question:. Do not ask questions about facts or ask the human to do anything.")
+        # human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
+        #                                  name="human",
+        #                                  description="You can ask the human for clarification regarding Question:. Do not ask questions about facts or ask the human to do anything.")
 
-        tools_packaged = tools + [memory_tool, human_tool]
+        tools_packaged = tools + [memory_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,

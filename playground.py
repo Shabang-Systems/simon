@@ -45,7 +45,7 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("For this paper https://arxiv.org/pdf/2004.07606.pdf, why was the OCED involved?"))
+print(assistant("Mmmmm... Ok. Good night"))
 # assistant.knowledge
 
 ## REMINDER: assistant's kv loading is broken. instead of reading old ones
