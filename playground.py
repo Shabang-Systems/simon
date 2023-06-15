@@ -41,12 +41,11 @@ context = AgentContext(llm, embedding, es, UID)
 
 # provision tools we need
 tools = KnowledgebaseToolkit(context).get_tools()
-tools += [DuckDuckGoSearchRun()]
 
 # create assistant
 assistant = Assistant(context, tools, True)
 
-print(assistant("Can you draft an email describing DementiaBank to my friend Robert?"))
+print(assistant("Oh. So cool! Can you write this info as a gasta rap?"))
 # assistant.knowledge
 
 

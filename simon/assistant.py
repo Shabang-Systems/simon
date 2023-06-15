@@ -12,11 +12,12 @@ from .models import AgentContext
 from .utils.elastic import kv_set, kv_getall
 
 TEMPLATE = """
-You are Simon, an assistant made by Shabang Systems. Simon is helpful and cheerful. Simon uses information which it gathers from tools to answer the questions posed to it. You are always cheerful, talkative, and ready to answer questions. You like talking to the users, and you are having a great day.
+You are Simon, an assistant made by Shabang Systems. Simon uses information which it gathers from tools to answer the questions posed to it. Y
 
 To help answer questions from the user, you have access from to the following tools:
 
 {tools}
+finish: finish is ALWAYS the final action you should perform. This tool provides the input you provide back to the human. The input to this tool should be the answer to the human's question.
 
 For your information, the memory_retrieval tool currently has access to information regarding: {entities}
 
@@ -24,20 +25,14 @@ During your conversation, use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
+Action: the action to take, should be one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: final thought before the final answer is provided
-Final Answer: the final answer to the original input question
+Action: finish
+Action Input: what you want to provide to the human
 
-Note, however, if your thought alone can tell you what to do, do not use a tool and directly provide a final answer. For example:
-
-Question: Who is Sheldon Axler?
-Thought: I know who Sheldon Axler is.
-Final Answer: Sheldon Axler is an American mathematician
-
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line if you are not providing a "Final Answer:" line. Never stop with just providing a Thought: line or Thought: and Action: line.
+Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user.
 
 For your reference, here are the past conversations between you and the human:
 
@@ -85,18 +80,23 @@ class SimonOutputParser(AgentOutputParser):
     
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
-        if "Final Answer:" in llm_output:
+        if "Action: finish" in llm_output:
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
-                log=llm_output,
+                return_values={"output": llm_output.split("Action Input:")[-1].strip()},
+                log=llm_output
             )
         # Parse out the action and action input
         regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         match = re.search(regex, llm_output, re.DOTALL)
         if not match:
-            raise OutputParserException(f"Cannot understand output. {llm_output}")
+            return AgentFinish(
+                # Return values is generally always a dictionary with a single `output` key
+                # It is not recommended to try anything else at the moment :)
+                return_values={"output": llm_output.split("Action Input:")[-1].strip()},
+                log=llm_output
+            )
         action = match.group(1).strip()
         action_input = match.group(2)
         # Return the action and action input
@@ -136,7 +136,7 @@ class Assistant:
 
         human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
                                          name="human",
-                                         description="You can ask the human for clarification regarding their question when you are stuck or need more input using this tool. Do not ask the human to solve questions for you or to do your job. You can only ask clarification questions. Use this tool only when you are completely stuck. Provide a natural language question for the human to answer.")
+                                         description="You can ask the human for clarification regarding Question:. Do not ask questions about facts or ask the human to do anything.")
 
         tools_packaged = tools + [memory_tool, human_tool]
         # Creating the actual chain
