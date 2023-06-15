@@ -23,6 +23,7 @@ def _seed_schema(es:Elasticsearch, dim=1546):
                                                                          "metadata.title": {"type": "text"},
                                                                          # paragraph number (seq / total)
                                                                          "metadata.seq": {"type": "unsigned_long"},
+                                                                         "metadata.tf": {"type": "float"},
                                                                          "metadata.total": {"type": "unsigned_long"},
                                                                          "text": {"type": "text"},
                                                                          "embedding": {"type": "dense_vector",

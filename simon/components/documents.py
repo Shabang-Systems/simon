@@ -7,7 +7,7 @@ Components for document parsing.
 import os
 import time
 import hashlib
-from itertools import groupby
+from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
 # Networking
@@ -23,6 +23,9 @@ from tika import parser
 
 # soup
 from bs4 import BeautifulSoup
+
+# TFIDF
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # utilities
 from ..utils.elastic import *
@@ -244,6 +247,34 @@ def get_range_chunk(hash, start, end, context):
 
     return [i[1] for i in res]
 
+def top_tf(hash:str, context:AgentContext, k=3):
+    """Retrieve the top n paragraphs of `hash` based on TFIDF 
+
+    Parameters
+    ----------
+    hash : str
+        The document to look for.
+    context : AgentContext
+        Context pointer to be used for operations.
+    k : optional, int
+        Number of values to return.
+
+    Return
+    ------
+    List[str]
+        Results of the search.
+    """
+
+    # res = context.elastic.search()
+    res = context.elastic.search(index="simon-paragraphs",
+                                query={"bool": {"must": [{"term": {"hash": hash}},
+                                                        {"term": {"user":
+                                                                    context.uid}}]}},
+                                fields=["text"],
+                                sort=[{"metadata.tf": {"order": "desc"}}],
+                                size=k)
+    return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
+
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
            doc_hash=None, k=3, threshold=0.9):
     """ElasticSearch the database based on a keyword query!
@@ -372,18 +403,26 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                                          context.uid}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
+
+        # calculate tfidf of paragraphs
+        vectorizer = TfidfVectorizer()
+        X = vectorizer.fit_transform(doc.paragraphs)
+        tf_sum = X.sum(1).squeeze().tolist()[0]
+
         update_calls = [{"_op_type": "index",
                          "_index": "simon-paragraphs",
                          "user": context.uid,
                          "metadata": {"title": doc.meta.get("title"),
                                       "source": doc.meta.get("source"),
                                       "seq": indx,
+                                      "tf": t,
                                       "total": len(doc.paragraphs)},
                          "hash": doc.hash,
                          "text": i,
-                         "embedding": e} for indx,(i,e) in
+                         "embedding": e} for indx,(i,e,t) in
                         enumerate(zip(doc.paragraphs,
-                                      context.embedding.embed_documents(doc.paragraphs)))]
+                                      context.embedding.embed_documents(doc.paragraphs),
+                                      tf_sum))]
 
         bulk(context.elastic, update_calls)
 
@@ -612,7 +651,13 @@ def assemble_chunks(results, context, padding=1):
     # and now, assemble everything with slashes between and return
     return "\n\n---------\n\n".join([i[1] for i in stitched_ranges])
 
-# read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
+# hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
+# delete_document(hash, context)
+
+
+# hash = read_remote("https://arxiv.org/pdf/2004.07606.pdf", context, MediaType.DOCUMENT)
+# top_tf(hash, context)
+# # hash
 
 # results = search("what's a linear map?", context, k=3)
 # print(assemble_chunks(results, context))

@@ -40,13 +40,16 @@ UID = "test-uid"
 context = AgentContext(llm, embedding, es, UID)
 
 # provision tools we need
-tools = KnowledgebaseToolkit(context).get_tools()
+tools = KnowledgebaseToolkit(context).tools
 
 # create assistant
 assistant = Assistant(context, tools, True)
 
-# print(assistant("Give me a link please. That's still not a link."))
+print(assistant("For this paper https://arxiv.org/pdf/2004.07606.pdf, why was the OCED involved?"))
 # assistant.knowledge
+
+## REMINDER: assistant's kv loading is broken. instead of reading old ones
+## it loads new ones still.
 
 
 # "Thanks so much! Bob's email is bob@bob.com. Can you draft a funny email to him explaining what TalkBank is?"

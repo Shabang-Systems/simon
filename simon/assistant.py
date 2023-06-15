@@ -174,6 +174,8 @@ class Assistant:
 
         # store memory context key value in elastic
         for key,value in kv.items():
+            # TODO this is broken!!!!!!
+            # it LOADS new values instead!!!!
             kv_set(key, value, self.__context.elastic, self.__context.uid)
 
         return result.get("output", "")

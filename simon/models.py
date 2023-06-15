@@ -4,6 +4,7 @@ from langchain.llms.base import LLM
 from elasticsearch import Elasticsearch
 from typing import List, Dict
 from enum import Enum
+from abc import ABC, abstractmethod
 
 @dataclass
 class AgentContext:
@@ -11,7 +12,6 @@ class AgentContext:
     embedding: Embeddings
     elastic: Elasticsearch
     uid: str
-
 
 @dataclass
 class ParsedDocument:
@@ -60,4 +60,19 @@ class StringMappingField(MappingField):
 @dataclass
 class JSONMapping(Mapping):
     mappings: List[StringMappingField]
+
+class SimonToolkit(ABC):
+
+    @property
+    @abstractmethod
+    def prefix(self):
+        """All tools with this toolkit should have this prefix"""
+        pass
+
+    @property
+    @abstractmethod
+    def tools(self):
+        """Returns the tools that is in this toolkit"""
+        pass
+
 
