@@ -37,12 +37,6 @@ class KnowledgebaseToolkit(SimonToolkit):
                                     name="knowledgebase_lookup",
                                     description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you.")
 
-        def __read(url, type):
-            hash = read_remote(url, self.context, type)
-            top = top_tf(hash, self.context)
-            self.__lastdoc = hash
-            return f"=== URL: {url}, hash: `{hash}` ===\n"+"\n".join(top)
-
         def __store(q):
             res = q.split("|||")
             key = res[0]

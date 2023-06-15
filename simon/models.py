@@ -24,10 +24,6 @@ class IndexClass(Enum):
     CHUNK = "simon-paragraphs"
     FULLTEXT = "simon-fulltext"
 
-class MediaType(Enum):
-    DOCUMENT = 0
-    WEBPAGE = 1
-
 class DataType(Enum):
     JSON = 0
 

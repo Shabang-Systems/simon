@@ -50,7 +50,9 @@ assistant = Assistant(context, tools, True)
 # get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
 # delete_document("6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6", context)
 
-# Can you write an email asking for my friend Kian's schedule next Tuesday? I want to have lunch with him.
+print(assistant("Write a summary for the paper On-device Panoptic Segmentation for Camera Using Transformers for my friend Josh in an jokey email?"))
+
+# 
 # Great. Can you pop in some recommendations to Mediterranean places in Mountain View 
 
 # assistant.knowledge

@@ -7,6 +7,7 @@ Components for document parsing.
 import os
 import time
 import hashlib
+import mimetypes
 from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
@@ -443,12 +444,10 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 ### Read Remote Helpers ###
 # These helpers should take a URL, and return an
 # object of class ParsedDocument
-def __read_remote_helper__DOCUMENT(url):
+def __read_remote_helper__DOCUMENT(r, url):
     # Retrieve and parse the document
     with TemporaryDirectory() as tmpdir:
         f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
-        headers = {'user-agent': 'Mozilla/5.0'}
-        r = requests.get(url, headers=headers)
         with open(f, 'wb') as fp:
             fp.write(r.content)
             doc = parse_tika(f, source=url)
@@ -456,11 +455,7 @@ def __read_remote_helper__DOCUMENT(url):
 
     return doc
 
-def __read_remote_helper__WEBPAGE(url):
-    # download page
-    headers = {'user-agent': 'Mozilla/5.0'}
-    r = requests.get(url, headers=headers)
-
+def __read_remote_helper__WEBPAGE(r, url):
     # parse!
     doc = parse_web(r.content, source=url)
     hash = doc.hash
@@ -468,7 +463,7 @@ def __read_remote_helper__WEBPAGE(url):
     return doc
 
 ### Read Remote Function ###
-def read_remote(url:str, context:AgentContext, type:MediaType):
+def read_remote(url:str, context:AgentContext):
     """Read and index a remote file into Elastic.
 
     Note
@@ -483,8 +478,6 @@ def read_remote(url:str, context:AgentContext, type:MediaType):
         URL to read.
     context : AgentContext
         Context to use.
-    type : MediaType
-        What are we indexing?? File? Webpage?
 
     Return
     ------
@@ -497,10 +490,14 @@ def read_remote(url:str, context:AgentContext, type:MediaType):
 
     # If there is no cache retrieve the doc
     if not hash:
-        if type == MediaType.DOCUMENT:
-            doc = __read_remote_helper__DOCUMENT(url)
-        elif type == MediaType.WEBPAGE:
-            doc = __read_remote_helper__WEBPAGE(url)
+        headers = {'user-agent': 'Mozilla/5.0'}
+        r = requests.get(url, headers=headers)
+        content_type = r.headers['content-type'].split(";")[0].strip()
+
+        if "text" in content_type:
+            doc = __read_remote_helper__WEBPAGE(r, url)
+        elif "application" in content_type:
+            doc = __read_remote_helper__DOCUMENT(r, url)
 
         # read hash off of the doc
         hash = doc.hash
@@ -661,11 +658,11 @@ def assemble_chunks(results, context, padding=1):
     # and now, assemble everything with slashes between and return
     return "\n\n---------\n\n".join([i[1] for i in stitched_ranges])
 
-# hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context, MediaType.DOCUMENT)
+# hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context)
 # delete_document(hash, context)
 
 
-# hash = read_remote("https://arxiv.org/pdf/2004.07606.pdf", context, MediaType.DOCUMENT)
+# hash = read_remote("https://arxiv.org/pdf/2004.07606.pdf", context)
 # top_tf(hash, context)
 # # hash
 
