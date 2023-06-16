@@ -45,17 +45,25 @@ context = AgentContext(llm, embedding, es, UID)
 tools = KnowledgebaseToolkit(context).tools
 
 # create assistant
-assistant = Assistant(context, tools, True)
+assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
+
+# hash = read_remote("https://cdn.discordapp.com/attachments/737841367098720358/1119113381207621662/cpumemory.pdf", context)
+# hash
+
+# print(assistant("What is single-threaded random access?"))
 
 # get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
+
+
+
 # delete_document("6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6", context)
 
-# print(assistant("Write an email asking for a meeting with Jackson next week."))
+# print(assistant("Write an email in my tone to my boss Prof. MacWhinney, announcing batchalign 0.2.26, which fixed the issues with benchmarking. However, WER is still at 20%, which he can see with the attached .diff file. Tenses and contractions contribute the majority of the errors."))
+# print(assistant("What are the differences between the installation instructions of batchalign vs. the re-installation instructions?"))
+# read_remote("https://pypi.org/project/bpe/", context)
 
 # 
 # Great. Can you pop in some recommendations to Mediterranean places in Mountain View 
-
-# assistant.knowledge
 
 
 # from langchain.memory import ConversationKGMemory

@@ -20,10 +20,6 @@ To help answer questions from the user, you have access from to the following to
 {tools}
 finish: finish is ALWAYS the final action you should perform. This tool provides the input you provide back to the human. The input to this tool should be the answer to the human's question.
 
-Here are some infromation that maybe helpful to you to answer the user's questions:
-
-{entities}
-
 During your conversation, use the following format:
 
 Question: the input question you must answer
@@ -41,7 +37,13 @@ For your reference, here are the past conversations between you and the human:
 
 {history}
 
-Lastly, today's date is {date}. It is currently {time}.
+Here are some infromation that maybe helpful to you to answer the user's questions:
+
+{entities}
+
+If you can answer the user's question just inferring from the information above, do not use other tools.
+
+Lastly, today's date is {date}. It is currently {time}. {human_intro}
 
 Begin!
 
@@ -58,6 +60,8 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
     template: str
     # The list of tools available
     tools: List[BaseTool]
+    # human intro
+    human_intro: str = ""
     
     def format_messages(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
@@ -72,6 +76,9 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
 
         kwargs["date"] = datetime.now().strftime("%A, %B %d, %Y")
         kwargs["time"] = datetime.now().strftime("%H:%M:%S")
+
+        if self.human_intro != "":
+            kwargs["human_intro"] = "Here's an introduction from the human working with you: "+self.human_intro
 
         kwargs["entities"] = "\n".join([f"{key}: {value}" for key, value in entities.items()]).strip()
         # Set the agent_scratchpad variable to that value
@@ -116,7 +123,7 @@ class SimonOutputParser(AgentOutputParser):
 
 class Assistant:
 
-    def __init__(self, context:AgentContext, tools:List[BaseTool], verbose=False):
+    def __init__(self, context:AgentContext, tools:List[BaseTool], human_intro:str="", verbose=False):
         """Creates a simon assistant
 
         Parameters
@@ -125,6 +132,8 @@ class Assistant:
             The context to create the assistant from.
         tools : List[BaseTool]
             The tools Simon can use.
+        human_intro : optional, str
+            An introduction from the human.
         verbose : optional, bool
             Whether or not to show intermediate steps. Defaults to False.
 
@@ -146,13 +155,14 @@ class Assistant:
         
         human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
                                         name="human",
-                                        description="You can ask a human a follow up question using this tool when you are stuck. Do NOT ask factual questions. Supply a question you would ask a human to this tool. Always begin your questions with \"I didn't understand your question; can you clarify what you meant when you said\"")
+                                        description="You can ask a human a follow up question using this tool when you are stuck. Do NOT ask factual questions. Supply a question you would ask a human to this tool. The input to your tool should begin with \"I didn't understand your question; can you clarify what you meant when you said\"")
 
         tools_packaged = tools + [human_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,
             tools=tools_packaged,
+            human_intro=human_intro,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
             input_variables=["input", "intermediate_steps", "entities", "history"]

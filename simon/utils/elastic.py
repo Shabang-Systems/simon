@@ -98,7 +98,8 @@ def kv_getall(es:Elasticsearch, user:str):
 
 
     results = es.search(index="simon-kv", query={"bool":
-                                                {"must": [{"term": {"user": user}}]}})
+                                                 {"must": [{"term": {"user": user}}]}},
+                        size=10000)
     return {i["_source"]["key"]:i["_source"]["value"] for i in results["hits"]["hits"]}
 
 def kv_set(key:str, value:str, es:Elasticsearch, user:str):
