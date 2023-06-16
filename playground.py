@@ -47,10 +47,10 @@ tools = KnowledgebaseToolkit(context).tools
 # create assistant
 assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", False)
 
-# hash = read_remote("https://cdn.discordapp.com/attachments/737841367098720358/1119113381207621662/cpumemory.pdf", context)
+# hash = read_remote("https://arxiv.org/pdf/2205.00445.pdf", context)
 # hash
 
-# print(assistant("Hey! Draft an email with the batchalign install instructions to my boss."))
+# print(assistant("Generate a docstring for the BPE class in Python."))
 # assistant.summary
 # assistant.knowledge["Batchalign"]
 
