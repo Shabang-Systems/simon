@@ -29,7 +29,7 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=0.7)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -45,12 +45,14 @@ context = AgentContext(llm, embedding, es, UID)
 tools = KnowledgebaseToolkit(context).tools
 
 # create assistant
-assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
+assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", False)
 
 # hash = read_remote("https://cdn.discordapp.com/attachments/737841367098720358/1119113381207621662/cpumemory.pdf", context)
 # hash
 
-# print(assistant("What is single-threaded random access?"))
+# print(assistant("Great. Can you provide the full text of the email to kian? Installation instructions + meeting request."))
+# assistant.summary
+# assistant.knowledge["Batchalign"]
 
 # get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
 

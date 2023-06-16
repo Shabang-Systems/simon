@@ -1,4 +1,4 @@
-from langchain.memory import ConversationEntityMemory, CombinedMemory
+from langchain.memory import ConversationEntityMemory, ConversationSummaryMemory, CombinedMemory
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentOutputParser, LLMSingleActionAgent, AgentExecutor
@@ -33,20 +33,15 @@ Action Input: the full, contexualized answer to the initial question provided by
 
 Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user.
 
-For your reference, here are the past conversations between you and the human:
-
-{history}
-
 Here are some infromation that maybe helpful to you to answer the user's questions:
 
 {entities}
-
-If you can answer the user's question just inferring from the information above, do not use other tools.
 
 Lastly, today's date is {date}. It is currently {time}. {human_intro}
 
 Begin!
 
+System: {summary}
 Question: {input}
 {agent_scratchpad}"""
 
@@ -145,19 +140,20 @@ class Assistant:
 
 
         # create the entity memory
-        memory = ConversationEntityMemory(llm=context.llm,
+        self.entity_memory = ConversationEntityMemory(llm=context.llm,
                                           input_key="input")
-        # memory_tool = Tool.from_function(func = lambda q: "\n".join([f"{key}: {value}"
-        #                                                              for key, value
-        #                                                              in memory.load_memory_variables({"input":q.strip("\"").strip()})["entities"].items()]),
-        #                                  name="entity_retrieval",
-        #                                  description="Retrieve information about an entity (person, location, etc.) that may have came up in conversations with the user. This tool only has information about a few entities. Provide this tool the name of the entity you want information about.")
-        
-        human_tool = Tool.from_function(func = lambda q: input(f" ").strip(),
-                                        name="human",
-                                        description="You can ask a human a follow up question using this tool when you are stuck. Do NOT ask factual questions. Supply a question you would ask a human to this tool. The input to your tool should begin with \"I didn't understand your question; can you clarify what you meant when you said\"")
+        kv = kv_getall(context.elastic, context.uid)
+        self.entity_memory.entity_store.store = kv
 
-        tools_packaged = tools + [human_tool]
+        # create the summary memory
+        self.summary_memory = ConversationSummaryMemory(llm=context.llm,
+                                                        input_key="input",
+                                                        memory_key="summary")
+
+        memory = CombinedMemory(memories=[self.entity_memory,
+                                          self.summary_memory])
+
+        tools_packaged = tools
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,
@@ -165,14 +161,12 @@ class Assistant:
             human_intro=human_intro,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because that is needed
-            input_variables=["input", "intermediate_steps", "entities", "history"]
+            input_variables=["input", "intermediate_steps", "entities", "summary"]
         )
         output_parser = SimonOutputParser()
-        kv = kv_getall(context.elastic, context.uid)
-        memory.entity_store.store = kv
         chain = LLMChain(
             llm=context.llm, 
-            verbose=True, 
+            verbose=verbose, 
             prompt=prompt,
             memory=memory
         )
@@ -199,7 +193,12 @@ class Assistant:
 
     @property
     def knowledge(self):
-        return self.__executor.memory.entity_store.store
+        return self.entity_memory.entity_store.store
+
+    @property
+    def summary(self):
+        return self.summary_memory.buffer
+
         
 
 
