@@ -50,7 +50,7 @@ assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college st
 # hash = read_remote("https://cdn.discordapp.com/attachments/737841367098720358/1119113381207621662/cpumemory.pdf", context)
 # hash
 
-# print(assistant("Great. Can you provide the full text of the email to kian? Installation instructions + meeting request."))
+# print(assistant("Hey! Draft an email with the batchalign install instructions to my boss."))
 # assistant.summary
 # assistant.knowledge["Batchalign"]
 
