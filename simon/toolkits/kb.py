@@ -49,10 +49,10 @@ class KnowledgebaseToolkit(SimonToolkit):
             document = parse_text(value, key, source)
             hash = index_document(document, self.context)
 
-            return f"Done! We now remember {key}."
+            return f"{value}"
 
         memory_store_tool = Tool.from_function(func = lambda q: __store(q),
                                                name="knowledgebase_store",
-                                               description="Use this tool to store a piece of information into memory. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup\nCold water to fill PureFizz Soda Maker to proper level\nAdd ingredients to soda maker.")
+                                               description="Use this tool to store a piece of information into memory. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup\nCold water to fill PureFizz Soda Maker to proper level\nAdd ingredients to soda maker. Do not use this tool to present information to the user. They are only stored for YOU to remember in the future, not for the user.")
 
         return [lookup, memory_store_tool]

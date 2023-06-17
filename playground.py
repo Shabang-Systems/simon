@@ -20,7 +20,6 @@ from elasticsearch import Elasticsearch
 
 # our toolkits
 from simon.models import *
-from simon.components.documents import *
 from simon.toolkits import KnowledgebaseToolkit
 
 from simon.assistant import Assistant
@@ -45,14 +44,19 @@ context = AgentContext(llm, embedding, es, UID)
 tools = KnowledgebaseToolkit(context).tools
 
 # create assistant
-assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", False)
+assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
 
-# hash = read_remote("https://arxiv.org/pdf/2205.00445.pdf", context)
+# from simon.components.documents import *
+# hash = read_remote("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/", context)
+# delete_document("e958bb20d131d87833c15183a722ef0732fa16d9e83e8e415702cbaef6e12ea4", context) 
+
 # hash
 
-# print(assistant("Generate a docstring for the BPE class in Python."))
+# print(assistant("Batchalign 0.27 just got released! Draft a cheerful email to Prof. MacWhinney about it; include installation instructions."))
+
+# "Modify the email to ask for a meeting next Tuesday. Include full dates."
 # assistant.summary
-# assistant.knowledge["Batchalign"]
+# assistant.knowledge
 
 # get_hash("https://machinelearning.apple.com/research/panoptic-segmentation", context)
 

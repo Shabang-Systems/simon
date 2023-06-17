@@ -23,15 +23,16 @@ finish: finish is ALWAYS the final action you should perform. This tool provides
 During your conversation, use the following format:
 
 Question: the input question you must answer
-Thought: you should always think about what to do
+Thought: provide a one-sentence proposal for yourself to your next action 
 Action: the action to take, should be one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now should know the final answer.
 Action: finish
-Action Input: the full, contexualized answer to the initial question provided by the user
+Action Input: the full answer to the user's question, which is given to the user
 
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user.
+Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user. The user does not see anything except for the final Action Input: you provide.
 
 Here are some infromation that maybe helpful to you to answer the user's questions:
 
@@ -41,7 +42,7 @@ Lastly, today's date is {date}. It is currently {time}. {human_intro}
 
 Begin!
 
-System: {summary}
+Here's what happened so far during your conversation: {summary}
 Question: {input}
 {agent_scratchpad}"""
 

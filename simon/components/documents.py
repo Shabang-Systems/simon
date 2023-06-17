@@ -47,6 +47,14 @@ def __chunk(text, delim="\n\n"):
         # clean the chunks
         parsed_chunks = [i.replace("\n"," ").replace("  ", " ").strip()
                      for i in text.split(delim) if i != '']
+
+    # if any chunk is longer than 8*2048=10240 characters long (>2048 words, i.e. 1/2 4097)
+    # we use the chunking technique 
+    if sum([len(i)>2048 for i in parsed_chunks]) > 0:
+        sentences = sent_tokenize(text)
+        # makes groups of 5 sentences, joined, as the chunks
+        parsed_chunks = [" ".join(sentences[i:i+5]).strip()
+                            for i in range(0, len(sentences), 5)]
     # and also create the bigger document
     parsed_text = " ".join(parsed_chunks)
     # hash the text
