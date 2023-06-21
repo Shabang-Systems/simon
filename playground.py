@@ -28,7 +28,7 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=0.7)
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -42,15 +42,24 @@ context = AgentContext(llm, embedding, es, UID)
 
 # provision our data sources
 kb = KnowledgeBase(context)
-# email = Fake
+email = FakeEmail(context)
 
-providers = [kb]
+providers = [kb, email]
 
 # create assistant
 assistant = Assistant(context, providers,
                       "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
 
-print(assistant("What's an eigenvalue?"))
+
+# from simon.utils.elastic import *
+# from simon.components.documents import *
+
+# kv_delete("Batchalign", context.elastic, context.uid)
+
+# search("batchalign 0.2.27 has been released", context)
+# delete_document("bc83e0ed53a5705c6178a28c234d3853c84f73513df24741f4ba1e44822b6511", context)
+
+print(assistant("Who is Sheldon Axler?"))
 # queries = [QuerySelectorOption("", "knowledgebase"),
 #            QuerySelectorOption("Looks up the contents, addressees, and date and times of the emails sent by the user.", "email"),
 #            QuerySelectorOption("Looks up the schedule of the user and their availability.", "schedule")]

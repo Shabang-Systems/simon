@@ -38,6 +38,8 @@ Action Input: the full answer to the user's question, which is given to the user
 
 Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user. The user does not see anything except for the final Action Input: you provide.
 
+Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
+
 Here are some infromation that maybe helpful to you to answer the user's questions:
 
 {entities}
@@ -162,15 +164,15 @@ class Assistant:
 
         #### KNOWLEDGE ####
         memory_store_tool = Tool.from_function(func = lambda q: self.__store(q),
-                                               name="store_knowledge",
-                                               description="Use this tool to store a piece of information into the knowledgebase. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup. Do not use this tool to present information to the user. They are only stored for YOU to remember in the future, not for the user. Store only what the user tells you to store for future reference.")
+                                               name="knowledgebase_store_very_bad_tool",
+                                               description="Use this tool to store a piece of FACTUAL information into the knowledgebase. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup. Do not use this tool unless you are explicitly asked by the user to remember something. DO NOT USE THIS TOOL unless you ABSOLUTELY have to.")
 
         self.__query_options = {i.selector_option:i for i in providers}
         self.__qm = QueryMaster(context, list(self.__query_options.keys()), verbose)
 
         knowledge_lookup_tool = Tool.from_function(func=lambda q:self.__get(q),
-                                    name="retrieve_knowledge",
-                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you.")
+                                    name="knowledgeable_lookup",
+                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you. This tool has information about general knowledge, information about the user's world (like contacts and preferences), and many other things.")
 
 
         #### TOOLS AND TEMPLATES ####
