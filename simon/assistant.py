@@ -9,8 +9,12 @@ import re
 from typing import List, Union
 from datetime import datetime
 
-from .models import AgentContext
+from .models import *
 from .utils.elastic import kv_set, kv_getall
+
+from .components.documents import *
+from .querymaster import *
+from .providers import *
 
 TEMPLATE = """
 You are Simon, an assistant made by Shabang Systems. Simon uses information which it gathers from tools to answer the questions posed to it. 
@@ -119,14 +123,15 @@ class SimonOutputParser(AgentOutputParser):
 
 class Assistant:
 
-    def __init__(self, context:AgentContext, tools:List[BaseTool], human_intro:str="", verbose=False):
+    def __init__(self, context:AgentContext, providers:List[SimonProvider],
+                 human_intro:str="", verbose=False):
         """Creates a simon assistant
 
         Parameters
         ----------
         context : AgentContext
             The context to create the assistant from.
-        tools : List[BaseTool]
+        providers : List[BaseTool]
             The tools Simon can use.
         human_intro : optional, str
             An introduction from the human.
@@ -140,6 +145,7 @@ class Assistant:
         """
 
 
+        #### MEMORY ####
         # create the entity memory
         self.entity_memory = ConversationEntityMemory(llm=context.llm,
                                           input_key="input")
@@ -154,14 +160,26 @@ class Assistant:
         memory = CombinedMemory(memories=[self.entity_memory,
                                           self.summary_memory])
 
-        tools_packaged = tools
+        #### KNOWLEDGE ####
+        memory_store_tool = Tool.from_function(func = lambda q: self.__store(q),
+                                               name="store_knowledge",
+                                               description="Use this tool to store a piece of information into the knowledgebase. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup. Do not use this tool to present information to the user. They are only stored for YOU to remember in the future, not for the user. Store only what the user tells you to store for future reference.")
+
+        self.__query_options = {i.selector_option:i for i in providers}
+        self.__qm = QueryMaster(context, list(self.__query_options.keys()), verbose)
+
+        knowledge_lookup_tool = Tool.from_function(func=lambda q:self.__get(q),
+                                    name="retrieve_knowledge",
+                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you.")
+
+
+        #### TOOLS AND TEMPLATES ####
+        tools_packaged = [memory_store_tool, knowledge_lookup_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             template=TEMPLATE,
             tools=tools_packaged,
             human_intro=human_intro,
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because that is needed
             input_variables=["input", "intermediate_steps", "entities", "summary"]
         )
         output_parser = SimonOutputParser()
@@ -178,10 +196,13 @@ class Assistant:
             stop=["\nObservation:"], 
             allowed_tools=tool_names
         )
+
+        #### SHIP IT ####
         self.__executor = AgentExecutor.from_agent_and_tools(agent, tools_packaged, memory=memory,
                                                              handle_parsing_errors=True, verbose=verbose)
         self.__context = context
 
+    #### EXECUTION ####
     def __call__(self, query):
         result = self.__executor(query)
         kv = self.knowledge
@@ -192,6 +213,33 @@ class Assistant:
 
         return result.get("output", "")
 
+    #### KNOWLEDGE ####
+    # knowledgebase getters and setters
+    def __store(self, q):
+        """Store q into the knowledgebase"""
+        res = q.split("|||")
+        key = res[0]
+        source = res[1]
+        value = res[2]
+        key = key.strip("|").strip("\"").strip()
+        source = source.strip("|").strip("\"").strip()
+        value = value.strip("|").strip("\"").strip()
+
+        document = parse_text(value, key, source)
+        hash = index_document(document, self.__context)
+
+        return str(value)
+
+    def __get(self, query):
+        """Get q from knowledgebase"""
+
+        # ask qm to choose what provider to use
+        provider = self.__query_options[self.__qm(query)]
+
+        # return the actual data
+        return provider(query)
+
+    #### MEMORY ####
     @property
     def knowledge(self):
         return self.entity_memory.entity_store.store

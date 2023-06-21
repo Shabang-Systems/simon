@@ -611,8 +611,8 @@ def assemble_chunks(results, context, padding=1):
         
     Return
     ------
-    str
-        String containing the assembled results.
+    List[Tuple[float, str, str]]
+        A list of score, title, range.
     """
 
 
@@ -658,13 +658,12 @@ def assemble_chunks(results, context, padding=1):
         range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
                                 for i,j in smooth_chunks])
         # metadat
-        metadata_text = f"=== Title: {title} === \n\n"
-        stitched_ranges.append((mean_score, metadata_text+range_text))
+        stitched_ranges.append((mean_score, title, range_text))
 
     stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 
     # and now, assemble everything with slashes between and return
-    return "\n\n---------\n\n".join([i[1] for i in stitched_ranges])
+    return stitched_ranges
 
 # context = ""
 # hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context)

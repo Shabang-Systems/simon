@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from langchain.embeddings.base import Embeddings
 from langchain.llms.base import LLM
 from elasticsearch import Elasticsearch
-from typing import List, Dict
+from typing import List, Dict, Optional
 from enum import Enum
 from abc import ABC, abstractmethod
 
@@ -57,18 +57,21 @@ class StringMappingField(MappingField):
 class JSONMapping(Mapping):
     mappings: List[StringMappingField]
 
-class SimonToolkit(ABC):
+@dataclass
+class QuerySelectorOption:
+    info: str
+    id: str
 
-    @property
-    @abstractmethod
-    def prefix(self):
-        """All tools with this toolkit should have this prefix"""
-        pass
+    def __hash__(self):
+        return hash((self.info, self.id))
 
-    @property
-    @abstractmethod
-    def tools(self):
-        """Returns the tools that is in this toolkit"""
-        pass
+@dataclass
+class SimonProviderResponse:
+    title: str # the "title" of an article == Title: [here] ==
+    body: str # the body text which is passed to the model
+    metadata: Optional[object]=None # any other object metadata, which could be none
 
+@dataclass
+class SimonProviderError:
+    error: str # the error that is exposed directly to the model
 

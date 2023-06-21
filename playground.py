@@ -20,7 +20,7 @@ from elasticsearch import Elasticsearch
 
 # our toolkits
 from simon.models import *
-from simon.toolkits import KnowledgebaseToolkit
+from simon.providers import *
 
 from simon.assistant import Assistant
 
@@ -40,19 +40,44 @@ UID = "test-uid"
 # # serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
 
-# provision tools we need
-tools = KnowledgebaseToolkit(context).tools
+# provision our data sources
+kb = KnowledgeBase(context)
+# email = Fake
+
+providers = [kb]
 
 # create assistant
-assistant = Assistant(context, tools, "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
+assistant = Assistant(context, providers,
+                      "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
+
+print(assistant("What's an eigenvalue?"))
+# queries = [QuerySelectorOption("", "knowledgebase"),
+#            QuerySelectorOption("Looks up the contents, addressees, and date and times of the emails sent by the user.", "email"),
+#            QuerySelectorOption("Looks up the schedule of the user and their availability.", "schedule")]
+
+# qm = QueryMaster(context, queries)
+# qm("what is happening to Brian next week?")
+
+
+# assistant.knowledge
+
+# es
+# _seed_schema(es)
+
+
+# hash = read_remote("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/", context)
+
 
 # from simon.components.documents import *
-# hash = read_remote("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/", context)
+
+# search("what is PETAse?", context)
+
+
+
 # delete_document("e958bb20d131d87833c15183a722ef0732fa16d9e83e8e415702cbaef6e12ea4", context) 
 
 # hash
 
-# print(assistant("Batchalign 0.27 just got released! Draft a cheerful email to Prof. MacWhinney about it; include installation instructions."))
 
 # "Modify the email to ask for a meeting next Tuesday. Include full dates."
 # assistant.summary
