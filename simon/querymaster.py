@@ -31,7 +31,7 @@ class SingleLetterOptionParser(BaseOutputParser):
     options: List[QuerySelectorOption]
 
     def parse(self, str):
-        return self.options[int(str[0])]
+        return self.options[int(str.strip()[0])]
 
 #################
 

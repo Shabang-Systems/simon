@@ -28,7 +28,7 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -50,16 +50,42 @@ providers = [kb, email]
 assistant = Assistant(context, providers,
                       "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
 
+# assistant.read("https://www.pnas.org/doi/full/10.1073/pnas.2006753117")
+
+# print(kb("plastics depolymerization"))
+
+# assistant.read("https://kaden.rice.edu/p2023-2.pdf")
 
 # from simon.utils.elastic import *
 # from simon.components.documents import *
+# search("acmia corp", context)
 
 # kv_delete("Batchalign", context.elastic, context.uid)
 
 # search("batchalign 0.2.27 has been released", context)
 # delete_document("bc83e0ed53a5705c6178a28c234d3853c84f73513df24741f4ba1e44822b6511", context)
 
-print(assistant("Who is Sheldon Axler?"))
+# search("robert", context, search_type=IndexClass.KEYWORDS)
+# assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota")
+# assistant.store("Sam", "Sam is my friend doing some architecture in Ashland, Montana.")
+# assistant.store("Acmia", "Acmia is an American company located in Minnesota.")
+
+# from simon.components.documents import search, delete_document
+# search("people in Minnesota", context)
+# delete_document("75c3d630152611dcc71826ff5b3556db4427bbb7ae914590370f8432665e48a3", context)
+
+# assistant._forget("Minnesota")
+
+print(assistant("What are Rydberg atoms?"))
+
+# print(kb("What is in Minnesota?"))
+
+# assistant.knowledge["Minnesota"]
+# print(assistant("What is Acmia?"))
+# print(assistant("What does DementiaBank do? What are some interesting projects it works on?"))
+# print(assistant("Can you summarize the contribution of RoseTTAFold2?"))
+# print(assistant("Can you rewrite that summary and include a glossery of all the jargon?"))
+# assistant.knowledge["Minnesota"]
 # queries = [QuerySelectorOption("", "knowledgebase"),
 #            QuerySelectorOption("Looks up the contents, addressees, and date and times of the emails sent by the user.", "email"),
 #            QuerySelectorOption("Looks up the schedule of the user and their availability.", "schedule")]

@@ -8,6 +8,7 @@ import os
 import time
 import hashlib
 import mimetypes
+from typing import List
 from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
@@ -295,7 +296,7 @@ def top_tf(hash:str, context:AgentContext, k=3):
     return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
 
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
-           doc_hash=None, k=3, threshold=0.9):
+           doc_hash=None, k=5, threshold=None):
     """ElasticSearch the database based on a keyword query!
 
     Parameters
@@ -319,6 +320,10 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
     List[str]
         Results of the search.
     """
+    if not threshold and search_type == IndexClass.CHUNK:
+        threshold = 0.9
+    elif not threshold:
+        threshold = 10
 
     # get results
     squery = {
@@ -328,11 +333,12 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
         ]}
     }
 
-    kquery = {"field": "embedding",
-              "query_vector": context.embedding.embed_query(query),
-              "k": k,
-              "num_candidates": 800,
-              "filter": [{"term": {"user": context.uid}}]}
+    if IndexClass.CHUNK:
+        kquery = {"field": "embedding",
+                "query_vector": context.embedding.embed_query(query),
+                "k": k,
+                "num_candidates": 800,
+                "filter": [{"term": {"user": context.uid}}]}
 
     if doc_hash:
         squery["bool"]["must"].append({"term": {"hash": doc_hash}})
@@ -340,8 +346,73 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
 
     if search_type == IndexClass.CHUNK:
         results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k))
-    else:
-        results = context.elastic.search(index=search_type.value, query=squery, size=str(k))
+    elif search_type == IndexClass.FULLTEXT:
+        results = context.elastic.search(index="simon-fulltext", query=squery, size=str(k))
+    elif search_type == IndexClass.KEYWORDS:
+        results = context.elastic.search(index="simon-paragraphs", query=squery, size=str(k))
+
+    results = [{"id": i["_id"],
+                "text": i["_source"]["text"],
+                "metadata": i["_source"]["metadata"],
+                "hash": i["_source"]["hash"],
+                "score": i["_score"]}
+               for i in results["hits"]["hits"] if i["_score"] > threshold]
+
+    return results
+
+def similar(id:str, context:AgentContext, k=5, threshold=0.9) -> List[str]:
+    """search for entries with similar meaning around a entry ID
+
+    find the nearest entries across the database to an entry.
+
+    Parameters
+    ----------
+    id : str
+        the ID of the entry to search nearby; NOTE! this is *NOT*
+        the hash of the element. It is the ID of the CHUNK. search()
+        returns both id (unique to each chunk) and hash (unique to each
+        document). Pass this element the ID.
+    context : AgentContext
+        the context of the agent
+    k : int
+        number of results to return
+    threshold : float
+        the float similarity threshold.
+
+    Returns
+    -------
+    List[str]
+        the returned entries
+    """
+   
+    # get results
+    squery = {
+        "bool": {"must": [
+            {"term": {"user": context.uid}},
+            {"term": {"_id": id}}
+        ]}
+    }
+
+    # search for the element with the correct ID
+    results = context.elastic.search(index="simon-paragraphs", query=squery, size=1)
+
+    # and raise an exception if we found nothing because the ID is dud
+    if len(results["hits"]["hits"]) == 0:
+        raise Exception(f"simon: the ID of the chunk provided '{id}' is not found; ensure you are providing an ID from CHUNK or KEYWORD index classes, and that its NOT the *hash* of the chunk. See the docstring of this field for more info.")
+    
+    embedding = results["hits"]["hits"][0]["_source"]["embedding"]
+
+
+    # and create the query
+    kquery = {"field": "embedding",
+              "query_vector": embedding,
+              "k": k,
+              "num_candidates": 800,
+              "filter": [{"term": {"user": context.uid}}]}
+
+    # search again, with the embedding
+    # we search k+1 because the top result is just the original element
+    results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k+1))
 
     results = [{"text": i["_source"]["text"],
                 "metadata": i["_source"]["metadata"],
@@ -349,7 +420,8 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
                 "score": i["_score"]}
                for i in results["hits"]["hits"] if i["_score"] > threshold]
 
-    return results
+    # we drop the top result, because that's the element itself
+    return results[1:]
 
 #### DELETERS ####
 def delete_document(hash:str, context:AgentContext):
@@ -394,7 +466,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     Note
     ----
-    Why is this code so agressive about search/checking first
+ at   Why is this code so agressive about search/checking first
     before indexing? Because indexing is SIGNIFICANTLY more
     expensive in Elastic than reading. Because its a search db
     after all.
@@ -407,12 +479,24 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                                          context.uid}}]}})["hits"]
     # If not, do so!
     if indicies["total"]["value"] == 0:
+        # change detected, remove elements of the same title
+        title = doc.meta.get("title", "")
+        if title != "":
+            titles = context.elastic.search(index="simon-fulltext",
+                                            query={"bool": {"must": [{"term": {"metadata.title": title.lower()}},
+                                                                     {"term": {"user":
+                                                                               context.uid}}]}})
+
+            [delete_document(doc["_source"]["hash"], context) for doc in titles["hits"]["hits"]]
+
         context.elastic.index(index="simon-fulltext",
                               document={"user": context.uid,
                                         "metadata": {"title": doc.meta.get("title"),
                                                      "source": doc.meta.get("source")},
                                         "hash": doc.hash,
                                         "text": doc.main_document})
+
+
         context.elastic.indices.refresh(index="simon-fulltext")
 
     # And check if we have already indexed the doc
@@ -621,8 +705,8 @@ def assemble_chunks(results, context, padding=1):
         return ""
 
     # group by source, parsing each one at a time
-    groups = groupby(sorted(results, key=lambda x:x.get("metadata", {}).get("source", "")),
-                     lambda x:x.get("metadata", {}).get("source", ""))
+    groups = groupby(sorted(results, key=lambda x:x.get("hash")),
+                     lambda x:x.get("hash"))
     stitched_ranges = []
 
     for _, group in groups:

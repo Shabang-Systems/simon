@@ -21,8 +21,9 @@ class ParsedDocument:
     meta: Dict
 
 class IndexClass(Enum):
-    CHUNK = "simon-paragraphs"
-    FULLTEXT = "simon-fulltext"
+    CHUNK = 0
+    KEYWORDS = 1
+    FULLTEXT = 2
 
 class DataType(Enum):
     JSON = 0

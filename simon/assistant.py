@@ -17,7 +17,7 @@ from .querymaster import *
 from .providers import *
 
 TEMPLATE = """
-You are Simon, an assistant made by Shabang Systems. Simon uses information which it gathers from tools to answer the questions posed to it. 
+You are Simon, a knowledge assistant and curator made by Shabang Systems.
 
 To help answer questions from the user, you have access from to the following tools:
 
@@ -27,7 +27,7 @@ finish: finish is ALWAYS the final action you should perform. This tool provides
 During your conversation, use the following format:
 
 Question: the input question you must answer
-Thought: provide a one-sentence proposal for yourself to your next action 
+Thought: consider the information you are given here, and provide a proposal faor the next action 
 Action: the action to take, should be one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
@@ -39,6 +39,8 @@ Action Input: the full answer to the user's question, which is given to the user
 Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user. The user does not see anything except for the final Action Input: you provide.
 
 Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
+
+You should use the knowledgebase_lookup tool at least once.
 
 Here are some infromation that maybe helpful to you to answer the user's questions:
 
@@ -172,7 +174,7 @@ class Assistant:
 
         knowledge_lookup_tool = Tool.from_function(func=lambda q:self.__get(q),
                                     name="knowledgeable_lookup",
-                                    description="Useful for when you need to look up a fact from your existing knowledge base. Provide a natural language statement (i.e. not a question), using specific keywords that may already appear in the knowledge base. Provide this tool only the statement. Do not ask the tool a question. The knowledgebase can only give you facts, and cannot do things for you. This tool has information about general knowledge, information about the user's world (like contacts and preferences), and many other things.")
+                                    description="Useful for when you need to look up a fact about the user's world or the world in general. Provide a natural language statement containing keywords that should appear in relavent information in your knowledge base. Provide this tool only the statement. Do not ask the tool a question.")
 
 
         #### TOOLS AND TEMPLATES ####
@@ -227,8 +229,7 @@ class Assistant:
         source = source.strip("|").strip("\"").strip()
         value = value.strip("|").strip("\"").strip()
 
-        document = parse_text(value, key, source)
-        hash = index_document(document, self.__context)
+        self.store(key, value, source)
 
         return str(value)
 
@@ -239,9 +240,64 @@ class Assistant:
         provider = self.__query_options[self.__qm(query)]
 
         # return the actual data
-        return provider(query)
+        # with warning
+        return provider(query.strip('"').strip("'").strip("\n").strip())
 
     #### MEMORY ####
+    def store(self, title, content, source=""):
+        """Force the model to explicitly remember something
+
+        Parameters
+        ----------
+        title : str
+            The title of the infromation to store.
+        content : str
+            The content of the information.
+        source : str
+            The source of the information.
+        """
+
+        document = parse_text(content, title, source)
+        hash = index_document(document, self.__context)
+
+        return document.hash
+
+    def read(self, url) -> str:
+        """ask the assistant to read a URL
+
+        Parameters
+        ----------
+        url : str
+            the string URL to read
+
+        Returns
+        -------
+        str
+            the hash of the read document
+        """
+
+        hash = read_remote(url, self.__context)
+
+        return hash
+
+    def _forget(self, key):
+        """Forgets a piece of memory
+
+        Parameters
+        ----------
+        key : str
+            The key-value fact to delete.
+        """
+
+        print("WARNING: this removes elements in the ENTITY MEMORY. Hence, it is NOT the opposite action for self.store.")
+
+        kv = kv_getall(self.__context.elastic, self.__context.uid)
+        del kv[key]
+        self.entity_memory.entity_store.store = kv
+        kv_delete(key, self.__context.elastic, self.__context.uid) 
+
+        print("Assistant._forget done.")
+
     @property
     def knowledge(self):
         return self.entity_memory.entity_store.store
