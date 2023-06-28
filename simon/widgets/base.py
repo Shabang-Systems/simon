@@ -40,8 +40,6 @@ Finally, here is the information you must arrange:
 
 {input}
 
-Begin!
-
 ```json"""
 
 class WidgetPromptFormatter(StringPromptTemplate):

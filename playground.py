@@ -55,7 +55,7 @@ widgets = get_widget_suite(context)
 assistant = Assistant(context, providers, widgets,
                       "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
 
-print(json.dumps(assistant("What are eigenvalues?"), sort_keys=True, indent=4))
+print(json.dumps(assistant("Can you provide me the installation instructions for batchalign?"), sort_keys=True, indent=4))
 
 # print(kb("plastics depolymerization"))
 

@@ -20,7 +20,7 @@ class FakeEmail(SimonProvider):
     def provide(self, input):
 
         return [SimonProviderResponse("Kian Email",
-                                      "Hi Jack! Yes, Sheldon Axler did indeed write Linear Algebra Done Right. Please don't hesitate to let me know if you need me to order a copy for you.")]
+                                      "Hi! I'm Kian, your friend from The Nueva School. My number is 930-392-0302 if you need to reach out to me.")]
 
         # results = search(input, self.context)
         # if len(results) == 0:

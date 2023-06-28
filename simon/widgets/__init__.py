@@ -23,6 +23,7 @@ def get_widget_suite(context: AgentContext):
         TextList(context),
         HeadlineDescription(context),
         ContactCard(context),
+        Codeblock(context)
     ]
     
 

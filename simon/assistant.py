@@ -32,14 +32,11 @@ Thought: ONE SENTENCE containing the name of your next action and a justificatio
 Action: the action to take, should be one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: "I now know the final answer"
+... (this Thought/Action/Action Input/Observation/Thought can repeat N times)
 Action: finish
-Action Input: the full answer to the user's question, which is given to the user
+Action Input: the full answer to the user's question, which is returned to the user
 
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Your final Thought: should be exactly "I now know the final answer". Then, your next action should be exactly finish and the Action Input: should be the information you present back to the user.
-
-Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
+Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
 
 You should use the knowledgebase_lookup tool at least once.
 

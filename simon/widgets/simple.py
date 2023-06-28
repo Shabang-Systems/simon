@@ -20,6 +20,16 @@ class HeadlineDescription(SimonWidget):
         "details": "important details, arranged as a markdown list deliminated by -"
     }
 
+class Codeblock(SimonWidget):
+    purpose = "a simple widget that presents a chunk of code with some explanation"
+    slots = {
+        "codeblock": "the raw source code, with ample comments",
+        "explanation": "human readable text explaining the text",
+        "language": "programming language to syntax highlight the codeblock with"
+    }
+
+
+
 
 
 
