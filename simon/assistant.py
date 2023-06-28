@@ -15,6 +15,7 @@ from .utils.elastic import kv_set, kv_getall
 from .components.documents import *
 from .querymaster import *
 from .providers import *
+from .widgets import *
 
 TEMPLATE = """
 You are Simon, a knowledge assistant and curator made by Shabang Systems.
@@ -27,16 +28,16 @@ finish: finish is ALWAYS the final action you should perform. This tool provides
 During your conversation, use the following format:
 
 Question: the input question you must answer
-Thought: consider the information you are given here, and provide a proposal faor the next action 
+Thought: ONE SENTENCE containing the name of your next action and a justification
 Action: the action to take, should be one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now should know the final answer.
+Thought: "I now know the final answer"
 Action: finish
 Action Input: the full answer to the user's question, which is given to the user
 
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Only provide ONE Action: finish line in your output. Never provide multiple as it will not be presented to the user. The user does not see anything except for the final Action Input: you provide.
+Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Your final Thought: should be exactly "I now know the final answer". Then, your next action should be exactly finish and the Action Input: should be the information you present back to the user.
 
 Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
 
@@ -127,7 +128,7 @@ class SimonOutputParser(AgentOutputParser):
 
 class Assistant:
 
-    def __init__(self, context:AgentContext, providers:List[SimonProvider],
+    def __init__(self, context:AgentContext, providers:List[SimonProvider], widgets:List[SimonWidget],
                  human_intro:str="", verbose=False):
         """Creates a simon assistant
 
@@ -135,8 +136,10 @@ class Assistant:
         ----------
         context : AgentContext
             The context to create the assistant from.
-        providers : List[BaseTool]
+        providers : List[SimonProvider]
             The tools Simon can use.
+        widgets : List[SimonWidget]
+            The widgets used to format the output text.
         human_intro : optional, str
             An introduction from the human.
         verbose : optional, bool
@@ -173,9 +176,12 @@ class Assistant:
         self.__qm = QueryMaster(context, list(self.__query_options.keys()), verbose)
 
         knowledge_lookup_tool = Tool.from_function(func=lambda q:self.__get(q),
-                                    name="knowledgeable_lookup",
-                                    description="Useful for when you need to look up a fact about the user's world or the world in general. Provide a natural language statement containing keywords that should appear in relavent information in your knowledge base. Provide this tool only the statement. Do not ask the tool a question.")
+                                    name="knowledgebase_lookup",
+                                    description="Useful for when you need to look up information. Provide a natural language statement containing keywords that should appear in relavent information in your knowledge base. This tool has information about the user's world, their contacts and relations, their work and documents, as well as factual worldly knowledge.")
 
+        #### WIDGETS ####
+        self.__widget_options = {i.selector_option:i for i in widgets}
+        self.__widget_qm = QueryMaster(context, list(self.__widget_options.keys()), "present the information", verbose)
 
         #### TOOLS AND TEMPLATES ####
         tools_packaged = [memory_store_tool, knowledge_lookup_tool]
@@ -215,7 +221,17 @@ class Assistant:
         for key,value in kv.items():
             kv_set(key, value, self.__context.elastic, self.__context.uid)
 
-        return result.get("output", "")
+        # get output text
+        output_text = result.get("output", "")
+
+        # and render it as the correct widget
+        widget_option = self.__widget_qm(output_text)
+        widget = self.__widget_options[widget_option]
+
+        return {
+            "widget": widget_option.id,
+            "payload": widget(output_text)
+        }
 
     #### KNOWLEDGE ####
     # knowledgebase getters and setters

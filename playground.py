@@ -1,6 +1,7 @@
 # pipes
 from dotenv import load_dotenv
 import os
+import json
 load_dotenv()
 
 KEY=os.environ["OPENAI_KEY"]
@@ -21,6 +22,7 @@ from elasticsearch import Elasticsearch
 # our toolkits
 from simon.models import *
 from simon.providers import *
+from simon.widgets import *
 
 from simon.assistant import Assistant
 
@@ -28,7 +30,7 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -46,15 +48,17 @@ email = FakeEmail(context)
 
 providers = [kb, email]
 
+# provision our output types
+widgets = get_widget_suite(context)
+
 # create assistant
-assistant = Assistant(context, providers,
+assistant = Assistant(context, providers, widgets,
                       "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
 
-# assistant.read("https://www.pnas.org/doi/full/10.1073/pnas.2006753117")
+print(json.dumps(assistant("What are eigenvalues?"), sort_keys=True, indent=4))
 
 # print(kb("plastics depolymerization"))
 
-# assistant.read("https://kaden.rice.edu/p2023-2.pdf")
 
 # from simon.utils.elastic import *
 # from simon.components.documents import *
@@ -67,7 +71,8 @@ assistant = Assistant(context, providers,
 
 # search("robert", context, search_type=IndexClass.KEYWORDS)
 # assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota")
-# assistant.store("Sam", "Sam is my friend doing some architecture in Ashland, Montana.")
+# assistant.store("Robert", "Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics.")
+# assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.")
 # assistant.store("Acmia", "Acmia is an American company located in Minnesota.")
 
 # from simon.components.documents import search, delete_document
@@ -76,7 +81,11 @@ assistant = Assistant(context, providers,
 
 # assistant._forget("Minnesota")
 
-print(assistant("What are Rydberg atoms?"))
+# assistant.read("https://kaden.rice.edu/p2023-2.pdf")
+# print(assistant("Should I share this with any of my friends?"))
+# print(assistant("Which of my friend should I share it with?"))
+# print(assistant("Which of my friend should I share it with?"))
+# print(assistant("Hmmmm. I wonder if I have a friend who may also be interested in this topic?"))
 
 # print(kb("What is in Minnesota?"))
 

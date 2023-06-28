@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 
 from ..models import *
 
-class SimonProvider:
+class SimonProvider(ABC):
     @abstractproperty
     def purpose(self):
         """The purpose of this provider, usually starts with \"Looks up [what does it do?]\""""

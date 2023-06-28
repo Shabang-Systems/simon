@@ -18,14 +18,15 @@ TEMPLATE = """
 Available options:
 {options}
 
-To answer the question {input}, it is best to use Option """
+To {action} {input}, it is best to use Option """
 
 class QuerySelectorTemplate(StringPromptTemplate):
     options: List[QuerySelectorOption]
+    action: str = "answer the question"
 
     def format(self, **kwargs):
         options = "\n".join([f"Option {i}: {option.info}" for i, option in enumerate(self.options)])
-        return TEMPLATE.replace("{options}", options).replace("{input}", kwargs["input"])
+        return TEMPLATE.format(options=options, input=kwargs["input"], action=self.action)
 
 class SingleLetterOptionParser(BaseOutputParser):
     options: List[QuerySelectorOption]
@@ -37,15 +38,17 @@ class SingleLetterOptionParser(BaseOutputParser):
 
 class QueryMaster:
 
-    def __init__(self, context, qso, verbose=False):
+    def __init__(self, context, qso, action="answer the question", verbose=False):
         """Creates a simon query handler
 
         Parameters
         ----------
         context : AgentContext
             The context to create the assistant from.
-        options : List[QuerySelectorOption]
+        qso : List[QuerySelectorOption]
             The options for the datasources.
+        action: optional, str
+            The action that the query is selecting for
         verbose : optional, bool
             Whether or not the chain should be verbose.
         """
@@ -53,7 +56,8 @@ class QueryMaster:
         prompt = QuerySelectorTemplate(
             options=qso,
             input_variables=["input"],
-            output_parser=SingleLetterOptionParser(options=qso)
+            output_parser=SingleLetterOptionParser(options=qso),
+            action=action
         )
 
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)

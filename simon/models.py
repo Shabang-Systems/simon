@@ -76,3 +76,7 @@ class SimonProviderResponse:
 class SimonProviderError:
     error: str # the error that is exposed directly to the model
 
+@dataclass
+class WidgetSpec:
+    description: str # the description of this widget
+    slots: Dict[str, str] # dictionary of {"slot_name": "description for the use of the slot"}
