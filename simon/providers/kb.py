@@ -35,22 +35,23 @@ class KnowledgeBase(SimonProvider):
         The context with which to seed the kb.
     """
 
-    purpose="Looks up factual and technical information about the world like the definition of eigenvalues or specific knowledge about the user's world like income of Acme's corp. Most general."
+    purpose="Looks up factual and technical information about the world like the definition of eigenvalues or specific knowledge about the user's world like income of Acme's corp. Most general. Use this tool the most often when specific tools are less useful."
 
     def __init__(self, context):
         self.context = context
 
     def provide(self, input):
         # use both types of search to create all possible hits
-        results_semantic = search(input.lower(), self.context, search_type=IndexClass.CHUNK, k=3)
-
+        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=3)
+ 
         # we then go through to find everything similar to the results to provide
         # the model more content
         results_similar = [j
                            for i in results_semantic
-                           for j in similar(i["id"], self.context, k=3)]
+                           for j in similar(i["id"], self.context, k=2, threshold=0.88)]
 
         results = results_semantic+results_similar
+        # breakpoint()
 
         if len(results) == 0:
             return SimonProviderError("We found nothing. Please rephrase your question.")

@@ -28,9 +28,9 @@ class SimonProvider(ABC):
         # and actually join them into a string
         metadata_strings = [", ".join(i) for i in metadata_strings]
         # and then, formulate responses
-        response_string = [f"=== {meta} === \n\n"+i.body for i, meta in zip(results, metadata_strings)]
+        response_string = [f"{meta} -- "+i.body for i, meta in zip(results, metadata_strings)]
 
-        return "\n\n---------\n\n".join(response_string)
+        return "\n--\n".join(response_string)
 
     @property
     def selector_option(self):

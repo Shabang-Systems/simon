@@ -296,7 +296,7 @@ def top_tf(hash:str, context:AgentContext, k=3):
     return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
 
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
-           doc_hash=None, k=5, threshold=None):
+           doc_hash=None, k=5, threshold=None, tf_threshold=0.3):
     """ElasticSearch the database based on a keyword query!
 
     Parameters
@@ -314,6 +314,9 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
         Number of values to return.
     threshold : optional, float
         Threshold of score before a value is returned.
+    tf_threshold : optional, float
+        Threshold of TFIDF before a value is returned,
+        if seaching on index CHUNK or KEYWORD.
 
     Return
     ------
@@ -323,7 +326,7 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
     if not threshold and search_type == IndexClass.CHUNK:
         threshold = 0.9
     elif not threshold:
-        threshold = 10
+        threshold = 13
 
     # get results
     squery = {
@@ -333,7 +336,9 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
         ]}
     }
 
-    if IndexClass.CHUNK:
+    kquery = None
+
+    if search_type == IndexClass.CHUNK:
         kquery = {"field": "embedding",
                 "query_vector": context.embedding.embed_query(query),
                 "k": k,
@@ -342,7 +347,15 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
 
     if doc_hash:
         squery["bool"]["must"].append({"term": {"hash": doc_hash}})
-        kquery["filter"].append({"term": {"hash": doc_hash}})
+
+        if kquery:
+            kquery["filter"].append({"term": {"hash": doc_hash}})
+
+    if tf_threshold!=None and search_type != IndexClass.FULLTEXT:
+        squery["bool"]["must"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
+
+        if kquery:
+            kquery["filter"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
 
     if search_type == IndexClass.CHUNK:
         results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k))
@@ -481,7 +494,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     if indicies["total"]["value"] == 0:
         # change detected, remove elements of the same title
         title = doc.meta.get("title", "")
-        if title != "":
+        if title and title != "":
             titles = context.elastic.search(index="simon-fulltext",
                                             query={"bool": {"must": [{"term": {"metadata.title": title.lower()}},
                                                                      {"term": {"user":
@@ -509,8 +522,13 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
         # calculate tfidf of paragraphs
         vectorizer = TfidfVectorizer()
-        X = vectorizer.fit_transform(doc.paragraphs)
-        tf_sum = X.sum(1).squeeze().tolist()[0]
+        try:
+            X = vectorizer.fit_transform(doc.paragraphs)
+            tf_sum = X.sum(1).squeeze().tolist()[0]
+        except ValueError:
+            print(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
+            context.elastic.indices.refresh(index="simon-paragraphs")
+            return
 
         update_calls = [{"_op_type": "index",
                          "_index": "simon-paragraphs",
@@ -660,7 +678,8 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
 
     # pop each into the index
     # and pop each into the cache and index
-    for i in docs:
+    from tqdm import tqdm
+    for i in tqdm(docs):
         index_document(i, context)
         source = i.meta.get("source")
         if source and source.strip() != "":

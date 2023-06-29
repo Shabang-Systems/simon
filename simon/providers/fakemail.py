@@ -12,7 +12,7 @@ class FakeEmail(SimonProvider):
         The context with which to seed the kb.
     """
 
-    purpose="Looks up the contents and addresses of previous emails sent and received by the user."
+    purpose="Looks up emails of previously sent and recieved by the user."
 
     def __init__(self, context):
         self.context = context

@@ -36,9 +36,12 @@ Specifically, here are the descriptions for those slots:
 
 {slots}
 
+Remember to include *EVERY SINGLE PIECE* of information you are provided below into your JSON output.
+
 Finally, here is the information you must arrange:
 
 {input}
+
 
 ```json"""
 
@@ -93,6 +96,9 @@ class SimonWidget(ABC):
 
     def __call__(self, input):
         output = self.__chain.predict(input=input)
-        output_json = parse_and_check_json_markdown(output.strip("`").strip(),
-                                                    [i for i in self.slots.keys()])
+        try:
+            output_json = parse_and_check_json_markdown(output.replace("```json", "").strip("`").strip(),
+                                                        [i for i in self.slots.keys()])
+        except:
+            breakpoint()
         return output_json

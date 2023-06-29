@@ -10,7 +10,7 @@ class TextChunk(SimonWidget):
     slots = { "text": "the main chunk of text" }
 
 class TextList(SimonWidget):
-    purpose = "a simple widget which presents a list of text"
+    purpose = "a simple widget which presents a list of text with multiple pieces of information"
     slots = { "list": "a markdown list of text with the main point of the text, with each point on a row delinated by -" }
 
 class HeadlineDescription(SimonWidget):
@@ -19,17 +19,4 @@ class HeadlineDescription(SimonWidget):
         "headline": "a main tagline/summary of the text",
         "details": "important details, arranged as a markdown list deliminated by -"
     }
-
-class Codeblock(SimonWidget):
-    purpose = "a simple widget that presents a chunk of code with some explanation"
-    slots = {
-        "codeblock": "the raw source code, with ample comments",
-        "explanation": "human readable text explaining the text",
-        "language": "programming language to syntax highlight the codeblock with"
-    }
-
-
-
-
-
 

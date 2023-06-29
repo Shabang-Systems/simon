@@ -13,8 +13,11 @@ ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
 from langchain.agents import load_tools
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.tools import DuckDuckGoSearchRun
+
+from langchain.callbacks.manager import CallbackManager
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.llms import LlamaCpp
 
 # DB
 from elasticsearch import Elasticsearch
@@ -30,7 +33,12 @@ from simon.assistant import Assistant
 from langchain.agents import AgentExecutor
 
 # llms
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
+# llm = LlamaCpp(model_path="./opt/open_llama_7b/ggml-model-f16-q4_0.bin",
+#                n_gpu_layers=1,
+#                n_batch=128,
+#                n_ctx=2048,
+#                verbose=False)
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -42,23 +50,38 @@ UID = "test-uid"
 # # serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
 
-# provision our data sources
-kb = KnowledgeBase(context)
+# provision our data sources (knowledgebase is provided by default)
 email = FakeEmail(context)
-
-providers = [kb, email]
-
-# provision our output types
-widgets = get_widget_suite(context)
+providers = [email]
 
 # create assistant
-assistant = Assistant(context, providers, widgets,
-                      "Hello! I am Jack, a first-year college student from the San Francisco Bay Area. My email is houjun@jemoka.com.", True)
+assistant = Assistant(context, providers, verbose=True)
+# assistant.read("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/pdf/pnas.202006753.pdf") c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9
+# assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 
-print(json.dumps(assistant("Can you provide me the installation instructions for batchalign?"), sort_keys=True, indent=4))
+# assistant._forget("Robert")
+# assistant._forget("Bay Area")
+# print(json.dumps(assistant("Describe "),
+#                  sort_keys=True, indent=4))
+# print(json.dumps(assistant("Can you give me more info about the restaurant Robert would like the best?"),
+#                  sort_keys=True, indent=4))
+# print(json.dumps(assistant("Which of my friends do you think I should talk about PETAse with?"),
+#                  sort_keys=True, indent=4))
 
-# print(kb("plastics depolymerization"))
+print(json.dumps(assistant("Which of my friends do you think will be interested in this?"),
+                 sort_keys=True, indent=4))
 
+# print(assistant.search("user's friends"))
+# assistant.
+
+# from simon.components.documents import *
+# search("companies to visit in Minnesota".lower(), context)
+
+# print(kb("companies in Minnesota"))
+# assistant.read("https://machinelearning.apple.com/research/panoptic-segmentation")
+# from simon.components.documents import *
+
+# delete_document('6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6', context)
 
 # from simon.utils.elastic import *
 # from simon.components.documents import *
@@ -70,11 +93,12 @@ print(json.dumps(assistant("Can you provide me the installation instructions for
 # delete_document("bc83e0ed53a5705c6178a28c234d3853c84f73513df24741f4ba1e44822b6511", context)
 
 # search("robert", context, search_type=IndexClass.KEYWORDS)
-# assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota")
-# assistant.store("Robert", "Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics.")
-# assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.")
-# assistant.store("Acmia", "Acmia is an American company located in Minnesota.")
-
+# assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota") 0cabe870801b876cebbd8886d66e5c89c8622350f51cafcc29d234d6449014ab
+# assistant.store("Robert", "Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics. He likes Chinese food a lot.") # 600165eb389d9da02ea160dcc1f8a0dc30b0a7a47588ae36c81e0189bcf98c02
+# assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.") bbcdde5962e2d63ee26093f61efc2d9d9bb99659bfc642dd771caa91810a5597
+# assistant.store("Acmia", "Acmia is an American company located in Minnesota.") e459317fd1d86b0313e19d6f6a6c16c13c017cbef900bd650ca5b4f9ff6d96a3
+# assistant.store("Sam", "Sam is my friend working as a painter in Flagstaff. She is very interested in sustainable plastics, especially new technologies to break down plastics.") #efd4f646158dc94fc85ba430b8efcf1190e9ee3388f7cc68098b0ac2102073e8
+# assistant.store("Rupert", "Rubert lives in Minneapolis, but he's often in Saint Paul these days") e1743af286a07cd26b36843d10bfabf92bf5bfd8acd121747c9b1621be2c2afa
 # from simon.components.documents import search, delete_document
 # search("people in Minnesota", context)
 # delete_document("75c3d630152611dcc71826ff5b3556db4427bbb7ae914590370f8432665e48a3", context)

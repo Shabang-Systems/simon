@@ -1,6 +1,8 @@
 from .base import SimonWidget
 from .simple import *
 from .people import *
+from .location import *
+from .misc import *
 
 from ..models import AgentContext
 
@@ -23,7 +25,11 @@ def get_widget_suite(context: AgentContext):
         TextList(context),
         HeadlineDescription(context),
         ContactCard(context),
-        Codeblock(context)
+        ContactCards(context),
+        Codeblock(context),
+        Definition(context),
+        Location(context),
+        Error(context),
     ]
     
 

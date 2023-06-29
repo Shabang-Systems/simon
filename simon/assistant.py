@@ -2,7 +2,7 @@ from langchain.memory import ConversationEntityMemory, ConversationSummaryMemory
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentOutputParser, LLMSingleActionAgent, AgentExecutor
-from langchain.schema import AgentAction, AgentFinish, HumanMessage, OutputParserException
+from langchain.schema import AgentAction, AgentFinish, HumanMessage, OutputParserException, SystemMessage, AIMessage
 from langchain.tools import BaseTool, Tool
 
 import re
@@ -17,7 +17,7 @@ from .querymaster import *
 from .providers import *
 from .widgets import *
 
-TEMPLATE = """
+STRUCTURE = """
 You are Simon, a knowledge assistant and curator made by Shabang Systems.
 
 To help answer questions from the user, you have access from to the following tools:
@@ -29,23 +29,28 @@ During your conversation, use the following format:
 
 Question: the input question you must answer
 Thought: ONE SENTENCE containing the name of your next action and a justification
-Action: the action to take, should be one of [{tool_names}, finish]
+Action: one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation/Thought can repeat N times)
+Thought: your final thought should be the exact phrase "I now know the answer, and I am going to tell it to the human".
 Action: finish
-Action Input: the full answer to the user's question, which is returned to the user
+Action Input: the full answer to the user's question, which is returned to the user. You are encouraged to use multiple lines for the final output.
 
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line.
+Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line. You MUST provide an Action: and Action Input: as the final two entries in your output.
 
 You should use the knowledgebase_lookup tool at least once.
+"""
 
+CONTEXT = """
 Here are some infromation that maybe helpful to you to answer the user's questions:
 
 {entities}
 
 Lastly, today's date is {date}. It is currently {time}. {human_intro}
+"""
 
+HISTORY = """
 Begin!
 
 Here's what happened so far during your conversation: {summary}
@@ -58,8 +63,6 @@ Question: {input}
 # We will change these in the future.
 
 class SimonPromptTemplate(BaseChatPromptTemplate):
-    # The template to use
-    template: str
     # The list of tools available
     tools: List[BaseTool]
     # human intro
@@ -81,6 +84,8 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
 
         if self.human_intro != "":
             kwargs["human_intro"] = "Here's an introduction from the human working with you: "+self.human_intro
+        else:
+            kwargs["human_intro"] = ""
 
         kwargs["entities"] = "\n".join([f"{key}: {value}" for key, value in entities.items()]).strip()
         # Set the agent_scratchpad variable to that value
@@ -91,8 +96,14 @@ class SimonPromptTemplate(BaseChatPromptTemplate):
         # Create a list of tool names for the tools provided
         # we index until -1 because the last tool is the failsafe identity tool
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
-        formatted = self.template.format(**kwargs)
-        return [HumanMessage(content=formatted)]
+
+        structure = STRUCTURE.format(**kwargs)
+        context = CONTEXT.format(**kwargs)
+        history = HISTORY.format(**kwargs)
+
+        return [SystemMessage(content=structure),
+                AIMessage(content=context),
+                HumanMessage(content=history)]
 
 class SimonOutputParser(AgentOutputParser):
     
@@ -109,6 +120,7 @@ class SimonOutputParser(AgentOutputParser):
         regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         match = re.search(regex, llm_output, re.DOTALL)
         if not match:
+            # raise OutputParserException("Your action seem to be malformed!")
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
@@ -125,7 +137,7 @@ class SimonOutputParser(AgentOutputParser):
 
 class Assistant:
 
-    def __init__(self, context:AgentContext, providers:List[SimonProvider], widgets:List[SimonWidget],
+    def __init__(self, context:AgentContext, providers:List[SimonProvider]=[], widgets:List[SimonWidget]=[],
                  human_intro:str="", verbose=False):
         """Creates a simon assistant
 
@@ -147,6 +159,10 @@ class Assistant:
         AgentExecutor
             The executor for the created agents.
         """
+
+        #### SEED DEFAULT PROVIDERS AND WIDGETS ####
+        providers = [KnowledgeBase(context)] + providers
+        widgets += get_widget_suite(context)
 
 
         #### MEMORY ####
@@ -172,9 +188,10 @@ class Assistant:
         self.__query_options = {i.selector_option:i for i in providers}
         self.__qm = QueryMaster(context, list(self.__query_options.keys()), verbose)
 
-        knowledge_lookup_tool = Tool.from_function(func=lambda q:self.__get(q),
+        knowledge_lookup_tool = Tool.from_function(func=lambda q:self.search(q),
                                     name="knowledgebase_lookup",
-                                    description="Useful for when you need to look up information. Provide a natural language statement containing keywords that should appear in relavent information in your knowledge base. This tool has information about the user's world, their contacts and relations, their work and documents, as well as factual worldly knowledge.")
+                                    description="Useful for when you need to look up information. Provide a noun-phrase that should appear in relavent information in your knowledge base. This tool has information about the user's world, their contacts and relations, their work and documents, as well as factual worldly knowledge. Pass only a few keywords into this tool (max 5 words); for instance, to find the definition of self-attention, look up \"self-attention definition\". If you are looking up information regarding the user, use the tone of the user; for instance, to look up the user's boss, look up \'my boss\' or \'boss\'.")
+         # For complex questions, it is a good idea to use this tool multiple times; for instance, to answer the question \"who would be interested in self-attention\", you should first look up \"self-attention\", understand from the contents that it is a NLP technique, then look up \"people interested in NLP\". Do not pass complex questions with logic into this tool.
 
         #### WIDGETS ####
         self.__widget_options = {i.selector_option:i for i in widgets}
@@ -184,7 +201,6 @@ class Assistant:
         tools_packaged = [memory_store_tool, knowledge_lookup_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
-            template=TEMPLATE,
             tools=tools_packaged,
             human_intro=human_intro,
             input_variables=["input", "intermediate_steps", "entities", "summary"]
@@ -226,6 +242,7 @@ class Assistant:
         widget = self.__widget_options[widget_option]
 
         return {
+            "raw": output_text,
             "widget": widget_option.id,
             "payload": widget(output_text)
         }
@@ -246,7 +263,7 @@ class Assistant:
 
         return str(value)
 
-    def __get(self, query):
+    def search(self, query):
         """Get q from knowledgebase"""
 
         # ask qm to choose what provider to use
@@ -293,7 +310,24 @@ class Assistant:
 
         return hash
 
-    def _forget(self, key):
+    def forget(self, hash):
+        """ask the assistant to forget a document/stored element
+
+        Notes
+        -----
+        This is distinct from self._forget_memory because
+        this UNDOs the self.read() or self.store() operation by removing
+        the hash token of the document the assistant has read.
+
+        Parameters
+        ----------
+        hash : str
+            the hash to forget
+        """
+
+        delete_document(hash, self.__context)
+
+    def _forget_memory(self, key):
         """Forgets a piece of memory
 
         Parameters
