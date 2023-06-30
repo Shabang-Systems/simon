@@ -210,7 +210,34 @@ def read():
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
 
-# OCR a document
+# store some information
+@api.route('/remember', methods=['PUT'])
+def remember():
+    """make the assistant remember some info
+
+    @params
+    - title : str --- the title to store the document
+    - content : str --- the content to store
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - resource_id: str --- string hash representing the ID of the document, useful for /forget
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]
+        return {
+            "resource_id": assistant.store(arguments["title"].strip(),
+                                           arguments["content"].strip()),
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+# forget a document
 @api.route('/forget', methods=['POST'])
 def forget():
     """make the assistant unread a URL based on the hash

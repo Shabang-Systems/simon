@@ -58,7 +58,8 @@ assistant = Assistant(context, providers, verbose=True)
 # map("Dinner places in Minnesota")
 
 # assistant("Who is Robert anyways?")
-# assistant.search()
+# assistant.search("OtterPilot")
+# assistant("what is OtterPilot?")
 
 # assistant._forget_memory("Robert")
 # self.qm("Robert's favorite types of cuisine")

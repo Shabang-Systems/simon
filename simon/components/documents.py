@@ -608,6 +608,8 @@ def read_remote(url:str, context:AgentContext):
             doc = __read_remote_helper__WEBPAGE(r, url)
         elif "application" in content_type:
             doc = __read_remote_helper__DOCUMENT(r, url)
+        elif "image" in content_type:
+            doc = __read_remote_helper__DOCUMENT(r, url)
 
         # read hash off of the doc
         hash = doc.hash
