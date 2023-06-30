@@ -15,7 +15,7 @@ class Map(SimonProvider):
         Mapbox API Key
     """
 
-    purpose="Looks up exact street addresses or local businesses \"coffee shops near me\" or \"chinese food\""
+    purpose="Looks up factual information about exact street addresses or generic local businesses \"coffee shops near me\" or \"chinese food\""
 
     def __init__(self, key):
         self.__key = key

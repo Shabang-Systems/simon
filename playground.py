@@ -49,6 +49,7 @@ context = AgentContext(llm, embedding, es, UID)
 
 # provision our data sources (knowledgebase is provided by default)
 map = Map(MAPBOX_KEY)
+kb = KnowledgeBase(context)
 providers = [map]
 
 # create assistant
@@ -57,11 +58,14 @@ assistant = Assistant(context, providers, verbose=True)
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 
 # assistant._forget_memory("Robert")
+# self.qm("Robert's favorite types of cuisine")
 # assistant._forget("Bay Area")
-# thoughts = assistant.brainstorm("TODO: organize lunch with Robert")
+thoughts = assistant.brainstorm("TODO: organize lunch with Robert")
+# Robert's favorite types of cuisine
+# thoughts
 
 # Robert dietary restrictions
-# print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
+print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
 
 
 # thoughts

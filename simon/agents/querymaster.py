@@ -15,10 +15,24 @@ from dataclasses import dataclass
 from ..models import *
 
 TEMPLATE = """
+You are an AI responsible for selecting the most optimal option based on
+a query.
+
 Available options:
 {options}
 
-To {action} {input}, it is best to use Option """
+When selecting options, ahdere to the following format.
+
+Thought: why you are going to select the option you are going to select
+Selection: *one number* representing the option you are selecting
+
+You are now going to select an option to {action} {input}.
+
+Remember to provide both a Thought: line *and* a Selection: line
+
+Begin!
+
+Thought:"""
 
 class QuerySelectorTemplate(StringPromptTemplate):
     options: List[QuerySelectorOption]
@@ -33,7 +47,8 @@ class SingleLetterOptionParser(BaseOutputParser):
 
     def parse(self, str):
         try:
-            return self.options[int(str.replace("Option", "").strip()[0])]
+            option = str.split("Selection:")[-1].strip()[0]
+            return self.options[int(option)]
         except ValueError:
             breakpoint()
 
