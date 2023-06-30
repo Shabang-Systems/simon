@@ -8,6 +8,7 @@ KEY=os.environ["OPENAI_KEY"]
 ELASTIC_URL=os.environ["ELASTIC_URL"]
 ELASTIC_USER=os.environ["ELASTIC_USER"]
 ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
+MAPBOX_KEY=os.environ["MAPBOX_KEY"]
 
 # LLM
 from langchain.agents import load_tools
@@ -23,11 +24,7 @@ from langchain.llms import LlamaCpp
 from elasticsearch import Elasticsearch
 
 # our toolkits
-from simon.models import *
-from simon.providers import *
-from simon.widgets import *
-
-from simon.assistant import Assistant
+from simon import *
 
 # fun
 from langchain.agents import AgentExecutor
@@ -51,21 +48,30 @@ UID = "test-uid"
 context = AgentContext(llm, embedding, es, UID)
 
 # provision our data sources (knowledgebase is provided by default)
-email = FakeEmail(context)
-providers = [email]
+map = Map(MAPBOX_KEY)
+providers = [map]
 
 # create assistant
 assistant = Assistant(context, providers, verbose=True)
 # assistant.read("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/pdf/pnas.202006753.pdf") c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 
-# assistant._forget("Robert")
+# assistant._forget_memory("Robert")
 # assistant._forget("Bay Area")
-# print(json.dumps(assistant.followup("""Hello Prof. MacWhinney,
-# Sorry about that! I think you have the incorrect instructions to update batchalign; here are the instructions to update:"""),
+# thoughts = assistant.brainstorm("TODO: organize lunch with Robert")
+
+# Robert dietary restrictions
+# print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
+
+
+# thoughts
+
 #                  sort_keys=True, indent=4))
 
-# followup = assistant.followup("TODO: schedule lunch with Robert")
+# assistant.brainstorm("")
+# print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
+
+# assistant("do you know if any good Chinese places I should go with Robert?")
 
 # print(json.dumps(assistant(followup),
 #                  sort_keys=True, indent=4))

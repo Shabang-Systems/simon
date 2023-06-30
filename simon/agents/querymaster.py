@@ -12,7 +12,7 @@ from langchain.schema import BaseOutputParser
 from typing import List
 from dataclasses import dataclass
 
-from .models import *
+from ..models import *
 
 TEMPLATE = """
 Available options:

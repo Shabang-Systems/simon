@@ -10,7 +10,7 @@ from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain.prompts import StringPromptTemplate
 from langchain.schema import BaseOutputParser
 
-from .models import *
+from ..models import *
 
 
 TEMPLATE = """
@@ -25,9 +25,10 @@ Questions:
 
 Remember, you maybe passed a *PARTIAL* slice of your thoughts. Hence, try to guess what the human is trying to say if their text is cut off awkwardly. 
 
-Begin!
-
+Here are some supporting information:
 {entities}
+
+Begin!
 {input}
 
 Thoughts:

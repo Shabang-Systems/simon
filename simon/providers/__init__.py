@@ -1,3 +1,4 @@
 from .base import *
 from .kb import KnowledgeBase
-from .fakemail import FakeEmail
+from .map import Map
+

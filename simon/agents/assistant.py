@@ -9,13 +9,13 @@ import re
 from typing import List, Union
 from datetime import datetime
 
-from .models import *
-from .utils.elastic import kv_set, kv_getall
+from ..models import *
+from ..utils.elastic import kv_set, kv_getall
 
-from .components.documents import *
+from ..components.documents import *
 from .querymaster import *
-from .providers import *
-from .widgets import *
+from ..providers import *
+from ..widgets import *
 from .rio import *
 
 STRUCTURE = """
@@ -356,18 +356,14 @@ class Assistant:
             The key-value fact to delete.
         """
 
-        print("WARNING: this removes elements in the ENTITY MEMORY. Hence, it is NOT the opposite action for self.store.")
-
         kv = kv_getall(self.__context.elastic, self.__context.uid)
         del kv[key]
         self.entity_memory.entity_store.store = kv
         kv_delete(key, self.__context.elastic, self.__context.uid) 
 
-        print("Assistant._forget done.")
-
     #### RIO ####
-    def followup(self, text):
-        """Come up with follow up questions
+    def brainstorm(self, text):
+        """Use the RIO to brainstorm followup questions
 
         Uses the RIO to come up with follow-up questions given a
         string of text, and then proceed to try to answer it using
