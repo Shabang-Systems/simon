@@ -33,7 +33,7 @@ Thought: ONE SENTENCE containing the name of your next action and a justificatio
 Action: one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action Input/Observation/Thought can repeat N times)
+... (this Thought/Action/Action Input/Observation/Thought can repeat at most 4 times)
 Action: finish
 Action Input: the full answer to the user's question, which is returned to the user. You are encouraged to use multiple lines for the final output.
 
@@ -188,7 +188,7 @@ class Assistant:
 
         knowledge_lookup_tool = Tool.from_function(func=lambda q:self.search(q),
                                     name="knowledgebase_lookup",
-                                    description="Useful for when you need to look up information. Provide a noun-phrase that should appear in relavent information in your knowledge base. This tool has information about the user's world, their contacts and relations, their work and documents, as well as factual worldly knowledge. Pass only a few keywords into this tool (max 5 words); for instance, to find the definition of self-attention, look up \"self-attention definition\". If you are looking up information regarding the user, use the tone of the user; for instance, to look up the user's boss, look up \'my boss\' or \'boss\'.")
+                                    description="Useful for when you need to look up any information. Provide a phrase that should appear in relavent information in your knowledge base to help you answer the question.")
          # For complex questions, it is a good idea to use this tool multiple times; for instance, to answer the question \"who would be interested in self-attention\", you should first look up \"self-attention\", understand from the contents that it is a NLP technique, then look up \"people interested in NLP\". Do not pass complex questions with logic into this tool.
 
         #### WIDGETS ####

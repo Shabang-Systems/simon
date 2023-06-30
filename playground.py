@@ -57,6 +57,9 @@ assistant = Assistant(context, providers, verbose=True)
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 # map("Dinner places in Minnesota")
 
+# assistant("Who is Robert anyways?")
+# assistant.search()
+
 # assistant._forget_memory("Robert")
 # self.qm("Robert's favorite types of cuisine")
 # assistant._forget("Bay Area")

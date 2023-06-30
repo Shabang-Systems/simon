@@ -35,7 +35,7 @@ class KnowledgeBase(SimonProvider):
         The context with which to seed the kb.
     """
 
-    purpose="Looks up factual and technical information about the world like the definition of eigenvalues or specific knowledge about the user's world like income of Acme's corp or information about people in the user's world."
+    purpose="Looks up any and all knowledge about the user's world. This includes generic factual information, technical information, or information about people and things. This is the most general provider, and should be used most liberally."
 
     def __init__(self, context):
         self.context = context

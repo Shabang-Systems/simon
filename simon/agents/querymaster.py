@@ -17,27 +17,26 @@ import re
 from ..models import *
 
 TEMPLATE = """
+System:
 You are an AI responsible for selecting the most optimal option based on
 a query.
 
 Available options:
 {options}
 
-When selecting options, ahdere to the following format.
+When selecting options, provide a markdown list of two elements like so:
 
-Thought: why you are going to select the option you are going to select
-Selection: *one number* representing the option you are selecting
-
-You are now going to select an option to {action} {input}.
-
-Remember to provide both a Thought: line *and* a Selection: line. Do NOT
-only provide a Thought: line.
+- Thought: [why you are going to select the option you are going to select]
+- Selection: [*one number* representing the option you are selecting]
 
 The final line of your output must start with Selection:
 
 Begin!
 
-Thought:"""
+You are now going to select an option to {action} {input}.
+
+AI:
+- Thought:"""
 
 class QuerySelectorTemplate(StringPromptTemplate):
     options: List[QuerySelectorOption]
