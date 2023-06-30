@@ -23,7 +23,7 @@ class Codeblock(SimonWidget):
     }
 
 class Error(SimonWidget):
-    purpose = "widget to use the artificial intelligence is unable to provide valid information"
+    purpose = "when the AI did not answer the question, or doesn't have enough info, use this widget"
     slots = {
         "error": "the problem that the AI is experiencing",
         "action": "what the AI wants the humans to reply with in order to resolve the problem",

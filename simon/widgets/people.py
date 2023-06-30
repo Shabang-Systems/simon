@@ -6,7 +6,7 @@ Widgets focusing on presenting information about people.
 from .base import SimonWidget
 
 class ContactCard(SimonWidget):
-    purpose = "a widget that presents a person's description and contact information"
+    purpose = "a widget that presents a person's contact information"
     slots = {
         "name": "full name of the person",
         "email": "email of the person, if included, or just the letters N/A",
@@ -18,7 +18,7 @@ class ContactCard(SimonWidget):
 
 
 class ContactCards(SimonWidget):
-    purpose = "a widget that presents information about multiple people"
+    purpose = "a widget that presents contact information about multiple people"
     slots = {
         "number": "number of people presented",
         "name": "full names of the people, seperated by commas",

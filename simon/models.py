@@ -80,3 +80,8 @@ class SimonProviderError:
 class WidgetSpec:
     description: str # the description of this widget
     slots: Dict[str, str] # dictionary of {"slot_name": "description for the use of the slot"}
+
+@dataclass
+class RIOObservation:
+    goal: str # the string observation of the goal of the human
+    followup: List[str] # follow up clarification questions

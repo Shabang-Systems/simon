@@ -61,15 +61,20 @@ assistant = Assistant(context, providers, verbose=True)
 
 # assistant._forget("Robert")
 # assistant._forget("Bay Area")
-# print(json.dumps(assistant("Describe "),
-#                  sort_keys=True, indent=4))
+print(json.dumps(assistant.followup("FDR was a "),
+                 sort_keys=True, indent=4))
+
+# from simon.rio import *
+# rio = RIO(context)
+# rio("TODO: lunch with Robert next Tuesday")
+
 # print(json.dumps(assistant("Can you give me more info about the restaurant Robert would like the best?"),
 #                  sort_keys=True, indent=4))
 # print(json.dumps(assistant("Which of my friends do you think I should talk about PETAse with?"),
 #                  sort_keys=True, indent=4))
 
-print(json.dumps(assistant("Which of my friends do you think will be interested in this?"),
-                 sort_keys=True, indent=4))
+# print(json.dumps(assistant("I think the human is trying to schedule a lunch meeting with someone named Robert on a specific date and time. Where would the human like to have lunch?"),
+#                  sort_keys=True, indent=4))
 
 # print(assistant.search("user's friends"))
 # assistant.

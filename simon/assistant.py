@@ -16,6 +16,7 @@ from .components.documents import *
 from .querymaster import *
 from .providers import *
 from .widgets import *
+from .rio import *
 
 STRUCTURE = """
 You are Simon, a knowledge assistant and curator made by Shabang Systems.
@@ -220,6 +221,9 @@ class Assistant:
             allowed_tools=tool_names
         )
 
+        #### RIO ####
+        self.__rio = RIO(context, verbose)
+
         #### SHIP IT ####
         self.__executor = AgentExecutor.from_agent_and_tools(agent, tools_packaged, memory=memory,
                                                              handle_parsing_errors=True, verbose=verbose)
@@ -344,6 +348,37 @@ class Assistant:
         kv_delete(key, self.__context.elastic, self.__context.uid) 
 
         print("Assistant._forget done.")
+
+    #### RIO ####
+    def followup(self, text):
+        """follow up a piece of text the human wrote
+
+        Uses the RIO to come up with follow-up questions given a
+        string of text, and then proceed to try to answer it using
+        simon
+
+        Parameters
+        ----------
+        text : str
+            The text to come up with follow up questions
+
+        Returns
+        -------
+        List[Dict[str, str]]
+            Each follow up question, and the response if exists.
+            [{"question": follow up question,
+              "response": a Simon response, if exists}]
+        """
+
+        # observe answer
+        observation = self.__rio(text)
+        # calculate followup
+        followups = [self(f"{observation.goal} {i}") for i in observation.followup]
+
+        return [{"question": question,
+                 "response": answer}
+                for question, answer in zip(observation.followup, followups)]
+        
 
     @property
     def knowledge(self):
