@@ -231,6 +231,22 @@ class Assistant:
 
     #### EXECUTION ####
     def __call__(self, query):
+
+        if type(query) == dict:
+            # if we are passed a followup series, process that
+            # series instead of process the string question itself
+            # independently
+
+            # calculate followup strings
+            followups = [self(f"{query['goal']} {i}") for i in query["questions"]]
+
+            return [{"question": question,
+                    "response": answer}
+                    for question, answer in zip(query["questions"], followups)]
+
+        elif type(query) != str:
+            raise TypeError("Simon: unknown input type passed to simon assistant")
+
         result = self.__executor(query)
         kv = self.knowledge
 
@@ -351,7 +367,7 @@ class Assistant:
 
     #### RIO ####
     def followup(self, text):
-        """follow up a piece of text the human wrote
+        """Come up with follow up questions
 
         Uses the RIO to come up with follow-up questions given a
         string of text, and then proceed to try to answer it using
@@ -364,21 +380,19 @@ class Assistant:
 
         Returns
         -------
-        List[Dict[str, str]]
+        List[Dict[str, Union[List[str]|str]]]
             Each follow up question, and the response if exists.
-            [{"question": follow up question,
-              "response": a Simon response, if exists}]
+            [{"goal": goal of the user,
+              "questions": [follow up questions]
+            }]
         """
 
         # observe answer
-        observation = self.__rio(text)
-        # calculate followup
-        followups = [self(f"{observation.goal} {i}") for i in observation.followup]
+        entities = self.entity_memory.load_memory_variables({"input": text})["entities"]
+        observation = self.__rio(text, entities)
+        return {"goal": observation.goal,
+                "questions": observation.followup}
 
-        return [{"question": question,
-                 "response": answer}
-                for question, answer in zip(observation.followup, followups)]
-        
 
     @property
     def knowledge(self):

@@ -11,7 +11,7 @@ class TextChunk(SimonWidget):
 
 class TextList(SimonWidget):
     purpose = "a simple widget which presents a list of text with multiple pieces of information"
-    slots = { "list": "a markdown list of text with the main point of the text, with each point on a row delinated by -" }
+    slots = { "list": "a markdown list of text with the main point of the text, with each point on a row delinated by - and a newline on each element" }
 
 class HeadlineDescription(SimonWidget):
     purpose = "a simple widget with a main headline with detailed description"

@@ -61,8 +61,16 @@ assistant = Assistant(context, providers, verbose=True)
 
 # assistant._forget("Robert")
 # assistant._forget("Bay Area")
-print(json.dumps(assistant.followup("FDR was a "),
-                 sort_keys=True, indent=4))
+# print(json.dumps(assistant.followup("""Hello Prof. MacWhinney,
+# Sorry about that! I think you have the incorrect instructions to update batchalign; here are the instructions to update:"""),
+#                  sort_keys=True, indent=4))
+
+# followup = assistant.followup("TODO: schedule lunch with Robert")
+
+# print(json.dumps(assistant(followup),
+#                  sort_keys=True, indent=4))
+
+# assistant.search("PETase")
 
 # from simon.rio import *
 # rio = RIO(context)
@@ -99,6 +107,11 @@ print(json.dumps(assistant.followup("FDR was a "),
 
 # search("robert", context, search_type=IndexClass.KEYWORDS)
 # assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota") 0cabe870801b876cebbd8886d66e5c89c8622350f51cafcc29d234d6449014ab
+# assistant.store("Batchalign update instructions", """
+# Here are the instructions to update batchalign
+# - conda activate batchalign
+# - conda update batchalign -c jemoka -c conda-forge
+# """) b5afefded670f4f6f2578999a8987f00236b651dd9f4198cec16a81fd383d4e6
 # assistant.store("Robert", "Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics. He likes Chinese food a lot.") # 600165eb389d9da02ea160dcc1f8a0dc30b0a7a47588ae36c81e0189bcf98c02
 # assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.") bbcdde5962e2d63ee26093f61efc2d9d9bb99659bfc642dd771caa91810a5597
 # assistant.store("Acmia", "Acmia is an American company located in Minnesota.") e459317fd1d86b0313e19d6f6a6c16c13c017cbef900bd650ca5b4f9ff6d96a3

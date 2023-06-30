@@ -21,20 +21,24 @@ When replying with your questions, adhere to the following format.
 
 Goal: what you are trying to achieve---beginning with the words "I am trying to..."
 Questions:
-[a markdown list, deliminated by -, of 3 most salient clarification, fact-based questions]
+[a markdown list, deliminated by -, of 2-3 most salient clarification, fact-based questions. They should stand independently and not build off of each other.]
 
 Remember, you maybe passed a *PARTIAL* slice of your thoughts. Hence, try to guess what the human is trying to say if their text is cut off awkwardly. 
 
 Begin!
 
-Thoughts:
+{entities}
 {input}
 
+Thoughts:
 Goal:"""
 
 class RIOPromptFormatter(StringPromptTemplate):
     def format(self, **kwargs):
-        return TEMPLATE.format(input=kwargs["input"])
+        entities = "\n".join([
+            f"{key}: {value}"
+            for key,value in kwargs.pop("entities").items()])
+        return TEMPLATE.format(input=kwargs["input"], entities=entities)
 
 class RIOOutputParser(BaseOutputParser):
     def parse(self, str) -> RIOObservation:
@@ -57,8 +61,9 @@ class RIO(object):
             Whether the chain should be verbose
         """
         
-        prompt = RIOPromptFormatter(input_variables=["input"], output_parser=RIOOutputParser())
+        prompt = RIOPromptFormatter(input_variables=["input", "entities"],
+                                    output_parser=RIOOutputParser())
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
-    def __call__(self, input):
-        return self.__chain.predict_and_parse(input=input)
+    def __call__(self, input, entities={}):
+        return self.__chain.predict_and_parse(input=input, entities=entities)
