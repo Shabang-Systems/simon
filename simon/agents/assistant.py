@@ -34,13 +34,10 @@ Action: one of [{tool_names}, finish]
 Action Input: the input to the action
 Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation/Thought can repeat N times)
-Thought: your final thought should be the exact phrase "I now know the answer, and I am going to tell it to the human".
 Action: finish
 Action Input: the full answer to the user's question, which is returned to the user. You are encouraged to use multiple lines for the final output.
 
-Remember, a "Thought:" line must be followed by an "Action:" line AND "Action Input: " line. Never EVER write two lines with the content Action: finish. Your text should only ever contain one such line. You MUST provide an Action: and Action Input: as the final two entries in your output.
-
-You should use the knowledgebase_lookup tool at least once.
+You MUST provide an Action: and Action Input: as the final two entries in your output.
 """
 
 CONTEXT = """
@@ -182,9 +179,9 @@ class Assistant:
                                           self.summary_memory])
 
         #### KNOWLEDGE ####
-        memory_store_tool = Tool.from_function(func = lambda q: self.__store(q),
-                                               name="knowledgebase_store_very_bad_tool",
-                                               description="Use this tool to store a piece of FACTUAL information into the knowledgebase. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup. Do not use this tool unless you are explicitly asked by the user to remember something. DO NOT USE THIS TOOL unless you ABSOLUTELY have to.")
+        # memory_store_tool = Tool.from_function(func = lambda q: self.__store(q),
+        #                                        name="knowledgebase_store_very_bad_tool",
+        #                                        description="Use this tool to store a piece of FACTUAL information into the knowledgebase. Provide this tool with a list of three elements, seperated by three pipes (|||). The three elements of the list should be: title of knowledge, a brief description of the source, and the actual knowledge. For example, if you want to store the recipe for Mint Fizzy Water, you should provide this tool Mint Fizzy Water Recipe|||cookistry.com|||Two tablespoons mint simple syrup. Do not use this tool unless you are explicitly asked by the user to remember something. DO NOT USE THIS TOOL unless you ABSOLUTELY have to.")
 
         self.__query_options = {i.selector_option:i for i in providers}
         self.__qm = QueryMaster(context, list(self.__query_options.keys()), verbose)
@@ -199,7 +196,7 @@ class Assistant:
         self.__widget_qm = QueryMaster(context, list(self.__widget_options.keys()), "present the information", verbose)
 
         #### TOOLS AND TEMPLATES ####
-        tools_packaged = [memory_store_tool, knowledge_lookup_tool]
+        tools_packaged = [knowledge_lookup_tool]
         # Creating the actual chain
         prompt = SimonPromptTemplate(
             tools=tools_packaged,

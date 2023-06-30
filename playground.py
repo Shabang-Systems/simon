@@ -49,23 +49,33 @@ context = AgentContext(llm, embedding, es, UID)
 
 # provision our data sources (knowledgebase is provided by default)
 map = Map(MAPBOX_KEY)
-kb = KnowledgeBase(context)
 providers = [map]
 
 # create assistant
 assistant = Assistant(context, providers, verbose=True)
 # assistant.read("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/pdf/pnas.202006753.pdf") c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
+# map("Dinner places in Minnesota")
 
 # assistant._forget_memory("Robert")
 # self.qm("Robert's favorite types of cuisine")
 # assistant._forget("Bay Area")
-thoughts = assistant.brainstorm("TODO: organize lunch with Robert")
-# Robert's favorite types of cuisine
+# thoughts = assistant.brainstorm("""Trip to Minnesota TODOs
+# - book plane ticket
+# - finding hotels
+
+# Questions
+# - who to meet with?""")
 # thoughts
 
+# Robert's favorite types of cuisine
+# map("Chinese restaurants in the area")
+# thoughts
+
+# thoughts
 # Robert dietary restrictions
-print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
+# print(json.dumps(assistant("I am trying to come up with ideas for people the human could potentially meet with during their trip to Minnesota. Does the human have any connections or acquaintances in Minnesota that they could potentially meet up with?"), sort_keys=True, indent=4))
+# print(json.dumps(assistant("which restaurant do you recommend for Robert?"), sort_keys=True, indent=4))
 
 
 # thoughts

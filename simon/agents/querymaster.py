@@ -12,6 +12,8 @@ from langchain.schema import BaseOutputParser
 from typing import List
 from dataclasses import dataclass
 
+import re 
+
 from ..models import *
 
 TEMPLATE = """
@@ -28,7 +30,10 @@ Selection: *one number* representing the option you are selecting
 
 You are now going to select an option to {action} {input}.
 
-Remember to provide both a Thought: line *and* a Selection: line
+Remember to provide both a Thought: line *and* a Selection: line. Do NOT
+only provide a Thought: line.
+
+The final line of your output must start with Selection:
 
 Begin!
 
@@ -50,6 +55,7 @@ class SingleLetterOptionParser(BaseOutputParser):
             option = str.split("Selection:")[-1].strip()[0]
             return self.options[int(option)]
         except ValueError:
+            
             breakpoint()
 
 #################
