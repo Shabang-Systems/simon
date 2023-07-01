@@ -44,10 +44,10 @@ api = Flask("simon")
 # providers
 def provider__map(_1, body, _2):
     try:
-        key = body["mapbox_key"]
+        key = body["google_maps_key"]
         provider = Map(key.strip())
     except KeyError:
-        raise KeyError("simon: missing mapbox_key")
+        raise KeyError("simon: missing google_maps_key")
 
     return provider
 

@@ -8,7 +8,7 @@ KEY=os.environ["OPENAI_KEY"]
 ELASTIC_URL=os.environ["ELASTIC_URL"]
 ELASTIC_USER=os.environ["ELASTIC_USER"]
 ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
-MAPBOX_KEY=os.environ["MAPBOX_KEY"]
+GOOGLE_MAPS_KEY=os.environ["GOOGLE_MAPS_KEY"]
 
 # LLM
 from langchain.agents import load_tools
@@ -48,7 +48,7 @@ UID = "test-uid"
 context = AgentContext(llm, embedding, es, UID)
 
 # provision our data sources (knowledgebase is provided by default)
-map = Map(MAPBOX_KEY)
+map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
@@ -57,11 +57,15 @@ assistant = Assistant(context, providers, verbose=True)
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 # map("Dinner places in Minnesota")
 
-# assistant("Who is Robert anyways?")
+# assistant._forget_memory("Robert")
+assistant(assistant.brainstorm("Can you recommend some restaurants Robert would like?"))
+assistant("so can you recommend me some good restaurants Robert would like?")
+assistant("Let's do the SF bay area. Recommend me some restaurants he would like in the bay area.")
+assistant("how about chinese places?")
+# assistant.brainstorm("Can you recommend some restaurants Robert would like?")
 # assistant.search("OtterPilot")
 # assistant("what is OtterPilot?")
 
-# assistant._forget_memory("Robert")
 # self.qm("Robert's favorite types of cuisine")
 # assistant._forget("Bay Area")
 # thoughts = assistant.brainstorm("""Trip to Minnesota TODOs

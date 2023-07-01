@@ -6,7 +6,7 @@ from uuid import uuid4
 import requests
 
 class Map(SimonProvider):
-    """Mapbox API service handler
+    """Google Maps API service handler
 
     Parameters
     ----------
@@ -16,53 +16,27 @@ class Map(SimonProvider):
         Mapbox API Key
     """
 
-    purpose="Looks up factual information about exact street addresses or generic local businesses \"coffee shops near me\" or \"chinese food\""
+    purpose="Looks up factual information about exact street addresses or generic local businesses \"coffee shops near me\" or \"chinese food\". This provider only has generic public information. For instance, \"best chinese food\" is a valid query for this provider, but \"Bob's favorite Chinese food place\" is *not* a valid query and should be deffered to another provider."
 
     def __init__(self, key):
         self.__key = key
 
     def __hydrate(self, query):
-        return f"https://api.mapbox.com/geocoding/v5/mapbox.places/{query}.json?access_token={self.__key}&fuzzyMatch=true&proximity=ip&limit=5"
-
-    def __clean(self, query):
-        """removes irrelavent words
-
-        mapbox's API doesn't have very good contextual search;
-        therefore, we need to clean out a lot of the common "useless"
-        phrases to ensure a good quality search
-
-        Parameters
-        ----------
-        query : str
-            the input query
-
-        Returns
-        -------
-        str
-            the cleaned query
-        """
-
-        query = query.lower().replace("in the area", "")
-        query = query.replace("local", "")
-        query = query.replace("good", "")
-        query = query.replace("bad", "")
-        query = query.replace("nearby", "")
-        query = query.replace("near me", "")
-
-        return query.strip()
-        
+        return f"https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&inputtype=textquery&key={self.__key}"
 
     def provide(self, input):
         # get location information based on the query
-        response = requests.get(self.__hydrate(self.__clean(input)))
+        response = requests.get(self.__hydrate(input))
         res = response.json()
 
         # gets the places data
-        places = res["features"]
+        places = res["results"]
 
         # serialize into title, address ("place name"), category
-        serialized = [(i["text"], i["place_name"], i["properties"].get("category", ""))
-                      for i in places]
+        serialized = [(i["name"], i["formatted_address"]+"\n"+", ".join(i["types"]),
+                       {"price level": i.get("price_level", "unknown"), "rating": i.get("rating", "unknown")})
+                      for i in places[:5]]
 
         # and serialize into responses to return
-        return [SimonProviderResponse(name, address+"\n"+info) for name, address, info in serialized]
+        return [SimonProviderResponse(name, details, metadata)
+                for name, details, metadata in serialized]

@@ -23,7 +23,7 @@ class Codeblock(SimonWidget):
     }
 
 class Error(SimonWidget):
-    purpose = "when the AI did not answer the question, or doesn't have enough info, use this widget"
+    purpose = "when the AI did not answer the question, or doesn't have enough info, use this widget. When the prompt starts with \"I'm sorry...\", this is usually a good choice."
     slots = {
         "error": "the problem that the AI is experiencing",
         "action": "what the AI wants the humans to reply with in order to resolve the problem",
