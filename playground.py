@@ -35,7 +35,7 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=1)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -57,11 +57,10 @@ assistant = Assistant(context, providers, verbose=True)
 # assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
 # map("Dinner places in Minnesota")
 
-# assistant._forget_memory("Robert")
-assistant(assistant.brainstorm("Can you recommend some restaurants Robert would like?"))
-assistant("so can you recommend me some good restaurants Robert would like?")
-assistant("Let's do the SF bay area. Recommend me some restaurants he would like in the bay area.")
-assistant("how about chinese places?")
+# assistant(assistant.brainstorm("Can you recommend some restaurants Robert would like?"))
+assistant("can you recommend me some good restaurants Robert would like?")
+# assistant("Let's do the SF bay area. Recommend me some restaurants he would like in the bay area.")
+# assistant("how about chinese places?")
 # assistant.brainstorm("Can you recommend some restaurants Robert would like?")
 # assistant.search("OtterPilot")
 # assistant("what is OtterPilot?")

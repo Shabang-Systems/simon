@@ -29,6 +29,7 @@ def get_widget_suite(context: AgentContext):
         Codeblock(context),
         Definition(context),
         Location(context),
+        Locations(context),
         Error(context),
     ]
     
