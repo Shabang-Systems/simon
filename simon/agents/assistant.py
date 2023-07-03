@@ -1,5 +1,5 @@
 from langchain.memory import ConversationEntityMemory, ConversationSummaryMemory, CombinedMemory
-from langchain.prompts import BaseChatPromptTemplate
+from langchain.prompts import BaseChatPromptTemplate, PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentOutputParser, LLMSingleActionAgent, AgentExecutor
 from langchain.schema import AgentAction, AgentFinish, HumanMessage, OutputParserException, SystemMessage, AIMessage
@@ -38,6 +38,8 @@ Action: finish
 Action Input: the full answer to the user's question, which is returned to the user. You are encouraged to use multiple lines for the final output.
 
 You MUST provide an Action: and Action Input: as the final two entries in your output.
+
+If the input doesn't require more information, simply provide a final a nswer directly by using Finish: and performing the task required. Do not use other tools if it is not required.
 """
 
 CONTEXT = """
@@ -353,6 +355,25 @@ class Assistant:
 
         return get_fulltext(hash, self.__context)
 
+    def summarize(self, hash) -> str:
+        """make the agent summarize a text
+
+        Parameters
+        ----------
+        hash : str
+            the hash of the read document
+
+        Returns
+        -------
+        usual simon output
+        """
+
+        context = "\n".join(top_tf(hash, self.__context))
+        template = PromptTemplate.from_template("System: You are an AI that is going to summarize the text given. Human: Here is the text {input}. Begin! AI:")
+        chain = LLMChain(llm=self.__context.llm, prompt=template)
+
+        return chain.run(input=context)
+
     def forget(self, hash):
         """ask the assistant to forget a document/stored element
 
@@ -419,7 +440,7 @@ class Assistant:
         return self.entity_memory.entity_store.store
 
     @property
-    def summary(self):
+    def conversation_summary(self):
         return self.summary_memory.buffer
 
         

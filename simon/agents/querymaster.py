@@ -50,12 +50,16 @@ class SingleLetterOptionParser(BaseOutputParser):
     options: List[QuerySelectorOption]
 
     def parse(self, str):
+        print(str)
         try:
-            option = str.split("Selection:")[-1].strip()[0]
-            return self.options[int(option)]
+            option = int(str.split("Selection:")[-1].strip()[0])
         except ValueError:
-            
-            breakpoint()
+            results = re.search(r"option:? ?(\d+)", str, flags=re.IGNORECASE)
+            try: 
+                option = int(results.group(1).strip())
+            except ValueError:
+                option = 0
+        return self.options[option]
 
 #################
 
