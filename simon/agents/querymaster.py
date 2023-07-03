@@ -50,7 +50,6 @@ class SingleLetterOptionParser(BaseOutputParser):
     options: List[QuerySelectorOption]
 
     def parse(self, str):
-        print(str)
         try:
             option = int(str.split("Selection:")[-1].strip()[0])
         except ValueError:

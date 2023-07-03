@@ -15,13 +15,13 @@ from ..models import *
 
 TEMPLATE = """
 System:
-You are trying to creatively think of things that you haven't thought of before. You are given what you have already thought of, and you are responsible for brainstorming with follow up questions that provoke areas of extensions for your thoughts using questions that have a factual answer.
+You are trying to creatively think of things that you haven't thought of before. You are given what you have already thought of, and you are responsible for brainstorming with follow up queries that provoke areas of extensions for your thoughts using questions that have a factual answer. These queries will be put into an artifical intelligence assistant to be processed and done.
 
-When replying with your questions, adhere to the following format.
+When replying with your queries, adhere to the following format.
 
 Goal: what you are trying to achieve---beginning with the words "I am trying to..."
-Questions:
-[a markdown list, deliminated by -, of 2-3 most salient clarification, fact-based questions. They should stand independently and not build off of each other.]
+Queries:
+[a markdown list, deliminated by -, of 2-3 most salient fact-based queries. They can be statements or questions. They should stand independently and not build off of each other.]
 
 Remember, you maybe passed a *PARTIAL* slice of your thoughts. Hence, try to guess what the human is trying to say if their text is cut off awkwardly. 
 
@@ -43,7 +43,7 @@ class RIOPromptFormatter(StringPromptTemplate):
 
 class RIOOutputParser(BaseOutputParser):
     def parse(self, str) -> RIOObservation:
-        goal, questions = str.split("Questions:")
+        goal, questions = str.split("Queries:")
         questions = [i.strip("-").strip()
                      for i in questions.strip().replace("\n -", "\n-").split("\n-")
                      if i.strip() != '']

@@ -54,9 +54,10 @@ providers = [map]
 # create assistant
 assistant = Assistant(context, providers, verbose=True)
 
-assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters. He really likes Chinese food""")
+# assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters. He really likes Chinese food""")
 
 # assistant("What does Robert like to eat?")
+# assistant.brainstorm("TODO: organize dinner with Robert")
 # assistant.forget("7c1e5e758554de4cd5e049ff62bdce887756d36239d64d75ceacc9a37ae68f0d")
 # assistant.fetch("732a680920a5b4e7ea16052810a674e5fc93cb552e78663213699476b5941055")
 # assistant.autocomplete("Eigen")
@@ -65,7 +66,7 @@ assistant.store("Robert", """Robert is a scientist working at Acmia's headquarte
 # kb("Who is Robert?")
 # from simon.components.documents import *
 
-search("who is Robert?", context, threshold=0.5)
+# search("who is Robert?", context, threshold=0.5)
 # get_nth_chunk("6af083ee3cc04ece755b6ee88685f12abc9fb088e5c618707966be92016c57cf", 0, context)
 
 # assistant.forget("1b3aab8c5fa77c3aec7f7a09747fb60d124ba220ba22b6b09f8c6a39aaf7b950")
