@@ -52,7 +52,15 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers, verbose=True)
+# assistant = Assistant(context, providers, verbose=True)
+# scholar = Scholar()
+# print(scholar("state of the art speech diarization"))
+
+
+# from semanticscholar import SemanticScholar
+# res = enumerate(SemanticScholar().search_paper("Speech dierization", limit=5))
+# for i, result in res:
+    # print("HI", i)
 
 # assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters. He really likes Chinese food""")
 
