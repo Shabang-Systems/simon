@@ -290,7 +290,17 @@ class Assistant:
         # with warning
         return provider(query.strip('"').strip("'").strip("\n").strip())
 
-    #### MEMORY ####
+    def autocomplete(self, query):
+        """Autocomplete a document title
+
+        Parameters
+        ----------
+        q : query
+            The query to autocomplete
+        """
+
+        return suggest(query, self.__context)
+
     def store(self, title, content, source=""):
         """Force the model to explicitly remember something
 
@@ -327,6 +337,22 @@ class Assistant:
 
         return hash
 
+    def fetch(self, hash) -> str:
+        """get the fulltext of an URL
+
+        Parameters
+        ----------
+        hash : str
+            the hash of the read document
+
+        Returns
+        -------
+        str
+            the full text of a particular document
+        """
+
+        return get_fulltext(hash, self.__context)
+
     def forget(self, hash):
         """ask the assistant to forget a document/stored element
 
@@ -344,6 +370,7 @@ class Assistant:
 
         delete_document(hash, self.__context)
 
+    #### MEMORY ####
     def _forget_memory(self, key):
         """Forgets a piece of memory
 

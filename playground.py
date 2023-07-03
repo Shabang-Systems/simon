@@ -53,12 +53,32 @@ providers = [map]
 
 # create assistant
 assistant = Assistant(context, providers, verbose=True)
+
+# assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics. He likes Chinese food a lot.""")
+
+# assistant.forget("1b3aab8c5fa77c3aec7f7a09747fb60d124ba220ba22b6b09f8c6a39aaf7b950")
+# assistant.forget("600165eb389d9da02ea160dcc1f8a0dc30b0a7a47588ae36c81e0189bcf98c02")
+
+# from simon.components.documents import *
+# top_tf("07850d14932a87fd16a3aec0fc4762a81a97cf2b525311c6a85cbc6fefef5f9e", context)
+# 600165eb389d9da02ea160dcc1f8a0dc30b0a7a47588ae36c81e0189bcf98c02
+
+# es.delete
+
+# assistant.autocomplete("Rob")
+# assistant.fetch("b4c246492452e6c4976d3218a6e3534df37ec34457b3896d3b10915592c06dce")
+
+# from simon.components.documents import *
+# [i[0] for i in suggest("Linear alg", context, False)]
+
+# es.indices.put_mapping(index="simon-fulltext", body={"properties": {"metadata.title": {"type": "completion"}}})
+
 # assistant.read("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/pdf/pnas.202006753.pdf") c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9
-# assistant.forget("c3da811700fe0d4e5cc6f5a4e2d25410892fc3565657af6ab68d20f6bc0624a9")
+# assistant("What's the stable matching problem?")
 # map("Dinner places in Minnesota")
 
 # assistant(assistant.brainstorm("Can you recommend some restaurants Robert would like?"))
-assistant("can you recommend me some good restaurants Robert would like?")
+# assistant("can you recommend me some good restaurants Robert would like?")
 # assistant("Let's do the SF bay area. Recommend me some restaurants he would like in the bay area.")
 # assistant("how about chinese places?")
 # assistant.brainstorm("Can you recommend some restaurants Robert would like?")
@@ -132,21 +152,37 @@ assistant("can you recommend me some good restaurants Robert would like?")
 # search("batchalign 0.2.27 has been released", context)
 # delete_document("bc83e0ed53a5705c6178a28c234d3853c84f73513df24741f4ba1e44822b6511", context)
 
-# search("robert", context, search_type=IndexClass.KEYWORDS)
-# assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota") 0cabe870801b876cebbd8886d66e5c89c8622350f51cafcc29d234d6449014ab
+# # search("robert", context, search_type=IndexClass.KEYWORDS)
+# assistant.store("Jacob", "Jacob is my friend working on IdeaFlow. He lives in Minnesota") #0cabe870801b876cebbd8886d66e5c89c8622350f51cafcc29d234d6449014ab
 # assistant.store("Batchalign update instructions", """
 # Here are the instructions to update batchalign
 # - conda activate batchalign
 # - conda update batchalign -c jemoka -c conda-forge
-# """) b5afefded670f4f6f2578999a8987f00236b651dd9f4198cec16a81fd383d4e6
+# """) #b5afefded670f4f6f2578999a8987f00236b651dd9f4198cec16a81fd383d4e6
 # assistant.store("Robert", "Robert is a scientist working at Acmia's headquarters with a specialization in high-energy physics. He likes Chinese food a lot.") # 600165eb389d9da02ea160dcc1f8a0dc30b0a7a47588ae36c81e0189bcf98c02
-# assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.") bbcdde5962e2d63ee26093f61efc2d9d9bb99659bfc642dd771caa91810a5597
-# assistant.store("Acmia", "Acmia is an American company located in Minnesota.") e459317fd1d86b0313e19d6f6a6c16c13c017cbef900bd650ca5b4f9ff6d96a3
+# assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.") #bbcdde5962e2d63ee26093f61efc2d9d9bb99659bfc642dd771caa91810a5597
+# assistant.store("Acmia", "Acmia is an American company located in Minnesota.") # e459317fd1d86b0313e19d6f6a6c16c13c017cbef900bd650ca5b4f9ff6d96a3
 # assistant.store("Sam", "Sam is my friend working as a painter in Flagstaff. She is very interested in sustainable plastics, especially new technologies to break down plastics.") #efd4f646158dc94fc85ba430b8efcf1190e9ee3388f7cc68098b0ac2102073e8
-# assistant.store("Rupert", "Rubert lives in Minneapolis, but he's often in Saint Paul these days") e1743af286a07cd26b36843d10bfabf92bf5bfd8acd121747c9b1621be2c2afa
-# from simon.components.documents import search, delete_document
-# search("people in Minnesota", context)
-# delete_document("75c3d630152611dcc71826ff5b3556db4427bbb7ae914590370f8432665e48a3", context)
+# assistant.store("Rupert", "Rubert lives in Minneapolis, but he's often in Saint Paul these days") #e1743af286a07cd26b36843d10bfabf92bf5bfd8acd121747c9b1621be2c2afa
+# assistant.store("Shall I compare thee to a summer's day?", """
+# Shall I compare thee to a summer’s day?
+# Thou art more lovely and more temperate.
+# Rough winds do shake the darling buds of May,
+# And summer’s lease hath all too short a date.
+# Sometime too hot the eye of heaven shines,
+# And often is his gold complexion dimmed;
+# And every fair from fair sometime declines,
+# By chance, or nature’s changing course, untrimmed;
+# But thy eternal summer shall not fade,
+# Nor lose possession of that fair thou ow’st,
+# Nor shall death brag thou wand'rest in his shade,
+# When in eternal lines to Time thou grow'st.
+# So long as men can breathe, or eyes can see,
+# So long lives this, and this gives life to thee.
+# """) # 6dd1099eb17dec9ea46cc8725f9e5a64952b04ce0da229376808a1a5c5148f24 
+# # from simon.components.documents import search, delete_document
+# # search("people in Minnesota", context)
+# # delete_document("75c3d630152611dcc71826ff5b3556db4427bbb7ae914590370f8432665e48a3", context)
 
 # assistant._forget("Minnesota")
 

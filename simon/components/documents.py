@@ -57,7 +57,7 @@ def __chunk(text, delim="\n\n"):
         parsed_chunks = [" ".join(sentences[i:i+5]).strip()
                             for i in range(0, len(sentences), 5)]
     # and also create the bigger document
-    parsed_text = " ".join(parsed_chunks)
+    parsed_text = "\n".join(parsed_chunks)
     # hash the text
     hash = hashlib.sha256(parsed_text.encode()).hexdigest()
 
@@ -295,6 +295,41 @@ def top_tf(hash:str, context:AgentContext, k=3):
                                 size=k)
     return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
 
+def suggest(query:str, context:AgentContext, k=8):
+    """string automcomplete to suggest article titles
+
+    Parameters
+    ----------
+    query : str
+        The string hash to read.
+    context : AgentContext
+        The context pointer to use to perform parsing.
+    k : optional, int
+        Number of results to return 
+
+    Return
+    ------
+    List[Tuple[str, str, str]]
+        Title, text, hash
+    """
+
+    docs = context.elastic.search(index="simon-fulltext",
+                                  suggest={"title-suggest": {
+                                      "prefix": query,
+                                      "completion": {
+                                          "field": "metadata.title"
+                                      },
+                                  }})
+
+    options = docs["suggest"]["title-suggest"][0]["options"]
+
+    # filter for matching UIDs and get fields
+    matching = [(i["_source"]["metadata"]["title"], i["_source"]["text"],
+                 i["_source"]["hash"])
+                for i in options if i["_source"]["user"] == context.uid]
+
+    return matching
+
 def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
            doc_hash=None, k=5, threshold=None, tf_threshold=0.3):
     """ElasticSearch the database based on a keyword query!
@@ -485,6 +520,9 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     after all.
     """
 
+    # try to cache the old cache
+    old_hash = None
+
     # And check if we have already indexed the doc
     indicies = context.elastic.search(index="simon-fulltext",
                                       query={"bool": {"must": [{"term": {"hash": doc.hash}},
@@ -500,7 +538,12 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                                      {"term": {"user":
                                                                                context.uid}}]}})
 
-            [delete_document(doc["_source"]["hash"], context) for doc in titles["hits"]["hits"]]
+            # remove the previous versions that we found
+            for result in titles["hits"]["hits"]:
+                old_hash = result["_source"]["hash"]
+                context.elastic.delete(index="simon-fulltext", id=result["_id"])
+
+            # [delete_document(doc["_source"]["hash"], context) for doc in titles["hits"]["hits"]]
 
         context.elastic.index(index="simon-fulltext",
                               document={"user": context.uid,
@@ -508,47 +551,54 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                      "source": doc.meta.get("source")},
                                         "hash": doc.hash,
                                         "text": doc.main_document})
+    else: return # if we have already indexed this, just leave
 
-
-        context.elastic.indices.refresh(index="simon-fulltext")
-
-    # And check if we have already indexed the doc
-    indicies = context.elastic.search(index="simon-paragraphs",
-                                      query={"bool": {"must": [{"term": {"hash": doc.hash}},
-                                                               {"term": {"user":
-                                                                         context.uid}}]}})["hits"]
-    # If not, do so!
-    if indicies["total"]["value"] == 0:
-
-        # calculate tfidf of paragraphs
-        vectorizer = TfidfVectorizer()
-        try:
-            X = vectorizer.fit_transform(doc.paragraphs)
-            tf_sum = X.sum(1).squeeze().tolist()[0]
-        except ValueError:
-            print(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
-            context.elastic.indices.refresh(index="simon-paragraphs")
-            return
-
-        update_calls = [{"_op_type": "index",
-                         "_index": "simon-paragraphs",
-                         "user": context.uid,
-                         "metadata": {"title": doc.meta.get("title"),
-                                      "source": doc.meta.get("source"),
-                                      "seq": indx,
-                                      "tf": t,
-                                      "total": len(doc.paragraphs)},
-                         "hash": doc.hash,
-                         "text": i,
-                         "embedding": e} for indx,(i,e,t) in
-                        enumerate(zip(doc.paragraphs,
-                                      context.embedding.embed_documents(doc.paragraphs),
-                                      tf_sum))]
-
-        bulk(context.elastic, update_calls)
-
+    # calculate tfidf for use later
+    vectorizer = TfidfVectorizer()
+    try:
+        X = vectorizer.fit_transform(doc.paragraphs)
+        tf_sum = X.sum(1).squeeze().tolist()[0]
+    except ValueError:
+        print(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
         context.elastic.indices.refresh(index="simon-paragraphs")
+        return
 
+    # We now go through each of the paragraphs. Index if needed, update the hash
+    # if we already have the paragraph.
+    for indx, paragraph in enumerate(doc.paragraphs):
+        # check if the we already have the element indexed
+
+        indicies = context.elastic.search(index="simon-paragraphs",
+                                          query={"bool": {"must": [{"match": {"text": paragraph}},
+                                                                   {"term": {"user":
+                                                                             context.uid}}]}},
+                                          size=1)["hits"]
+        tf = tf_sum[indx]
+
+        # if so, just update their hashes
+        if len(indicies["hits"]) > 0 and indicies["hits"][0]["_source"]["text"] == paragraph:
+            context.elastic.update(index="simon-paragraphs", id=indicies["hits"][0]["_id"],
+                                   body={"doc": {"hash": doc.hash,
+                                                 "metadata.tf": tf}})
+        else:
+            context.elastic.index(index="simon-paragraphs",
+                                  document={"user": context.uid,
+                                            "metadata": {"title": doc.meta.get("title"),
+                                                         "source": doc.meta.get("source"),
+                                                         "seq": indx,
+                                                         "tf": tf,
+                                                         "total": len(doc.paragraphs)},
+                                            "hash": doc.hash,
+                                            "text": paragraph,
+                                            "embedding": context.embedding.embed_documents(paragraph)[0]})
+    # refresh indicies
+    context.elastic.indices.refresh(index="simon-fulltext")
+    context.elastic.indices.refresh(index="simon-paragraphs")
+
+    # if an old hash was detected, we delete any traces of the old document
+    if old_hash:
+        delete_document(old_hash, context)
+        
 #### SPECIAL SETTERS ####
 
 ### Read Remote Helpers ###

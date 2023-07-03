@@ -15,12 +15,12 @@ def _seed_schema(es:Elasticsearch, dim=1546):
                                                                     "user": {"type": "keyword"}}})
     es.indices.create(index="simon-fulltext", mappings={"properties": {"hash": {"type": "keyword"},
                                                                        "metadata.source": {"type": "text"},
-                                                                       "metadata.title": {"type": "text"},
+                                                                       "metadata.title": {"type": "completion"},
                                                                        "text": {"type": "text"},
                                                                        "user": {"type": "keyword"}}})
     es.indices.create(index="simon-paragraphs", mappings={"properties": {"hash": {"type": "keyword"},
                                                                          "metadata.source": {"type": "text"},
-                                                                         "metadata.title": {"type": "text"},
+                                                                         "metadata.title": {"type": "completion"},
                                                                          # paragraph number (seq / total)
                                                                          "metadata.seq": {"type": "unsigned_long"},
                                                                          "metadata.tf": {"type": "float"},
