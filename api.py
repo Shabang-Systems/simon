@@ -185,6 +185,84 @@ def brainstorm():
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
 
+@api.route('/fetch', methods=['GET'])
+def fetch():
+    """fetch a document based the hash
+
+    @params
+    - resource_id : str --- the hash of the document to fetch
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]
+        return {
+            "response": assistant.fetch(arguments["resource_id"].strip()),
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+@api.route('/summarize', methods=['GET'])
+def summarize():
+    """summarizes a document
+
+    @params
+    - resource_id : str --- the hash of the document to fetch
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]
+        return {
+            "response": assistant.summarize(arguments["resource_id"].strip()),
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+
+# automcomplete document title
+@api.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    """come up with possible documents based on the title
+
+    @params
+    - q : str --- the beginning of your query
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]
+        results = assistant.autocomplete(arguments["q"].strip())
+
+        results_serialized = [{"title": i, "text": j, "resource_id": k} for i,j,k in results]
+
+        return {
+            "response": results_serialized,
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
 # OCR a document
 @api.route('/read', methods=['PUT'])
 def read():
@@ -211,8 +289,8 @@ def read():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # store some information
-@api.route('/remember', methods=['PUT'])
-def remember():
+@api.route('/store', methods=['PUT'])
+def store():
     """make the assistant remember some info
 
     @params
