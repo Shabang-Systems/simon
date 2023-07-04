@@ -1,0 +1,26 @@
+#editor-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    @apply text-gray-700;
+}
+
+#editor-title {
+    outline: none;
+    padding: 0px 15px;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+#editor-text {
+    height: 100%;
+}
+
+.ql-editor {
+    font-size: 15px;
+    font-weight: 400;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+
+

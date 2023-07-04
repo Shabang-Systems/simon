@@ -1,4 +1,4 @@
-from .base import g
+from .base import *
 from ..models import *
 
 import re
