@@ -26,26 +26,28 @@ function locations(substring, string) {
     return results;
 }
 
-export default function Editor() {
+export default function Editor(props) {
     const [title, setTitle] = useState('');
     const [html, setHTML] = useState('');
     const [text, setText] = useState('');
     const editorRef = useRef(null);
 
     useEffect(() => {
-        // calculate where linebreaks are, if the text has actual content
-        // we place one chunk at the beginning 
-        let linebreak_locations = locations("\n\n", text);
-        linebreak_locations = [0, ...linebreak_locations];
+        // if brainstorm render is requested, and the editor is ready
+        // we call render by passing the text chunks and where they should
+        // be placed: call --- props.render([(text, rendering_height), ...])
+        if (props.render && editorRef.current) {
+            // calculate where linebreaks are, if the text has actual content
+            // we place one chunk at the beginning 
+            let linebreak_locations = locations("\n\n", text);
+            linebreak_locations = [0, ...linebreak_locations];
 
-        // create the chunks based on where double newlines are
-        let raw_chunks = text.split("\n\n");
-        let html_chunks = html.split("<br>");
+            // create the chunks based on where double newlines are
+            let raw_chunks = text.split("\n\n");
 
-        // and gather top locations for each of the chunks
-        if (editorRef.current) {
+            // and gather top locations for each of the chunks
             let tops = linebreak_locations.map(i => editorRef.current.getBounds(i+1).top);
-            console.log(raw_chunks, tops);
+            props.render(tops.map((e,i) => [e, raw_chunks[i]]));
         }
     }, [text, html]);
 
