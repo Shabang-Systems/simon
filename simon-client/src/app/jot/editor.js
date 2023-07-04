@@ -30,6 +30,7 @@ export default function Editor() {
     const [title, setTitle] = useState('');
     const [html, setHTML] = useState('');
     const [text, setText] = useState('');
+    const editorRef = useRef(null);
 
     useEffect(() => {
         // calculate where linebreaks are, if the text has actual content
@@ -37,11 +38,15 @@ export default function Editor() {
         let linebreak_locations = locations("\n\n", text);
         linebreak_locations = [0, ...linebreak_locations];
 
-        // 
+        // create the chunks based on where double newlines are
         let raw_chunks = text.split("\n\n");
         let html_chunks = html.split("<br>");
-        console.log(linebreak_locations.length, raw_chunks.length);
-        console.log(raw_chunks, linebreak_locations);
+
+        // and gather top locations for each of the chunks
+        if (editorRef.current) {
+            let tops = linebreak_locations.map(i => editorRef.current.getBounds(i+1).top);
+            console.log(raw_chunks, tops);
+        }
     }, [text, html]);
 
     return (
@@ -58,6 +63,7 @@ export default function Editor() {
                 onChange={(content, _1, _2, editor) => {
                     setHTML(content);
                     setText(editor.getText().trim());
+                    editorRef.current = editor;
                     /*  */
                     /* let sel = editor.getSelection(); */
                     /* let line_position = editor.getBounds(sel.index).top; */
