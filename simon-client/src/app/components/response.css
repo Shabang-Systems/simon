@@ -5,7 +5,21 @@
 }
 
 .simon-brainstorm-question-list {
-    list-style: inside;
+    /* list-style: inside; */
 }
 
 
+.simon-brainstorm-question {
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: color 0.3s;
+    /* list-style: inside; */
+}
+
+.simon-brainstorm-question:hover {
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: color 0.3s;
+    @apply text-gray-400;
+    /* list-style: inside; */
+}

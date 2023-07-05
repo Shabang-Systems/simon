@@ -20,7 +20,9 @@ export default function Response({text, session}) {
         <div className="simon-brainstorm">
             <ul className="simon-brainstorm-question-list">
                 {questions.map((i, indx) => (
+                    <>
                     <li key={indx} className="simon-brainstorm-question">{i}</li>
+                    </>
                 ))}
             </ul>
         </div>
