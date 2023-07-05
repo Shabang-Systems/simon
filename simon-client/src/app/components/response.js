@@ -1,20 +1,26 @@
 import { brainstorm } from "@lib/utils.js";
 import "./response.css";
 
-export function LoadingResponse() {
-    return (<div classname="simon-brainstorm-loading">
-                nana goon
-            </div>);
-}
+import { useState, useEffect } from "react";
 
-export default async function Response({text, session}) {
-    let thoughts = await brainstorm(text, session);
+export default function Response({text, session}) {
+    let [questions, setQuestions] = useState([]);
+    let [goal, setGoal] = useState("");
+
+
+    useEffect(() => {
+        console.log("THIS IS CALLED!!", text);
+        brainstorm(text, session).then((thoughts) => {
+            setQuestions(thoughts.response.questions);
+            setGoal(thoughts.response.goal);
+        });
+    }, [text]);
 
     return (
         <div className="simon-brainstorm">
             <ul className="simon-brainstorm-question-list">
-                {thoughts.response.questions.map(i => (
-                    <li className="simon-brainstorm-question">{i}</li>
+                {questions.map((i, indx) => (
+                    <li key={indx} className="simon-brainstorm-question">{i}</li>
                 ))}
             </ul>
         </div>

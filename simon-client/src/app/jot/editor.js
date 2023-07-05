@@ -1,13 +1,26 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import 'react-quill/dist/quill.bubble.css';
 
+import Response, { LoadingResponse } from "@components/response.js";
+
 import strings from "@lib/strings.json";
 import "./editor.css";
+
+String.prototype.hashCode = function() {
+    var hash = 0,
+        i, chr;
+    if (this.length === 0) return hash;
+    for (i = 0; i < this.length; i++) {
+        chr = this.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
 
 /* locations(substring, string)
  * calculate all instances of "substring" in "string"
@@ -28,12 +41,13 @@ function locations(substring, string) {
     return results;
 }
 
-export default function Editor(props) {
+export default function Editor({session}) {
     const [title, setTitle] = useState('');
     const [html, setHTML] = useState('');
     const [text, setText] = useState('');
+    const [chunks, setChunks] = useState([]);
+
     const editorRef = useRef(null);
-    const router = useRouter();
 
     const EDITING_TIMEOUT = 1000; // we re-render barinstorms after inaction
     const timeout_status = useRef(null);
@@ -42,7 +56,7 @@ export default function Editor(props) {
         // if brainstorm render is requested, and the editor is ready
         // we call render by passing the text chunks and where they should
         // be placed: call --- props.render([(text, rendering_height), ...])
-        if (props.onUpdate, editorRef.current) {
+        if (editorRef.current) {
             // if we were almost going to re-render brainstorm, don't. 
             if (timeout_status.current != null) {
                 clearTimeout(timeout_status.current);
@@ -62,12 +76,11 @@ export default function Editor(props) {
                 // and gather top locations for each of the chunks
                 let tops = linebreak_locations.map(i => editorRef.current.getBounds(i+1).top);
                 tops[0] -= 30;
-                props.onChunk(tops.map((e,i) => {
+                setChunks(tops.map((e,i) => {
                     return {position: e, text: raw_chunks[i]};
-                }));
-                router.refresh();
+                }).filter((i)=>i.text != ""));
             }, EDITING_TIMEOUT);
-                
+            
         }
     }, [text, html]);
 
@@ -102,11 +115,11 @@ export default function Editor(props) {
                 </div>
             </div>
             <div className="rightbar">
-                {props.chunks.map(([position, object], indx) =>
-                    <div key={indx}
+                {chunks.map(({position, text}, indx) =>
+                    <div key={text.hashCode()}
                          style={{top: position}}
                          className="chunk">
-                        {object}
+                        <Response text={text} session={session}/>
                     </div>
                 )}
             </div>

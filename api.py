@@ -7,6 +7,7 @@ is fine for now.
 
 # flask!
 from flask import Flask, request, jsonify
+from flask_cors import cross_origin
 
 # importing everything
 from simon import *
@@ -83,6 +84,7 @@ def handle_providers(providers, arguments, body, context):
 
 # generate new llm
 @api.route('/start', methods=['POST'])
+@cross_origin()
 def start():
     """start a chat instance
 
@@ -135,6 +137,7 @@ def start():
 
 # call the llm directly
 @api.route('/chat', methods=['GET'])
+@cross_origin()
 def chat():
     """ask your model a question
 
@@ -161,6 +164,7 @@ def chat():
 # engage RIO, which helps brainstorm possible prompts given a textual input
 # for instance, while taking notes
 @api.route('/brainstorm', methods=['GET'])
+@cross_origin()
 def brainstorm():
     """come up with possible queries
 
@@ -186,6 +190,7 @@ def brainstorm():
                         "message": "malformed request, or invalid session_id"}), 400
 
 @api.route('/fetch', methods=['GET'])
+@cross_origin()
 def fetch():
     """fetch a document based the hash
 
@@ -210,6 +215,7 @@ def fetch():
                         "message": "malformed request, or invalid session_id"}), 400
 
 @api.route('/summarize', methods=['GET'])
+@cross_origin()
 def summarize():
     """summarizes a document
 
@@ -236,6 +242,7 @@ def summarize():
 
 # automcomplete document title
 @api.route('/autocomplete', methods=['GET'])
+@cross_origin()
 def autocomplete():
     """come up with possible documents based on the title
 
@@ -265,6 +272,7 @@ def autocomplete():
 
 # OCR a document
 @api.route('/read', methods=['PUT'])
+@cross_origin()
 def read():
     """make the assistant read a URL
 
@@ -290,6 +298,7 @@ def read():
 
 # store some information
 @api.route('/store', methods=['PUT'])
+@cross_origin()
 def store():
     """make the assistant remember some info
 
@@ -317,6 +326,7 @@ def store():
 
 # forget a document
 @api.route('/forget', methods=['POST'])
+@cross_origin()
 def forget():
     """make the assistant unread a URL based on the hash
 

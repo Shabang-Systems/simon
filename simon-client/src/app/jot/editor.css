@@ -46,7 +46,7 @@
 
 .chunk {
     position: absolute;
-    transform: translateY(90px);
+    transform: translateY(85px) scale(0.9);
 }
 
 .session {
