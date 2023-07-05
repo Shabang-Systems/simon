@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import 'react-quill/dist/quill.bubble.css';
-import "./editor.css";
+
 import strings from "@lib/strings.json";
+import "./editor.css";
 
 /* locations(substring, string)
  * calculate all instances of "substring" in "string"
@@ -31,26 +33,41 @@ export default function Editor(props) {
     const [html, setHTML] = useState('');
     const [text, setText] = useState('');
     const editorRef = useRef(null);
+    const router = useRouter();
 
-    const [chunks, setChunks] = useState([]);
+    const EDITING_TIMEOUT = 1000; // we re-render barinstorms after inaction
+    const timeout_status = useRef(null);
 
     useEffect(() => {
         // if brainstorm render is requested, and the editor is ready
         // we call render by passing the text chunks and where they should
         // be placed: call --- props.render([(text, rendering_height), ...])
-        if (editorRef.current) {
-            // calculate where linebreaks are, if the text has actual content
-            // we place one chunk at the beginning 
-            let linebreak_locations = locations("\n\n", text);
-            linebreak_locations = [0, ...linebreak_locations];
+        if (props.onUpdate, editorRef.current) {
+            // if we were almost going to re-render brainstorm, don't. 
+            if (timeout_status.current != null) {
+                clearTimeout(timeout_status.current);
+            }
 
-            // create the chunks based on where double newlines are
-            let raw_chunks = text.split("\n\n");
+            // set a new timeout to re-render
+            timeout_status.current = setTimeout(() => {
 
-            // and gather top locations for each of the chunks
-            let tops = linebreak_locations.map(i => editorRef.current.getBounds(i+1).top);
-            tops[0] -= 30;
-            setChunks(tops.map((e,i) => {return {position: e, text: raw_chunks[i]};}));
+                // calculate where linebreaks are, if the text has actual content
+                // we place one chunk at the beginning 
+                let linebreak_locations = locations("\n\n", text);
+                linebreak_locations = [0, ...linebreak_locations];
+
+                // create the chunks based on where double newlines are
+                let raw_chunks = text.split("\n\n");
+
+                // and gather top locations for each of the chunks
+                let tops = linebreak_locations.map(i => editorRef.current.getBounds(i+1).top);
+                tops[0] -= 30;
+                props.onChunk(tops.map((e,i) => {
+                    return {position: e, text: raw_chunks[i]};
+                }));
+                router.refresh();
+            }, EDITING_TIMEOUT);
+                
         }
     }, [text, html]);
 
@@ -82,20 +99,17 @@ export default function Editor(props) {
                         theme="bubble"/>
                     {/* The following is a focus clearfix so users can click */}
                     {/* anywhere to get focus */}
-                    <div style={{height: "110%", cursor: "text"}}
-                         onClick={()=>
-                             document.getElementsByClassName("ql-editor")[0].focus()
-                         }>&nbsp;</div>
                 </div>
             </div>
             <div className="rightbar">
-                {chunks.map((i, indx) =>
+                {props.chunks.map(([position, object], indx) =>
                     <div key={indx}
-                         style={{top: i.position}}
-                         className="chunk">{i.text}</div>
+                         style={{top: position}}
+                         className="chunk">
+                        {object}
+                    </div>
                 )}
             </div>
-            <div className="session aside">#!/Shabang Simon | AGPL-3.0 | SessionID {props.session}</div>
         </div>
 
     );

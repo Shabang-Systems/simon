@@ -16,9 +16,20 @@ export async function startSession() {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({google_maps_key: process.env.GOOGLE_MAPS_KEY})
+        body: JSON.stringify({google_maps_key: process.env.GOOGLE_MAPS_KEY}),
     });
 
     return (await res.json()).session_id;
 }
 
+export async function brainstorm(text, session) {
+    let base = getRoute("brainstorm")
+    base.searchParams.append('q', text)
+    base.searchParams.append('session_id', session)
+
+    const res = await fetch(base.toString(), {
+        method: "GET",
+    });
+
+    return (await res.json());
+}

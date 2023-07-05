@@ -7,12 +7,12 @@
 
 .main {
     flex-grow: 1;
-    max-width: 75%;
+    max-width: 70%;
 }
 
 .rightbar {
     flex-shrink: 1;
-    min-width: 15%;
+    min-width: 30%;
 }
 
 .rightbar > span {
@@ -35,6 +35,7 @@
 }
 
 .editor-text {
+    min-height: 99%;
 }
 
 .ql-editor {
@@ -49,9 +50,10 @@
 }
 
 .session {
-    position: fixed;
+    position: absolute;
     bottom: 13px;
-    right: 15px;
-    font-size: 8px;
+    right: 10px;
+    font-size: 6px;
+    word-wrap: break-word;
 }
 

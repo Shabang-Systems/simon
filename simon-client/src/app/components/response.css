@@ -1,0 +1,11 @@
+
+.simon-brainstorm {
+    font-size: 12px;
+    @apply p-3 text-gray-500;
+}
+
+.simon-brainstorm-question-list {
+    list-style: inside;
+}
+
+

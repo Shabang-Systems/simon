@@ -3,6 +3,7 @@
         "baseUrl": "src/",
         "paths": {
             "@lib/*": ["lib/*"],
+            "@components/*": ["app/components/*"],
         }
     }
 }
