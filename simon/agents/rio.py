@@ -21,7 +21,9 @@ When replying with your queries, adhere to the following format.
 
 Goal: what you are trying to achieve---beginning with the words "I am trying to..."
 Queries:
-[a markdown list, deliminated by -, of 2-3 most salient fact-based queries. They can be statements or questions. They should stand independently and not build off of each other.]
+- your first fact-based query
+- your second fact-based query
+[this could repeat at most 4 times, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.]
 
 Remember, you maybe passed a *PARTIAL* slice of your thoughts. Hence, try to guess what the human is trying to say if their text is cut off awkwardly. 
 
