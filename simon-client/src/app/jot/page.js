@@ -1,21 +1,10 @@
-import Editor from "./editor";
-import strings from "@lib/strings.json";
-
+import Editor from "./editor.js";
 import "./page.css";
 
-// a server action to render a specific
-// chunk that got updated
-async function render(e) {
-    "use server";
-    console.log(e);
-}
+import { startSession } from "@lib/utils.js";
 
 export default async function Jot() {
     return (
-        <div id="jot">
-            <div id="main"><Editor render={render}/></div>
-            <div id="rightbar"> </div>
-        </div>
-
+        <Editor session={await startSession()}/>
     );
 }
