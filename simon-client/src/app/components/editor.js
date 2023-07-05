@@ -49,7 +49,7 @@ export default function Editor({session}) {
 
     const editorRef = useRef(null);
 
-    const EDITING_TIMEOUT = 1000; // we re-render barinstorms after inaction
+    const EDITING_TIMEOUT = 500; // we re-render barinstorms after inaction
     const timeout_status = useRef(null);
 
     useEffect(() => {
@@ -123,6 +123,7 @@ export default function Editor({session}) {
                     </div>
                 )}
             </div>
+            <span className="aside session">#!/Simon {session}</span>
         </div>
 
     );

@@ -36,3 +36,15 @@ export async function brainstorm(text, session) {
 
     return (await res.json());
 }
+
+export async function chat(text, session) {
+    let base = getRoute("chat")
+    base.searchParams.append('q', text)
+    base.searchParams.append('session_id', session)
+
+    const res = await fetch(base.toString(), {
+        method: "GET",
+    });
+
+    return (await res.json());
+}

@@ -1,5 +1,6 @@
 // UI
-import Editor from "./editor.js";
+import Editor from "@components/editor.js";
+import QueryModal from "@components/query.js";
 
 // styles
 import "./page.css";
@@ -14,9 +15,16 @@ import { Suspense } from 'react';
 // in the user's cookies or something client side
 // so that the session can have actual auth
 
-export default async function Jot() {
+let session = await startSession();
+
+export default async function Jot(props) {
+    let query = props.searchParams.q;
 
     return (
-        <Editor session={await startSession()}/>
+        <>
+            <Editor session={session}/>
+            {query ? (<QueryModal text={query}
+                                  session={session}/>) : (<></>)}
+        </>
     );
 }
