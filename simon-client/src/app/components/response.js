@@ -29,6 +29,7 @@ export default function Response({text, session}) {
                             let url = new URL(window.location.href);
                             url.searchParams.set('q', goal+" "+i);
                             router.push(url.toString());
+                            router.refresh();
                         }}>{i}</li>
                 ))}
             </ul>
