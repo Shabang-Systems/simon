@@ -9,7 +9,6 @@ export default function Response({text, session}) {
 
 
     useEffect(() => {
-        console.log("THIS IS CALLED!!", text);
         brainstorm(text, session).then((thoughts) => {
             setQuestions(thoughts.response.questions);
             setGoal(thoughts.response.goal);
@@ -18,6 +17,7 @@ export default function Response({text, session}) {
 
     return (
         <div className="simon-brainstorm">
+            <span className="simon-brainstorm-goal">{goal}</span>
             <ul className="simon-brainstorm-question-list">
                 {questions.map((i, indx) => (
                     <>

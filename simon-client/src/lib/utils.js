@@ -2,8 +2,11 @@
  * Basically by appending /route to the base
  * but smartly using the URL libarry.
  */
+
+"use server"
+
 function getRoute(route) {
-    return new URL(`../${route}`, process.env.NEXT_PUBLIC_SERVER_URL)
+    return new URL(`../${route}`, process.env.SERVER_URL)
 }
 
 export async function startSession() {

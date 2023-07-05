@@ -4,6 +4,13 @@
     @apply pl-3 pr-3 text-gray-500;
 }
 
+.simon-brainstorm-goal {
+    display: inline-block;
+    margin-bottom: 3px;
+    font-weight: 600;
+    font-size: 9px;
+}
+
 .simon-brainstorm-question-list {
     /* list-style: inside; */
 }
