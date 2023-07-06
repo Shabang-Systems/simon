@@ -104,9 +104,13 @@ class Assistant:
         )
         judgement = self.__validator_qm(f"Question: {query}. Answer: {answer}")
 
+        # a force breaking mechanism
+        recall_count = 0
+
         # state_id is the validator's judgement of the quality of the answer
         # we re-prompt until it is happy with the answer or gives up
-        while judgement.id == "clarify":
+        while judgement.id == "clarify" and recall_count < 4:
+            recall_count += 1 
             # calculate clarification
             clarification = self.__followup(query, answer, entities)
             followup = clarification.followup

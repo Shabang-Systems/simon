@@ -31,3 +31,7 @@
     @apply text-gray-400;
     /* list-style: inside; */
 }
+
+.qm-close {
+    cursor: pointer;
+}

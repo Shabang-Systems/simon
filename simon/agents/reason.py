@@ -46,8 +46,11 @@ class ReasonOutputParser(BaseOutputParser):
         regex = r"Thought\s*:\s*(.*)\nAnswer\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
-        thought = match.group(1).strip("\"").strip('"').strip("`").strip()
-        answer = match.group(2).strip("\"").strip('"').strip("`").strip()
+        if match:
+            thought = match.group(1).strip("\"").strip('"').strip("`").strip()
+            answer = match.group(2).strip("\"").strip('"').strip("`").strip()
+        else:
+            breakpoint()
 
         return answer
 

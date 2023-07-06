@@ -10,6 +10,8 @@ import Response, { LoadingResponse } from "@components/response.js";
 import strings from "@lib/strings.json";
 import "./editor.css";
 
+import QueryModal from "./query.js";
+
 String.prototype.hashCode = function() {
     var hash = 0,
         i, chr;
@@ -45,6 +47,7 @@ export default function Editor({session}) {
     const [title, setTitle] = useState('');
     const [html, setHTML] = useState('');
     const [text, setText] = useState('');
+    const [queryText, setQueryText] = useState('');
     const [chunks, setChunks] = useState([]);
 
     const editorRef = useRef(null);
@@ -119,10 +122,13 @@ export default function Editor({session}) {
                     <div key={text.hashCode()}
                          style={{top: position}}
                          className="chunk">
-                        <Response text={text} session={session}/>
+                        <Response text={text} session={session} onQuery={(text) => setQueryText(text)}/>
                     </div>
                 )}
             </div>
+            {queryText != "" ?
+             <QueryModal text={queryText} session={session}/> : <></>
+            }
             <span className="aside session">#!/Simon {session}</span>
         </div>
 

@@ -100,5 +100,5 @@ class SimonWidget(ABC):
             output_json = parse_and_check_json_markdown(output.replace("```json", "").strip("`").strip(),
                                                         [i for i in self.slots.keys()])
         except:
-            breakpoint()
+            return {"raw": output}
         return output_json

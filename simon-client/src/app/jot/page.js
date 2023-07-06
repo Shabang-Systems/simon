@@ -15,16 +15,10 @@ import { Suspense } from 'react';
 // in the user's cookies or something client side
 // so that the session can have actual auth
 
-let session = await startSession();
 
 export default async function Jot(props) {
-    let query = props.searchParams.q;
-
+    let session = await startSession();
     return (
-        <>
-            <Editor session={session}/>
-            {query ? (<QueryModal text={query}
-                                  session={session}/>) : (<></>)}
-        </>
+        <Editor session={session}/>
     );
 }

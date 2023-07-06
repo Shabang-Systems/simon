@@ -6,7 +6,7 @@ import "./response.css";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Response({text, session}) {
+export default function Response({text, session, onQuery}) {
     let [questions, setQuestions] = useState([]);
     let [goal, setGoal] = useState("");
     let router = useRouter();
@@ -26,10 +26,7 @@ export default function Response({text, session}) {
                 {questions.map((i, indx) => (
                     <li key={indx} className="simon-brainstorm-question"
                         onClick={() => {
-                            let url = new URL(window.location.href);
-                            url.searchParams.set('q', goal+" "+i);
-                            router.push(url.toString());
-                            router.refresh();
+                            if (onQuery) onQuery(goal+' ' + i);
                         }}>{i}</li>
                 ))}
             </ul>
