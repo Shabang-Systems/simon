@@ -52,9 +52,9 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers, verbose=True)
+assistant = Assistant(context, providers)
 # assistant._forget_memory("Robert")
-# assistant("What does the DementiaBank Acoustics Project do?")
+assistant("What does the DementiaBank Acoustics Project do?")
 # assistant("Can you suggest a Chinese restaurant where I can take him?")
 # scholar = Scholar()
 # print(scholar("state of the art speech diarization"))
