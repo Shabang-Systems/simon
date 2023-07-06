@@ -54,7 +54,7 @@ class RIOOutputParser(BaseOutputParser):
 
 class RIO(object):
     def __init__(self, context, verbose=False):
-        """Context-Aware follow-up assistant
+        """Context-Aware brainstorm assistant
 
         Parameters
         ----------

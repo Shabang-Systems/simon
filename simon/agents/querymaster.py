@@ -9,8 +9,10 @@ from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain.prompts import StringPromptTemplate
 from langchain.schema import BaseOutputParser
 
-from typing import List
+from typing import List, Union
 from dataclasses import dataclass
+
+from pydantic import BaseModel, validator
 
 import re 
 
@@ -46,10 +48,18 @@ class QuerySelectorTemplate(StringPromptTemplate):
         options = "\n".join([f"Option {i}: {option.info}" for i, option in enumerate(self.options)])
         return TEMPLATE.format(options=options, input=kwargs["input"], action=self.action)
 
+    @validator("options", each_item=True)
+    def validate_option(cls, v):
+        if type(v) == QuerySelectorOption:
+            return v
+        else:
+            raise ValueError("not a qso!")
+
 class SingleLetterOptionParser(BaseOutputParser):
     options: List[QuerySelectorOption]
 
     def parse(self, str):
+        print(str)
         try:
             option = int(str.split("Selection:")[-1].strip()[0])
         except ValueError:

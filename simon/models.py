@@ -85,3 +85,9 @@ class WidgetSpec:
 class RIOObservation:
     goal: str # the string observation of the goal of the human
     followup: List[str] # follow up clarification questions
+
+@dataclass
+class FollowupResult:
+    problem: str # why the previous answer was no good
+    followup: str # follow up question
+

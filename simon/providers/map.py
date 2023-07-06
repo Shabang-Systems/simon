@@ -16,7 +16,7 @@ class Map(SimonProvider):
         Mapbox API Key
     """
 
-    purpose="Looks up exact street addresses or generic businesses \"coffee shops near me\" or \"chinese food\". This provider only has generic public information. For instance, \"best chinese food\" is a valid query for this provider, but \"Bob's preferences\" or \"Recommendations for medicine for Bob\" is *not* a valid query for this option."
+    purpose="This tool does *not* have information about specific people, like \"Joe's favorite dinner place\". However, this is a maps tool that can return answers for questions like \"Chinese restaurants near me\""
 
     def __init__(self, key):
         self.__key = key

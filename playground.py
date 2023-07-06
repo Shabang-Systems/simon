@@ -54,9 +54,12 @@ providers = [map]
 # create assistant
 assistant = Assistant(context, providers, verbose=True)
 # assistant._forget_memory("Robert")
+# assistant("What does the DementiaBank Acoustics Project do?")
+# assistant("Can you suggest a Chinese restaurant where I can take him?")
 # scholar = Scholar()
 # print(scholar("state of the art speech diarization"))
 
+# assistant.knowledge["Robert"]
 
 # from semanticscholar import SemanticScholar
 # res = enumerate(SemanticScholar().search_paper("Speech dierization", limit=5))
@@ -64,6 +67,7 @@ assistant = Assistant(context, providers, verbose=True)
     # print("HI", i)
 
 # assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters. He really likes Chinese food""")
+# assistant.forget("77b7ad9fe1562cfb01275653a13eb9f8451078412155da5eae1373bfaa7da31e")
 
 # assistant("What does Robert like to eat?")
 # assistant.brainstorm("TODO: organize dinner with Robert")
