@@ -590,7 +590,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                          "total": len(doc.paragraphs)},
                                             "hash": doc.hash,
                                             "text": paragraph,
-                                            "embedding": context.embedding.embed_documents([doc.meta.get("title", "")+": "+paragraph.strip()])[0]})
+                                            "embedding": context.embedding.embed_documents([(doc.meta.get("title", "") if doc.meta.get("title", "") else "")+": "+paragraph.strip()])[0]})
     # refresh indicies
     context.elastic.indices.refresh(index="simon-fulltext")
     context.elastic.indices.refresh(index="simon-paragraphs")

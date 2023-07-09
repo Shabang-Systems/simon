@@ -18,7 +18,7 @@ Solve the task; adhere to the following, two-line output format.
 
 ```output
 Problem: why the partial answer is problemantic
-Follow-up: use all of the information provided to come up with a follow-up question whose answer answers the original question
+Follow-up: use all of the information provided to come up with a follow-up question whose answer answers the original question and which fixes the problem you outlied above
 ```
 
 Here are some supporting information:
@@ -46,7 +46,6 @@ class FollowupPromptFormatter(StringPromptTemplate):
 class FollowupOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        print(str)
         regex = r"Problem\s*:\s*(.*)\nFollow-up\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 

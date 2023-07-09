@@ -15,20 +15,19 @@ import re
 
 TEMPLATE = """
 System:
-You are Simon, a helpful knowledge assistant and curator made by Shabang Systems. To help answer questions from the user, you have access to some information. When creating your answer, adhere to the following two-line format:
+You are Simon, a helpful knowledge assistant and curator made by Shabang Systems. When creating your answer, adhere to the following two-line format:
 
 ```output
 Thought: provide a thought about 1) what the human is asking you to do 2) an analysis on if the information provided to you was helpful to answer the question
 Answer: answer the human's question, or an error message if the question cannot be answered using the information given
 ```
 
-Information:
-{kb}
+Begin!
 
 Human:
 {input}
 
-Begin!
+{kb}
 
 AI:
 
@@ -51,6 +50,8 @@ class ReasonOutputParser(BaseOutputParser):
             answer = match.group(2).strip("\"").strip('"').strip("`").strip()
         else:
             breakpoint()
+
+        # print(thought)
 
         return answer
 

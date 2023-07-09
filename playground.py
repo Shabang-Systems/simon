@@ -35,8 +35,10 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo-0613", temperature=0.5)
-# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
+# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo")
+llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
+# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4")
+# llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
@@ -47,14 +49,45 @@ UID = "test-uid"
 # # serialize all of the above together
 context = AgentContext(llm, embedding, es, UID)
 
-# provision our data sources (knowledgebase is provided by default)
+# provision our data sources (knowledgebase is provided by default
+# but initialized here for debug)
+kb = KnowledgeBase(context)
 map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers)
-# assistant._forget_memory("Robert")
-assistant("What does the DementiaBank Acoustics Project do?")
+assistant = Assistant(context, providers, verbose=True)
+# assistant._forget_memory("Minnesota")
+
+# import time
+
+# im
+# assistant("I'm going to Minnesota soon! Who should I meet?")
+# assistant("I'm going to be visiting Acmia, who should I email?")
+# assistant("")
+
+# from simon.agents.queryfixer import QueryFixer
+
+# qf = QueryFixer(context, True)
+# kb(qf("What does the Dementia Acoustics Project do?"))
+
+
+
+# assistant("Can you explain what PETAse is while providing a glossery of technical unfamiliar terms?")
+# assistant.search("Can you explain what PETAse is while providing a glossery of technical unfamiliar terms?")
+
+# assistant.search("What is the definition of PETAse and can you provide a glossary of technical unfamiliar terms?")
+# from simon.agents.followup import Followup
+# fu = Followup(context)
+# fu(question="Can you explain what PETAse is while providing a glossery of technical unfamiliar terms?", answer="No information about this is found in my knowledge base.")
+
+# assistant.search("PETAse")
+# assistant._forget_memory("PETAse")
+# assistant.read("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7568301/pdf/pnas.202006753.pdf")
+# assistant.forget("e9af594ca6d8db9178e59d33fefc922de6199b7d2fc1209217c3bf49ff5a6aaa")
+
+# assistant.autocomplete("PETA")
+# assistant.knowledge["Robert"]
 # assistant("Can you suggest a Chinese restaurant where I can take him?")
 # scholar = Scholar()
 # print(scholar("state of the art speech diarization"))

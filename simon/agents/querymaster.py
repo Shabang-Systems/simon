@@ -63,6 +63,8 @@ class SingleLetterOptionParser(BaseOutputParser):
             option = int(str.split("Selection:")[-1].strip()[0])
         except ValueError:
             results = re.search(r"option:? ?(\d+)", str, flags=re.IGNORECASE)
+            if not results:
+                breakpoint()
             try: 
                 option = int(results.group(1).strip())
             except ValueError:

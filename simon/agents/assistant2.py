@@ -14,6 +14,7 @@ from ..utils.elastic import kv_set, kv_getall
 
 from ..components.documents import *
 from .querymaster import *
+from .queryfixer import *
 from ..providers import *
 from ..widgets import *
 from .rio import *
@@ -71,6 +72,7 @@ class Assistant:
         self.__rio = RIO(context, verbose)
         self.__followup = Followup(context, verbose)
         self.__reason = Reason(context, verbose)
+        self.__fix = QueryFixer(context, verbose)
 
         #### Context ####
         self.__context = context
@@ -91,12 +93,16 @@ class Assistant:
             the output, with widget information, etc.
         """
 
-        # first kb call always goes to internal knowledge
-        # TODO is this a good idea?
-        kb = self.search(query)
 
         # and create the first reasoning group
         entities = self.__entity_memory.load_memory_variables({"input": query})["entities"]
+
+        # fix the query
+        q = self.__fix(query, entities)
+        # first kb call always goes to internal knowledge
+        # TODO is this a good idea?
+        kb = self.search(q)
+
         answer = self.__reason(query, kb)
         self.__entity_memory.save_context(
             {"input": query},
@@ -115,10 +121,13 @@ class Assistant:
             clarification = self.__followup(query, answer, entities)
             followup = clarification.followup
 
+            # fix the query
+            q = self.__fix(followup, entities)
+
             # followup entities
             input_dict = {"input": (query+"\n"+followup)}
             entities = self.__entity_memory.load_memory_variables(input_dict)["entities"]
-            kb += self.search(followup)
+            kb += self.search(q)
 
             # and re-reason
             answer = self.__reason(query, kb, entities)
@@ -201,6 +210,9 @@ class Assistant:
 
         # query the kb first
         res = self.__kb(query)
+
+        if res == "We found nothing. Please rephrase your question.":
+            res = ""
         
         # ask qm to choose what additinoal provider to use
         option = self.__provider_qm(query)
@@ -210,6 +222,9 @@ class Assistant:
             provider = self.__provider_options[option]
             res += "\n---\n"+provider(query.strip('"').strip("'").strip("\n").strip())
 
+        # if we indeed have nothing
+        if res.strip() == "":
+            res = "We found nothing. Please rephrase your question."
         # return the actual data
         # with warning
         return res
