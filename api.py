@@ -111,7 +111,8 @@ def start():
 
         # create the base llms
         llm = ChatOpenAI(openai_api_key = KEY,
-                         model_name = "gpt-3.5-turbo-0613")
+                         model_name = "gpt-3.5-turbo",
+                         temperature=0.5)
         embeddings = OpenAIEmbeddings(openai_api_key=KEY,
                                       model="text-embedding-ada-002")
         es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
@@ -149,6 +150,7 @@ def chat():
     - response: JSON --- JSON paylod returned from the model
     - status: str --- status, usually success
     """
+    print("HI CHAT HI")
 
     try:
         arguments = request.args
@@ -177,6 +179,7 @@ def brainstorm():
     - response: JSON --- JSON paylod returned from the model
     - status: str --- status, usually success
     """
+    print("HI BRAINSTORM HI")
 
     try:
         arguments = request.args

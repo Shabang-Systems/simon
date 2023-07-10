@@ -361,7 +361,7 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
     if not threshold and search_type == IndexClass.CHUNK:
         threshold = 0.9
     elif not threshold:
-        threshold = 13
+        threshold = 5
 
     # get results
     squery = {

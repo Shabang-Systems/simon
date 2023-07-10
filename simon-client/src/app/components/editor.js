@@ -119,7 +119,7 @@ export default function Editor({session}) {
             </div>
             <div className="rightbar">
                 {chunks.map(({position, text}, indx) =>
-                    <div key={text.hashCode()}
+                    <div key={position}
                          style={{top: position}}
                          className="chunk">
                         <Response text={text} session={session} onQuery={(text) => setQueryText(text)}/>

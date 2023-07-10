@@ -38,6 +38,7 @@ export async function brainstorm(text, session) {
 }
 
 export async function chat(text, session) {
+    console.log("I HAVE BENE CALLED");
     let base = getRoute("chat")
     base.searchParams.append('q', text)
     base.searchParams.append('session_id', session)

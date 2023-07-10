@@ -94,48 +94,68 @@ class Assistant:
         """
 
 
+        print("START RECALL", query)
+        print("LOADING")
         # and create the first reasoning group
         entities = self.__entity_memory.load_memory_variables({"input": query})["entities"]
 
+        print("FIXING")
         # fix the query
         q = self.__fix(query, entities)
         # first kb call always goes to internal knowledge
         # TODO is this a good idea?
+        print("SEARCHING")
         kb = self.search(q)
 
-        answer = self.__reason(query, kb)
-        self.__entity_memory.save_context(
-            {"input": query},
-            {"output": answer}
-        )
-        judgement = self.__validator_qm(f"Question: {query}. Answer: {answer}")
+        print("REASONING")
+        answer, next = self.__reason(query, kb)
+
+        # print("SAVING TIME")
+        # self.__entity_memory.save_context(
+        #     {"input": query},
+        #     {"output": answer}
+        # )
+        # judgement = self.__validator_qm(f"Question: {query}. Answer: {answer}")
 
         # a force breaking mechanism
         recall_count = 0
 
         # state_id is the validator's judgement of the quality of the answer
         # we re-prompt until it is happy with the answer or gives up
-        while judgement.id == "clarify" and recall_count < 4:
+        while next and recall_count < 3:
+            print("RECALL ONCE", next)
             recall_count += 1 
-            # calculate clarification
-            clarification = self.__followup(query, answer, entities)
-            followup = clarification.followup
+            # # calculate clarification
+            # clarification = self.__followup(query, answer, entities)
+            # followup = clarification.followup
 
             # fix the query
-            q = self.__fix(followup, entities)
+            print("FIXING")
+            q = self.__fix(next, entities)
 
             # followup entities
-            input_dict = {"input": (query+"\n"+followup)}
+            input_dict = {"input": (query+"\n"+next)}
+            print("LOADING")
             entities = self.__entity_memory.load_memory_variables(input_dict)["entities"]
+            print("SEARCHING")
             kb += self.search(q)
 
             # and re-reason
-            answer = self.__reason(query, kb, entities)
-            self.__entity_memory.save_context(
-                input_dict,
-                {"output": answer}
-            )
-            judgement = self.__validator_qm(f"Question: {query}. Answer: {answer}")
+            print("REASONING")
+            prev_next = next
+            answer, next = self.__reason(query, kb, entities)
+
+            # the model has given up
+            if next == prev_next:
+                break
+
+        # save results into memory
+        print("SAVING")
+        input_dict = {"input": query}
+        self.__entity_memory.save_context(
+            input_dict,
+            {"output": answer}
+        )
 
         # and now, store memory results
         kv = self.knowledge
@@ -145,13 +165,13 @@ class Assistant:
             kv_set(key, value, self.__context.elastic, self.__context.uid)
 
         # and render it as the correct widget
-        widget_option = self.__widget_qm(answer)
-        widget = self.__widget_options[widget_option]
+        # widget_option = self.__widget_qm(answer)
+        # widget = self.__widget_options[widget_option]
 
         return {
             "raw": answer,
-            "widget": widget_option.id,
-            "payload": widget(answer)
+            "widget": "NO"
+            # "payload": widget(answer)
         }
 
 

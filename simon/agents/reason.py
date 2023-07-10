@@ -12,26 +12,37 @@ from ..models import *
 
 import re
 
+# You will be provided sources to come up with an answer. When creating your answer, adhere to the following four-element format:
 
 TEMPLATE = """
 System:
-You are Simon, a helpful knowledge assistant and curator made by Shabang Systems. When creating your answer, adhere to the following two-line format:
+Use knowledge to answer the user's question.
 
-```output
-Thought: provide a thought about 1) what the human is asking you to do 2) an analysis on if the information provided to you was helpful to answer the question
-Answer: answer the human's question, or an error message if the question cannot be answered using the information given
-```
+Answer in the following four element format:
+
+Knowledge:
+Contents of your knowledge base should go here; recall any relavent (or perhaps adjacent and somewhat relevant) information to aid you.
+
+Answer:
+a markdown-formatted answer the human's question; use markdown lists, bold elements, italics, and quote your sources. rely *only* on information from the knowledge: section above.
+
+Reasoning:
+a reasoning about whether or not your answer is well supported by the sources
+
+Better Question:
+N/A, if your answer is sufficient; otherwise, provide a better question that would answer the Human's question but is more specific
 
 Begin!
 
 Human:
-{input}
-
-{kb}
+My question is: {input}
 
 AI:
 
-```output
+Knowledge:
+{kb}
+
+Answer:
 """
 
 class ReasonPromptFormatter(StringPromptTemplate):
@@ -42,18 +53,20 @@ class ReasonPromptFormatter(StringPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"Thought\s*:\s*(.*)\nAnswer\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?Reasoning\s*:\s*(.*)\n\n?Better Question\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
-            thought = match.group(1).strip("\"").strip('"').strip("`").strip()
-            answer = match.group(2).strip("\"").strip('"').strip("`").strip()
+            answer = match.group(1).strip("\"").strip('"').strip("`").strip()
+            reasoning = match.group(2).strip("\"").strip('"').strip("`").strip()
+            followup = match.group(3).strip("\"").strip('"').strip("`").strip()
         else:
-            breakpoint()
+            return str, None
 
-        # print(thought)
+        if "n/a" in followup.lower():
+            followup = None
 
-        return answer
+        return answer, followup
 
 class Reason(object):
     def __init__(self, context, verbose=False):

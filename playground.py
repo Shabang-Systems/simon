@@ -35,8 +35,8 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo")
-llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0.5)
+# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003", temperature=0.5)
 # llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4")
 # llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
@@ -56,14 +56,21 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers, verbose=True)
-# assistant._forget_memory("Minnesota")
+assistant = Assistant(context, providers)
+
+
+# from simon.components.documents import *
+# search("runhouse", context, search_type=IndexClass.KEYWORDS, threshold=5)
+# assistant.search("runhouse")
+# assistant._forget_memory("Chibuwa")
 
 # import time
 
 # im
-# assistant("I'm going to Minnesota soon! Who should I meet?")
-# assistant("I'm going to be visiting Acmia, who should I email?")
+# assistant("What is the use of PETAse?")
+# assistant("")
+
+# assistant("What are the preexisting research on which DementiaBank Acoustics project was based on?")
 # assistant("")
 
 # from simon.agents.queryfixer import QueryFixer
@@ -99,7 +106,9 @@ assistant = Assistant(context, providers, verbose=True)
 # for i, result in res:
     # print("HI", i)
 
-# assistant.store("Robert", """Robert is a scientist working at Acmia's headquarters. He really likes Chinese food""")
+# some utter non-sense:
+# assistant.store("Chibuwa complexional field", """Chibuwa complexional field is a zordable field where chimbab are eaten for lunch and dinner. It helps eigenvectors grow large and strong for their eigenvector duties.""") # 0aef0537927edfb6aa1e808d5bfb7e8c2d46e0462e44b78516ab7e29d0ac600e
+# assistant.store("Zordable", """Zordable is a term to describe chimbabs, it generally means that their affine representations are unique.""") # c05812bbe836877a1459c75cca55ca5487822211c7cabf1aa09fa97b598ddcf0
 # assistant.forget("77b7ad9fe1562cfb01275653a13eb9f8451078412155da5eae1373bfaa7da31e")
 
 # assistant("What does Robert like to eat?")

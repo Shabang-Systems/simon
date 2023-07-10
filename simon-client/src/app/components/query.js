@@ -17,19 +17,12 @@ export function QueryLoading() {
 }
 
 function Widget({res}) {
-    let [widget, setWidget] = useState(<></>);
-
-    useEffect(() => {
-        // serialize special responses
-        if (res.response.widget == "TextChunk") {
-            setWidget(<TextChunk payload={res.response.payload}/>);
-        } else {
-            // TODO give up other widgets are needed
-            setWidget(<div style={{whiteSpace: "pre-line"}}>{res.response.raw}</div>);
-        }
-    }, [res]);
-
-    return widget;
+    switch (res.response.widget) {
+    case "TextChunk":
+        return <TextChunk payload={res.response.payload}/>;
+    default:
+        return <div style={{whiteSpace: "pre-line"}}>{res.response.raw}</div>;
+    }
 }
 
 export default function QueryModal({text, session}) {
@@ -48,9 +41,11 @@ export default function QueryModal({text, session}) {
         <div className="queryModal">
             <span className="qm-query">{text}</span>
             <div className="qm-response">
-                <div className="qm-response-body">
-                    <Widget res={res}/>
-                </div>
+                {ready? 
+                 <div className="qm-response-body">
+                     <Widget res={res}/>
+                 </div>
+                 : <QueryLoading/>}
             </div>
         </div>
     );
