@@ -14,14 +14,12 @@ from ..models import *
 
 TEMPLATE = """
 System:
-You are responsible for coming up with the best phrase query that would gather all the supporting information needed to answer a question.
-
 The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel sheet for last year's tax return" is not.
 
 Adhere to the following, one-line output format:
 
 ```output
-Justification: which parts of the query would be the *simplest form* information in the knowledge base, and which parts are supplementary information that can be generated later
+Justification: which parts of the query would be the *simplest form* information in the knowledge base, and which parts are supplementary information that can be generated later. Use at most 10 words.
 Query: what you need to look up in the knowledge base to be able to have all the information needed to answer the question, removing all supplementary information that wouldn't be in the knowledge base
 ```
 

@@ -28,6 +28,7 @@ function Widget({res}) {
 export default function QueryModal({text, session}) {
     let [res, setRes] = useState({response: {}});
     let [ready, setReady] = useState(false);
+    let [hidden, setHidden] = useState(false);
 
     useEffect(() => {
         setReady(false);
@@ -38,7 +39,7 @@ export default function QueryModal({text, session}) {
     }, [text, session]);
 
     return (
-        <div className="queryModal">
+        <div className={"queryModal "+(hidden?"qm-hide":"")}>
             <span className="qm-query">{text}</span>
             <div className="qm-response">
                 {ready? 
@@ -47,6 +48,7 @@ export default function QueryModal({text, session}) {
                  </div>
                  : <QueryLoading/>}
             </div>
+            <i className={(hidden?"fa-solid fa-caret-up":"fa-solid fa-caret-down")+" qm-close"} onClick={() =>setHidden(!hidden)}/>
         </div>
     );
 }

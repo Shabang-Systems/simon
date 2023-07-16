@@ -42,16 +42,16 @@ class KnowledgeBase(SimonProvider):
 
     def provide(self, input):
         # use both types of search to create all possible hits
-        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=2)
-        results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
+        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=5)
+        # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
  
         # we then go through to find everything similar to the results to provide
         # the model more content
         results_similar = [j
-                           for i in results_semantic+results_keywords
-                           for j in similar(i["id"], self.context, k=1, threshold=0.88)]
+                           for i in results_semantic
+                           for j in similar(i["id"], self.context, k=2, threshold=0.88)]
 
-        results = results_semantic+results_keywords+results_similar
+        results = results_semantic+results_similar
         # breakpoint()
 
         if len(results) == 0:

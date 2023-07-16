@@ -28,7 +28,7 @@ Available options:
 
 When selecting options, provide a markdown list of two elements like so:
 
-- Thought: [why you are going to select the option you are going to select]
+- Thought: [why you are going to select the option you are going to select, use at most 5 words in this section]
 - Selection: [*one number* representing the option you are selecting]
 
 The final line of your output must start with Selection:

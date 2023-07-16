@@ -35,9 +35,9 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0.5)
-# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003", temperature=0.5)
-# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4")
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
+# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
+# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
 # llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -56,8 +56,49 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers)
+assistant = Assistant(context, providers, verbose=True)
 
+# assistant.read("https://cdn.discordapp.com/attachments/698384432725491754/1126315886903574548/Jack_and_Alb_on_simon_in_car.txt") # a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719
+# assistant.forget("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719")
+
+# assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31
+# assistant.forget("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
+
+# assistant.fetch("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
+
+from simon.agents.reason2 import Reason
+from simon.agents.queryfixer import QueryFixer
+
+sent = "I'm visiting Minnesoda, who should I talk to?"
+
+qf = QueryFixer(context)
+q = qf(sent)
+kb = assistant.search(q)
+
+tmp = Reason(context, verbose=True)
+tmp(sent, kb)
+
+# assistant("How did the treatment of immigrants by Americans change throughout history?")
+
+
+# The treatment of immigrants by Americans changed throughout history. Immigrants were processed differently based on their nationality, with Irish immigrants being processed quickly and Chinese immigrants facing longer processing times. Immigrants were also crowded into tenements during the Gilded Age, which marked the beginning of skyscrapers.
+
+# - "USCIS processed people in Ellis (Irish processing, took about 2 days to process) and Angel (Chinese processing, took about 6 months to process) islands: beginning having racial immigrant discrimination."
+# - "Immigrants were stuffed into Tennaments. The Guilded age saw the beginning of skyscrapers."
+
+
+# assistant.search("Minnesota people")
+
+# print(json.dumps(assistant("Tell me about PreTA"), sort_keys=True, indent=4))
+
+
+# from simon.components.documents import *
+# top_tf("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719", context, k=10)
+
+# assistant.summarize("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719")
+
+# assistant.read("https://transfer.sh/4btTSyVV9H/WINFIELD-LegacyEleanorRoosevelt-1990.pdf")
+# assistant.summarize("b318fd905cc447c1388be2f713fa0f82dffb9ef3c7e417a2e569748dd57beb86")
 
 # from simon.components.documents import *
 # search("runhouse", context, search_type=IndexClass.KEYWORDS, threshold=5)
@@ -107,7 +148,11 @@ assistant = Assistant(context, providers)
     # print("HI", i)
 
 # some utter non-sense:
+
 # assistant.store("Chibuwa complexional field", """Chibuwa complexional field is a zordable field where chimbab are eaten for lunch and dinner. It helps eigenvectors grow large and strong for their eigenvector duties.""") # 0aef0537927edfb6aa1e808d5bfb7e8c2d46e0462e44b78516ab7e29d0ac600e
+
+
+
 # assistant.store("Zordable", """Zordable is a term to describe chimbabs, it generally means that their affine representations are unique.""") # c05812bbe836877a1459c75cca55ca5487822211c7cabf1aa09fa97b598ddcf0
 # assistant.forget("77b7ad9fe1562cfb01275653a13eb9f8451078412155da5eae1373bfaa7da31e")
 

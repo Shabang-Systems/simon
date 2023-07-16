@@ -143,7 +143,7 @@ def parse_web(html, title=None, source=None) -> ParsedDocument:
     text = soup.get_text()
 
     # meta!
-    title = title if title else soup.title.string
+    title = title if title else soup.title.string if soup.title else ""
 
     return parse_text(text, title, source)
 
