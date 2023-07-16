@@ -29,8 +29,6 @@ When responding, adhere to the following format.
 ```output
 Concept: A one-line explanation of what concept the user is talking about? Be as specific as possible.
 
-Main Idea: A one-line thought for what's important for the user to know about the overall concept.
-
 Answer: A one-sentence, markdown-formatted, easy to understand answer to the user's question. Keep this extremely brief. You must only use information presented in the Knowledge section to provide your answer. Use **markdown** _styles_, if appropriate. At the end of your answer, provide references to useful citation numbers in brackets found in the knowledge section. Like so: [2] [3]
 
 Extrapolations: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a three-to-five word summary of the point, then a colon, then provide some explanation in one to two sentences. These extrapolations need to be short. 
@@ -65,16 +63,20 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?Main Idea\s*:\s*(.*)\n\n?Answer\s*:\s*(.*)\n\n?Extrapolations\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?Answer\s*:\s*(.*)\n\n?Extrapolations\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
             concept = match.group(1).strip("\"").strip('"').strip("`").strip()
-            main_idea = match.group(2).strip("\"").strip('"').strip("`").strip()
-            answer = match.group(3).strip("\"").strip('"').strip("`").strip()
-            extrapolations = match.group(4).strip("\"").strip('"').strip("`").strip()
+            answer = match.group(2).strip("\"").strip('"').strip("`").strip()
+            extrapolations = match.group(3).strip("\"").strip('"').strip("`").strip()
         else:
-            return str, None, ""
+            return {
+                "headline": "",
+                "answer": str,
+                "extrapolations": [],
+                "resources": []
+        }
 
         # collect up all the [citations]
         resource_regex = r"\[(\d+)\]"
@@ -82,10 +84,10 @@ class ReasonOutputParser(BaseOutputParser):
         for r in re.findall(resource_regex, str):
             resource_ids.append(int(r.strip()))
 
-        extrapolations = [i.strip() for i in extrapolations.split("\n")]
+        extrapolations = [i.strip()[2:].strip() for i in extrapolations.split("\n")]
 
         return {
-            "headline": main_idea,
+            "headline": concept,
             "answer": answer,
             "extrapolations": extrapolations,
             "resources": resource_ids
@@ -117,7 +119,7 @@ class Reason(object):
         res =  self.__chain.predict_and_parse(input=input,
                                               kb=sentences)
         # we only leave useful resources
-        res["resources"] = {i:sentence_dict[i] for i in res["resources"]}
+        res["resources"] = {int(i):sentence_dict[i] for i in res["resources"]}
 
         return res
 

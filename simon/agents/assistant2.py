@@ -19,7 +19,7 @@ from ..providers import *
 from ..widgets import *
 from .rio import *
 from .followup import *
-from .reason import *
+from .reason2 import *
 
 class Assistant:
     def __init__(self, context, providers=[], widgets=[], verbose=False):
@@ -108,53 +108,14 @@ class Assistant:
         kb = self.search(q)
 
         # print("REASONING")
-        answer, next, citation = self.__reason(query, kb)
-
-        # print("SAVING TIME")
-        # self.__entity_memory.save_context(
-        #     {"input": query},
-        #     {"output": answer}
-        # )
-        # judgement = self.__validator_qm(f"Question: {query}. Answer: {answer}")
-
-        # a force breaking mechanism
-        recall_count = 0
-
-        # state_id is the validator's judgement of the quality of the answer
-        # we re-prompt until it is happy with the answer or gives up
-        while next and recall_count < 3:
-            # print("RECALL ONCE", next)
-            recall_count += 1 
-            # # calculate clarification
-            # clarification = self.__followup(query, answer, entities)
-            # followup = clarification.followup
-
-            # fix the query
-            # print("FIXING")
-            q = self.__fix(next, entities)
-
-            # followup entities
-            input_dict = {"input": (query+"\n"+next)}
-            # print("LOADING")
-            entities = self.__entity_memory.load_memory_variables(input_dict)["entities"]
-            # print("SEARCHING")
-            kb += self.search(q)
-
-            # and re-reason
-            # print("REASONING")
-            prev_next = next
-            answer, next, citation = self.__reason(query, kb, entities)
-
-            # the model has given up
-            if next == prev_next:
-                break
+        output = self.__reason(query, kb)
 
         # save results into memory
         # print("SAVING")
         input_dict = {"input": query}
         self.__entity_memory.save_context(
             input_dict,
-            {"output": answer}
+            {"output": output["answer"]}
         )
 
         # print("DONE")
@@ -171,10 +132,7 @@ class Assistant:
         # widget_option = self.__widget_qm(answer)
         # widget = self.__widget_options[widget_option]
 
-        return {
-            "raw": answer,
-            "citation": citation
-        }
+        return output
 
 
     #### KNOWLEDGE ####

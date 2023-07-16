@@ -66,20 +66,21 @@ assistant = Assistant(context, providers, verbose=True)
 
 # assistant.fetch("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
 
-from simon.agents.reason2 import Reason
-from simon.agents.queryfixer import QueryFixer
+# from simon.agents.reason2 import Reason
+# from simon.agents.queryfixer import QueryFixer
 
-sent = "I'm visiting Minnesoda, who should I talk to?"
+# sent = "I'm visiting Minnesoda, who should I talk to?"
 
-qf = QueryFixer(context)
-q = qf(sent)
-kb = assistant.search(q)
+# qf = QueryFixer(context)
+# q = qf(sent)
+# kb = assistant.search(q)
 
-tmp = Reason(context, verbose=True)
-tmp(sent, kb)
+# tmp = Reason(context, verbose=True)
+# tmp(sent, kb)
 
 # assistant("How did the treatment of immigrants by Americans change throughout history?")
 
+# print(json.dumps(assistant("What should I do with Robert?"), sort_keys=True, indent=4))
 
 # The treatment of immigrants by Americans changed throughout history. Immigrants were processed differently based on their nationality, with Irish immigrants being processed quickly and Chinese immigrants facing longer processing times. Immigrants were also crowded into tenements during the Gilded Age, which marked the beginning of skyscrapers.
 
