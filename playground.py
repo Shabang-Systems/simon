@@ -36,7 +36,7 @@ from langchain.agents import AgentExecutor
 #                n_ctx=2048,
 #                verbose=False)
 llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
-# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003")
+# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003", temperature=0)
 # llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
 # llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
@@ -69,7 +69,7 @@ assistant = Assistant(context, providers, verbose=True)
 # from simon.agents.reason2 import Reason
 # from simon.agents.queryfixer import QueryFixer
 
-# sent = "I'm visiting Minnesoda, who should I talk to?"
+sent = "I'm visiting Minnesoda, who should I visit?"
 
 # qf = QueryFixer(context)
 # q = qf(sent)
@@ -80,7 +80,7 @@ assistant = Assistant(context, providers, verbose=True)
 
 # assistant("How did the treatment of immigrants by Americans change throughout history?")
 
-# print(json.dumps(assistant("What should I do with Robert?"), sort_keys=True, indent=4))
+print(json.dumps(assistant(sent), sort_keys=True, indent=4))
 
 # The treatment of immigrants by Americans changed throughout history. Immigrants were processed differently based on their nationality, with Irish immigrants being processed quickly and Chinese immigrants facing longer processing times. Immigrants were also crowded into tenements during the Gilded Age, which marked the beginning of skyscrapers.
 
@@ -233,7 +233,7 @@ assistant = Assistant(context, providers, verbose=True)
 
 # assistant.search("PETase")
 
-# from simon.rio import *
+# from simon.agents.rio import *
 # rio = RIO(context)
 # rio("TODO: lunch with Robert next Tuesday")
 

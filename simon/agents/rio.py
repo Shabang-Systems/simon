@@ -15,7 +15,10 @@ from ..models import *
 
 TEMPLATE = """
 System:
-You are creating margin notes to help creatively brainstorm an idea. You are going to be given your previous partial thoughts, and you are going to write comments (questions or statements) about these thoughts. Answering the comments you provide should help advance the partial thought you began with.
+You will be given your partial thoughts and some knowledge. Pay attention to the lack of knowledge the partial thoughts betray. Fix them by coming up with salient questions that would fix this. Emojis. aaaaaa
+TODO
+
+"I'm visiting Minnesoda, what should I do?" => "hey you have some friends in Minnisoda! reach out"
 
 When replying with your comments, adhere to the following format.
 
