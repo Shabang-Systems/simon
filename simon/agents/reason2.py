@@ -22,17 +22,26 @@ import re
 # You will be provided sources to come up with an answer. When creating your answer, adhere to the following four-element format:
 
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept. They will be providing a limited question to start the discussion, and you are responsible for coming up for an answer to their specific question as well as providing them general understanding. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
+You are helping a human understand the state of a concept. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
 
-When responding, adhere to the following two section format. The sections are "Answer", "New Information". Keep your entire output brief.
+When responding, adhere to the following two section format. The sections are "Answer", "New Information". 
 
 ```output
-Answer: A one-sentence, markdown-formatted, easy to understand answer to the user's question. Keep this extremely brief. You must only use information presented in the Knowledge section to provide your answer. Use **markdown** _styles_, if appropriate. At the end of your answer, provide references to useful citation numbers in brackets found in the knowledge section. Like so: [2] [3]
+Answer: Provide markdown-formatted, easy to understand, *brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer. [2] 
+New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a brief summary about how your citation connects to the main topic. 
+- Briefly explain why this extrapolation connect ot the main topic each list element should be a clear statement of fact which will be helpful to the user and how it connects. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
+- Three to five word connection of the point. Each element in this list should be < 10 words. [3] [5]
+- Three to five word connection point again. Reminder to keep this brief. [5] [8]
+[This can repeat N times, but the user hates reading so keep it short.]
+```
 
-New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Summarize, fill in gaps, and explain: do not just copy your sources. Begin each element with a three-to-five word summary of the point, then a colon, then provide some explanation in one to two sentences. These extrapolations need to be short. You may only have 3, so select the ones that you think will be the most difficult for the user to come up with independently.
-- Three to five word summary: Each list element should be a clear statement of fact which will be helpful to the user. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
-- Three to five word summary of the point: You can do this at most 3 times. Each element in this list should be < 10 words. [3] [5]
-- Three to five word summary again: here is your third and final extrapolation. Reminder to keep this brief. [5] [8]
+For instance, here's an example format:
+
+```output
+Answer: your answer here [3] with some citations. [4]
+New Information:
+- Why this info connects to the main topic [4]
+- Why other info connects to the main topic [6]
 ```
 
 Begin!
@@ -105,7 +114,7 @@ class Reason(object):
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
     def __call__(self, input, kb="", entities={}):
-        sentences = sent_tokenize(kb.replace("\n--\n", "."))
+        sentences = [j for i in kb.split("\n--\n") for j in sent_tokenize(i)]
         sentences = [j for i in sentences for j in i.split("\n")]
 
         sentence_dict = {indx:i.strip() for indx, i in enumerate(sentences)}

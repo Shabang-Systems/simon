@@ -51,6 +51,12 @@ class KnowledgeBase(SimonProvider):
         #                    for i in results_semantic
         #                    for j in similar(i["id"], self.context, k=1, threshold=0.95)]
 
+        total_text = "".join(i["text"] for i in results_semantic)
+
+        # to prevent long contexts
+        if len(total_text) > 6000:
+            results_semantic = results_semantic[:3]
+
         results = results_semantic
         # breakpoint()
 

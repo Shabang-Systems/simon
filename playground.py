@@ -56,14 +56,27 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers, verbose=False)
+assistant = Assistant(context, providers, verbose=True)
+
+# sent = "What did Elanor Roosevelt do?"
+
+# # # # assistant._forget_memory("DAR")
+# import time
+
+# a = time.time()
+# print(json.dumps(assistant("What are the arguments for and against the idea that urbanization in Africa is abnormal?"), sort_keys=True, indent=4))
+# b = time.time()
+
+# print(b-a)
+
+
 
 # assistant.read("https://cdn.discordapp.com/attachments/698384432725491754/1126315886903574548/Jack_and_Alb_on_simon_in_car.txt") # a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719
 # assistant.read("https://arxiv.org/pdf/2305.10601")
 # assistant.forget("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719")
 
-# assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31
-# assistant.forget("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
+# assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 12ac6da669611e5c80ce88cf7c3dcfb9ac7a62f21be9ff0291e47a1ea0ba7357
+# assistant.forget("12ac6da669611e5c80ce88cf7c3dcfb9ac7a62f21be9ff0291e47a1ea0ba7357")
 
 # assistant.fetch("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
 
@@ -82,13 +95,14 @@ assistant = Assistant(context, providers, verbose=False)
 
 # a = time.time()
 # print(json.dumps(assistant.brainstorm("""
-# FDR was a consiquential president:
-# - implemented New deal policies
-# - created WPA
+# Debate surrounding Urbanization in Africa
+# - 
 # """), sort_keys=True, indent=4))
 # b = time.time()
 
 # print(b-a)
+
+
 
 # 
 # assistant.brainstorm("""TODO: plan a visit to Minnesota""")
@@ -115,17 +129,6 @@ assistant = Assistant(context, providers, verbose=False)
 # tmp(sent, kb)
 
 # assistant("How did the treatment of immigrants by Americans change throughout history?")
-
-# sent = "How does the tree-of-thoughts prompting process work? Don't be afraid to be technical."
-
-# # # assistant._forget_memory("DAR")
-# import time
-
-# a = time.time()
-# print(json.dumps(assistant(sent), sort_keys=True, indent=4))
-# b = time.time()
-
-# print(b-a)
 
 # The treatment of immigrants by Americans changed throughout history. Immigrants were processed differently based on their nationality, with Irish immigrants being processed quickly and Chinese immigrants facing longer processing times. Immigrants were also crowded into tenements during the Gilded Age, which marked the beginning of skyscrapers.
 

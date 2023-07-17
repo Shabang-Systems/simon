@@ -112,7 +112,7 @@ def start():
         # create the base llms
         llm = ChatOpenAI(openai_api_key = KEY,
                          model_name = "gpt-3.5-turbo",
-                         temperature=0.5)
+                         temperature=0)
         embeddings = OpenAIEmbeddings(openai_api_key=KEY,
                                       model="text-embedding-ada-002")
         es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
