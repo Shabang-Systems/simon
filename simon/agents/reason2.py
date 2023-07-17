@@ -24,17 +24,15 @@ import re
 SYSTEM_TEMPLATE = """
 You are helping a human understand the state of a concept. They will be providing a limited question to start the discussion, and you are responsible for coming up for an answer to their specific question as well as providing them general understanding. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
 
-When responding, adhere to the following format.
+When responding, adhere to the following two section format. The sections are "Answer", "New Information". Keep your entire output brief.
 
 ```output
-Concept: A one-line explanation of what concept the user is talking about? Be as specific as possible.
-
 Answer: A one-sentence, markdown-formatted, easy to understand answer to the user's question. Keep this extremely brief. You must only use information presented in the Knowledge section to provide your answer. Use **markdown** _styles_, if appropriate. At the end of your answer, provide references to useful citation numbers in brackets found in the knowledge section. Like so: [2] [3]
 
-Extrapolations: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a three-to-five word summary of the point, then a colon, then provide some explanation in one to two sentences. These extrapolations need to be short. 
-- Three to five word summary: Each list element should be a clear statement of fact which will be helpful to the user. As with before, you must put citations in brackets. [1] [4]
-- Three to five word summary of the point: You can do this at most 5 times. Each element in this list should be < 10 words. [3] [5]
-- ...
+New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Summarize, fill in gaps, and explain: do not just copy your sources. Begin each element with a three-to-five word summary of the point, then a colon, then provide some explanation in one to two sentences. These extrapolations need to be short. You may only have 3, so select the ones that you think will be the most difficult for the user to come up with independently.
+- Three to five word summary: Each list element should be a clear statement of fact which will be helpful to the user. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
+- Three to five word summary of the point: You can do this at most 3 times. Each element in this list should be < 10 words. [3] [5]
+- Three to five word summary again: here is your third and final extrapolation. Reminder to keep this brief. [5] [8]
 ```
 
 Begin!
@@ -50,7 +48,7 @@ Question:
 
 AI_TEMPLATE="""
 ```output
-Concept:"""
+Answer:"""
 
 class ReasonPromptFormatter(BaseChatPromptTemplate):
     def format_messages(self, **kwargs):
@@ -63,16 +61,14 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?Answer\s*:\s*(.*)\n\n?Extrapolations\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?New Information\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
-            concept = match.group(1).strip("\"").strip('"').strip("`").strip()
-            answer = match.group(2).strip("\"").strip('"').strip("`").strip()
-            extrapolations = match.group(3).strip("\"").strip('"').strip("`").strip()
+            answer = match.group(1).strip("\"").strip('"').strip("`").strip()
+            extrapolations = match.group(2).strip("\"").strip('"').strip("`").strip()
         else:
             return {
-                "headline": "",
                 "answer": str,
                 "extrapolations": [],
                 "resources": []
@@ -87,7 +83,6 @@ class ReasonOutputParser(BaseOutputParser):
         extrapolations = [i.strip()[2:].strip() for i in extrapolations.split("\n")]
 
         return {
-            "headline": concept,
             "answer": answer,
             "extrapolations": extrapolations,
             "resources": resource_ids
@@ -110,8 +105,8 @@ class Reason(object):
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
     def __call__(self, input, kb="", entities={}):
-        sentences = sent_tokenize(kb)
-        sentences = [j for i in sentences for j in i.split("--")]
+        sentences = sent_tokenize(kb.replace("\n--\n", "."))
+        sentences = [j for i in sentences for j in i.split("\n")]
 
         sentence_dict = {indx:i.strip() for indx, i in enumerate(sentences)}
         sentences = "".join([i+f" [{indx}] " for indx, i in enumerate(sentences)])
@@ -119,7 +114,7 @@ class Reason(object):
         res =  self.__chain.predict_and_parse(input=input,
                                               kb=sentences)
         # we only leave useful resources
-        res["resources"] = {int(i):sentence_dict[i] for i in res["resources"]}
+        res["resources"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
 
         return res
 

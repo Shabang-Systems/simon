@@ -21,6 +21,7 @@ from .rio import *
 from .followup import *
 from .reason2 import *
 
+
 class Assistant:
     def __init__(self, context, providers=[], widgets=[], verbose=False):
         """Creates a simon assistant
@@ -93,6 +94,7 @@ class Assistant:
             the output, with widget information, etc.
         """
 
+        import time
 
         # print("START RECALL", query)
         # print("LOADING")
@@ -127,6 +129,14 @@ class Assistant:
         for key,value in kv.items():
             kv_set(key, value, self.__context.elastic, self.__context.uid)
 
+        # print({
+        #     "load": onfix-onload,
+        #     "fix": onsearch-onfix,
+        #     "search": onreason-onsearch,
+        #     "reason": onsave-onreason,
+        #     "save": onpost-onsave,
+        #     "post": ondone-onpost,
+        # })
         # and render it as the correct widget
         # print("WIDGETING")
         # widget_option = self.__widget_qm(answer)
@@ -281,7 +291,7 @@ class Assistant:
         Parameters
         ----------
         key : str
-            The key-value fact to delete.
+            The key-palue fact to delete.
         """
 
         kv = kv_getall(self.__context.elastic, self.__context.uid)
@@ -312,11 +322,15 @@ class Assistant:
             }]
         """
 
-        # observe answer
+        # observe answe
+        import time
+
         entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        observation = self.__rio(text, entities)
-        return {"goal": observation.goal,
-                "questions": observation.followup}
+        query = self.__fix(text, entities)
+        kb = self.__kb(query) # we only search the kb because this is only a spot check
+
+        observation = self.__rio(text, kb, entities)
+        return observation
 
 
     @property

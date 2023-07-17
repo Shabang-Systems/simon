@@ -14,13 +14,20 @@ from ..models import *
 
 TEMPLATE = """
 System:
-The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel sheet for last year's tax return" is not.
+The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel shI'm visiting Flagstaff! Who should I visitset for last year's tax return" is not.
 
-Adhere to the following, one-line output format:
+You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a more genreal question or statement that uses only keywords that could be found in the knowledge base.
+
+Here are few examples of successful conversions:
+- "What's an eigenvalue?" => "Eigenvalues"
+- "Tell me about Zorbabs" => "Zorbabs"
+- "I'm traveling to Singapore next week! What should I do?" => "Singapore"
+- "Who should I visit in Bangkok?" => "people I know in Bangkok"
+
+Provide your output in this format:
 
 ```output
-Justification: which parts of the query would be the *simplest form* information in the knowledge base, and which parts are supplementary information that can be generated later. Use at most 10 words.
-Query: what you need to look up in the knowledge base to be able to have all the information needed to answer the question, removing all supplementary information that wouldn't be in the knowledge base
+your full, new question/statement here
 ```
 
 Begin!
@@ -32,7 +39,6 @@ Here is the question to answer:
 {input}
 
 AI:
-```output
 """
 
 class QueryPromptFormatter(StringPromptTemplate):
@@ -45,17 +51,9 @@ class QueryPromptFormatter(StringPromptTemplate):
 
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
-        str = str.strip("```output").strip("`").strip()
-        regex = r"Justification\s*:\s*(.*)\nQuery\s*:\s*(.*)"
-        match = re.search(regex, str, re.DOTALL)
+        str = str.strip("```output").strip("`").strip("'").strip('"').strip()
 
-        justification = match.group(1).strip("\"").strip('"').strip("`").strip()
-        query = match.group(2).strip("\"").strip('"').strip("`").strip()
-
-        # print(justification)
-        # print(str)
-
-        return query
+        return str
 
 class QueryFixer(object):
     def __init__(self, context, verbose=False):

@@ -32,6 +32,8 @@ from bs4 import BeautifulSoup
 # TFIDF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from tqdm import tqdm
+
 # utilities
 from ..utils.elastic import *
 from ..models import *
@@ -565,7 +567,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
-    for indx, paragraph in enumerate(doc.paragraphs):
+    for indx, paragraph in enumerate(tqdm(doc.paragraphs)):
         # check if the we already have the element indexed
 
         indicies = context.elastic.search(index="simon-paragraphs",

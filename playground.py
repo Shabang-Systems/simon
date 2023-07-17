@@ -56,9 +56,10 @@ map = Map(GOOGLE_MAPS_KEY)
 providers = [map]
 
 # create assistant
-assistant = Assistant(context, providers, verbose=True)
+assistant = Assistant(context, providers, verbose=False)
 
 # assistant.read("https://cdn.discordapp.com/attachments/698384432725491754/1126315886903574548/Jack_and_Alb_on_simon_in_car.txt") # a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719
+# assistant.read("https://arxiv.org/pdf/2305.10601")
 # assistant.forget("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719")
 
 # assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31
@@ -69,18 +70,62 @@ assistant = Assistant(context, providers, verbose=True)
 # from simon.agents.reason2 import Reason
 # from simon.agents.queryfixer import QueryFixer
 
-sent = "I'm visiting Minnesoda, who should I visit?"
+# sent = "Who is Jacob?"
+
+# from simon.agents.queryfixer import *
+# from simon.agents.rio import *
 
 # qf = QueryFixer(context)
-# q = qf(sent)
+# qf("TODO: plan a visit to Minnesota")
+# rio = RIO(context, True)
+# import time
+
+# a = time.time()
+# print(json.dumps(assistant.brainstorm("""
+# FDR was a consiquential president:
+# - implemented New deal policies
+# - created WPA
+# """), sort_keys=True, indent=4))
+# b = time.time()
+
+# print(b-a)
+
+# 
+# assistant.brainstorm("""TODO: plan a visit to Minnesota""")
+# assistant("Jacob lives in Minnesota. Could you please tell me more about Jacobk")
+
+# q = qf(inp)
+# res = assistant.search(q)
+
+# rio(inp, res)
+
 # kb = assistant.search(q)
+
+# kb
+# q
+
+
+
+
+# kb
+# q
+
 
 # tmp = Reason(context, verbose=True)
 # tmp(sent, kb)
 
 # assistant("How did the treatment of immigrants by Americans change throughout history?")
 
-print(json.dumps(assistant(sent), sort_keys=True, indent=4))
+# sent = "How does the tree-of-thoughts prompting process work? Don't be afraid to be technical."
+
+# # # assistant._forget_memory("DAR")
+# import time
+
+# a = time.time()
+# print(json.dumps(assistant(sent), sort_keys=True, indent=4))
+# b = time.time()
+
+# print(b-a)
 
 # The treatment of immigrants by Americans changed throughout history. Immigrants were processed differently based on their nationality, with Irish immigrants being processed quickly and Chinese immigrants facing longer processing times. Immigrants were also crowded into tenements during the Gilded Age, which marked the beginning of skyscrapers.
 
@@ -277,6 +322,7 @@ print(json.dumps(assistant(sent), sort_keys=True, indent=4))
 # assistant.store("James", "James is a scientist working at Acmia's headquarters with research interest involving natural language processing.") #bbcdde5962e2d63ee26093f61efc2d9d9bb99659bfc642dd771caa91810a5597
 # assistant.store("Acmia", "Acmia is an American company located in Minnesota.") # e459317fd1d86b0313e19d6f6a6c16c13c017cbef900bd650ca5b4f9ff6d96a3
 # assistant.store("Sam", "Sam is my friend working as a painter in Flagstaff. She is very interested in sustainable plastics, especially new technologies to break down plastics.") #efd4f646158dc94fc85ba430b8efcf1190e9ee3388f7cc68098b0ac2102073e8
+# assistant.forget("efd4f646158dc94fc85ba430b8efcf1190e9ee3388f7cc68098b0ac2102073e8") #efd4f646158dc94fc85ba430b8efcf1190e9ee3388f7cc68098b0ac2102073e8
 # assistant.store("Rupert", "Rubert lives in Minneapolis, but he's often in Saint Paul these days") #e1743af286a07cd26b36843d10bfabf92bf5bfd8acd121747c9b1621be2c2afa
 # assistant.store("Shall I compare thee to a summer's day?", """
 # Shall I compare thee to a summer’s day?

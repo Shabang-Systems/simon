@@ -26,10 +26,7 @@ a query.
 Available options:
 {options}
 
-When selecting options, provide a markdown list of two elements like so:
-
-- Thought: [why you are going to select the option you are going to select, use at most 5 words in this section]
-- Selection: [*one number* representing the option you are selecting]
+Selection: [*one number* representing the option you are selecting]
 
 The final line of your output must start with Selection:
 
@@ -38,7 +35,7 @@ Begin!
 You are now going to select an option to {action} {input}.
 
 AI:
-- Thought:"""
+Selection:"""
 
 class QuerySelectorTemplate(StringPromptTemplate):
     options: List[QuerySelectorOption]
@@ -60,7 +57,7 @@ class SingleLetterOptionParser(BaseOutputParser):
 
     def parse(self, str):
         try:
-            option = int(str.split("Selection:")[-1].strip()[0])
+            option = int(str.strip("]").strip("[").strip())
         except ValueError:
             results = re.search(r"option:? ?(\d+)", str, flags=re.IGNORECASE)
             if not results:

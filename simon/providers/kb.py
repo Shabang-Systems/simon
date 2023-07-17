@@ -45,13 +45,13 @@ class KnowledgeBase(SimonProvider):
         results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=5)
         # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
  
-        # we then go through to find everything similar to the results to provide
-        # the model more content
-        results_similar = [j
-                           for i in results_semantic
-                           for j in similar(i["id"], self.context, k=2, threshold=0.88)]
+        # # we then go through to find everything similar to the results to provide
+        # # the model more content
+        # results_similar = [j
+        #                    for i in results_semantic
+        #                    for j in similar(i["id"], self.context, k=1, threshold=0.95)]
 
-        results = results_semantic+results_similar
+        results = results_semantic
         # breakpoint()
 
         if len(results) == 0:
@@ -66,6 +66,9 @@ class KnowledgeBase(SimonProvider):
         # remove duplicates from list of lists
         # https://stackoverflow.com/questions/2213923/removing-duplicates-from-a-list-of-lists
         responses = dedup(responses)
+
+        if responses=="\n---\n":
+            return SimonProviderError("We found nothing. Please rephrase your question.")
 
         return responses
         
