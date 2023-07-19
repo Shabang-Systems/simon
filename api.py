@@ -20,15 +20,12 @@ from langchain.embeddings import OpenAIEmbeddings
 # uuid generator
 from uuid import uuid4
 
-# environment
-from dotenv import load_dotenv
-import os
-load_dotenv()
+# environment variables
+from check_environ import get_env_vars
 
-KEY=os.environ["OPENAI_KEY"]
-ELASTIC_URL=os.environ["ELASTIC_URL"]
-ELASTIC_USER=os.environ["ELASTIC_USER"]
-ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
+env_vars, _ = get_env_vars()
+KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD, _ = env_vars
+
 
 # TODO TODO TODO AUTHHH
 UID = "test-uid"
