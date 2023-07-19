@@ -35,11 +35,13 @@ Not all required environment variables present, some code might not function pro
 Missing vars: OPENAI_KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD
 ```
 
-Set those variables through the .env file (set values after the = sign in the template) or through simple `export` in your shell, e.g.:
+Set those variables through the `.env` file (set values after the = sign in the template) or through simple `export` in your shell, e.g.:
 
 ```
 export OPENAI_KEY=sk-some-api-key
 ```
+
+An example of all the environment variables needed is in the .env.example file?
 
 Values set in your shell will override those in the `.env` file.
 
