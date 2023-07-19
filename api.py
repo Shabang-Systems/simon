@@ -21,7 +21,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from uuid import uuid4
 
 # environment variables
-from check_environ import get_env_vars
+from environment import get_env_vars
 env_vars = get_env_vars()
 KEY = env_vars.get("OPENAI_KEY")
 ES_CONFIG = env_vars.get('ES_CONFIG')

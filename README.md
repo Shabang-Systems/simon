@@ -25,7 +25,7 @@ pip install -r requirements.txt
 (Do this whenever you start a new terminal session + want to run code)
 
 ```
-python check_environ.py
+python environment.py
 ```
 
 If you don't have a required environment variable set, you'll get a message like this:
