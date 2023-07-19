@@ -22,10 +22,9 @@ from uuid import uuid4
 
 # environment variables
 from check_environ import get_env_vars
-
-env_vars, _ = get_env_vars()
-KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD, _ = env_vars
-
+env_vars = get_env_vars()
+KEY = env_vars.get("OPENAI_KEY")
+ES_CONFIG = env_vars.get('ES_CONFIG')
 
 # TODO TODO TODO AUTHHH
 UID = "test-uid"
@@ -112,7 +111,7 @@ def start():
                          temperature=0)
         embeddings = OpenAIEmbeddings(openai_api_key=KEY,
                                       model="text-embedding-ada-002")
-        es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
+        es = Elasticsearch(**ES_CONFIG)
 
         # create the context
         context = AgentContext(llm, embeddings, es, UID)

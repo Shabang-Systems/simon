@@ -1,8 +1,9 @@
 # environment variables
 from check_environ import get_env_vars
-
-env_vars, _ = get_env_vars()
-KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD, GOOGLE_MAPS_KEY = env_vars
+env_vars = get_env_vars()
+KEY = env_vars.get("OPENAI_KEY")
+ES_CONFIG = env_vars.get('ES_CONFIG')
+GOOGLE_MAPS_KEY = env_vars.get('GOOGLE_MAPS_KEY')
 
 # pipes
 import os
@@ -40,7 +41,7 @@ llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
-es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
+es = Elasticsearch(**ES_CONFIG)
 UID = "test-uid"
 # UID = "test-uid-alt"
 
@@ -50,8 +51,12 @@ context = AgentContext(llm, embedding, es, UID)
 # provision our data sources (knowledgebase is provided by default
 # but initialized here for debug)
 kb = KnowledgeBase(context)
-map = Map(GOOGLE_MAPS_KEY)
-providers = [map]
+providers = []
+
+# If we have a Google Maps API key, we can use it as a provider, too
+if GOOGLE_MAPS_KEY:
+    map = Map(GOOGLE_MAPS_KEY)
+    providers.append(map)
 
 # create assistant
 assistant = Assistant(context, providers, verbose=True)

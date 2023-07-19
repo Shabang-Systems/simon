@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ```
 
 **Make sure all environment variables are set.**
-(Do this whenever you want to run code)
+(Do this whenever you start a new terminal session + want to run code)
 
 ```
 python check_environ.py
@@ -32,10 +32,10 @@ If you don't have a required environment variable set, you'll get a message like
 
 ```
 Not all required environment variables present, some code might not function properly.
-Missing vars: OPENAI_KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD
+Missing vars: OPENAI_KEY, SOMETHING_ELSE
 ```
 
-Set those variables through the `.env` file (set values after the = sign in the template) or through simple `export` in your shell, e.g.:
+Set those variables through the `.env` file (copy `.env.exapmle` and set values after the = sign) or through simple `export` in your shell, e.g.:
 
 ```
 export OPENAI_KEY=sk-some-api-key
@@ -47,14 +47,16 @@ Values set in your shell will override those in the `.env` file.
 
 **Provision your Elastic**
 
-In the future we hope to have better ways of doing this. However, for now, you need to manually seed your schema. To do this, create an ElasticSearch api instance, and call the following once per **new elastic instance**:
+You need to manually seed the ElasticSearch schema when you're first setting up. To do this, create an ElasticSearch api instance, and use the following helper script once per **new elastic instance**:
 
-```python
-from elasticsearch import Elasticsearch
-from simon.utils.elastic import _seed_schema
+```
+python setup_es.py
+```
 
-es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
-_seed_schema(es)
+If you find that you want to delete the existing ElasticSearch schema and start fresh, you can use the `--nuke` option:
+
+```
+python setup_es.py --nuke
 ```
 
 **Run the code!**
