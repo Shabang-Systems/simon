@@ -43,6 +43,18 @@ export OPENAI_KEY=sk-some-api-key
 
 Values set in your shell will override those in the `.env` file.
 
+**Provision your Elastic**
+
+In the future we hope to have better ways of doing this. However, for now, you need to manually seed your schema. To do this, create an ElasticSearch api instance, and call the following once per **new elastic instance**:
+
+```python
+from elasticsearch import Elasticsearch
+from simon.utils.elastic import _seed_schema
+
+es = Elasticsearch(ELASTIC_URL, basic_auth=(ELASTIC_USER, ELASTIC_PASSWORD))
+_seed_schema(es)
+```
+
 **Run the code!**
 
 ```
