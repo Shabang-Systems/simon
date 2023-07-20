@@ -17,8 +17,8 @@ export default function Response({text, session, onQuery}) {
     useEffect(() => {
         brainstorm(text, session).then((thoughts) => {
             setReady(true);
-            setQuestions(thoughts.response.questions);
-            setGoal(thoughts.response.goal);
+            setQuestions(thoughts.response.comments.map(i => i.comment));
+            setGoal(thoughts.response.gap);
         });
     }, [text]);
 
