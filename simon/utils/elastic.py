@@ -44,10 +44,14 @@ def _nuke_schema(es:Elasticsearch):
         Elastic search instance used to store the data.
     """
 
-    es.indices.delete(index="simon-cache")
-    es.indices.delete(index="simon-kv")
-    es.indices.delete(index="simon-fulltext")
-    es.indices.delete(index="simon-paragraphs")
+    if es.indices.exists(index="simon-cache"):
+        es.indices.delete(index="simon-cache")
+    if es.indices.exists(index="simon-kv"):
+        es.indices.delete(index="simon-kv")
+    if es.indices.exists(index="simon-fulltext"):
+        es.indices.delete(index="simon-fulltext")
+    if es.indices.exists(index="simon-paragraphs"):
+        es.indices.delete(index="simon-paragraphs")
 
 def kv_get(key:str, es:Elasticsearch, user:str, return_id=False):
     """Performs a key-value search on the Elastic store
