@@ -27,7 +27,7 @@ You are helping a human understand the state of a concept. You will be provided 
 When responding, adhere to the following two section format. The sections are "Answer", "New Information". 
 
 ```output
-Answer: Provide markdown-formatted, easy to understand, *brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer. [2] 
+Answer: Provide markdown-formatted, easy to understand, *brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer: place them directly after each claim you make. [2] 
 New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a brief summary about how your citation connects to the main topic. 
 - Briefly explain why this extrapolation connect ot the main topic each list element should be a clear statement of fact which will be helpful to the user and how it connects. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
 - Three to five word connection of the point. Each element in this list should be < 10 words. [3] [5]
@@ -113,9 +113,16 @@ class Reason(object):
                                        output_parser=ReasonOutputParser())
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
-    def __call__(self, input, kb="", entities={}):
-        sentences = [j for i in kb.split("\n--\n") for j in sent_tokenize(i)]
-        sentences = [j for i in sentences for j in i.split("\n")]
+    def __call__(self, input, kb="", provider="", entities={}):
+        provider_sentences = [j for i in provider.split("\n--\n") for j in sent_tokenize(i)]
+        provider_sentences = [j for i in provider_sentences for j in i.split("\n")]
+
+        num_provider_sents = len(provider_sentences)
+
+        kb_sentences = [j for i in kb.split("\n--\n") for j in sent_tokenize(i)]
+        kb_sentences = [j for i in kb_sentences for j in i.split("\n")]
+
+        sentences = kb_sentences + provider_sentences
 
         sentence_dict = {indx:i.strip() for indx, i in enumerate(sentences)}
         sentences = "".join([i+f" [{indx}] " for indx, i in enumerate(sentences)])
@@ -124,6 +131,10 @@ class Reason(object):
                                               kb=sentences)
         # we only leave useful resources
         res["resources"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
+        res["context_sentence_count"] = {
+            "provider": len(provider_sentences),
+            "kb": len(kb_sentences)
+        }
 
         return res
 

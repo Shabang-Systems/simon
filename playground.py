@@ -33,9 +33,9 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
+# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
 # llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003", temperature=0)
-# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
+llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
 # llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
@@ -59,14 +59,15 @@ assistant = Assistant(context, providers, verbose=True)
 # sent = "What did Elanor Roosevelt do?"
 
 # # # # assistant._forget_memory("DAR")
-# import time
+import time
 
-# a = time.time()
-# print(json.dumps(assistant("What are the arguments for and against the idea that urbanization in Africa is abnormal?"), sort_keys=True, indent=4))
-# b = time.time()
+a = time.time()
+print(json.dumps(assistant("What was the relationship of Elanor Roosevelt with the Press?"), sort_keys=True, indent=4))
+b = time.time()
 
-# print(b-a)
+print(b-a)
 
+# assistant.search("american Immigration")
 
 
 # assistant.read("https://cdn.discordapp.com/attachments/698384432725491754/1126315886903574548/Jack_and_Alb_on_simon_in_car.txt") # a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719

@@ -107,10 +107,26 @@ class Assistant:
         # first kb call always goes to internal knowledge
         # TODO is this a good idea?
         # print("SEARCHING")
-        kb = self.search(q)
+        kb, providers = self.search(q, return_provider_results=True)
 
         # print("REASONING")
-        output = self.__reason(query, kb)
+        output = self.__reason(query, kb, providers)
+
+
+        # we now assemle the metadata all citations that come from a
+        # provider. TODO BAD CODE AVERT YOUR EYESSSSSS
+        metadata = {}
+        for id, text in output["resources"].items():
+            # if the id came from the kb (i.e. the index is smalller than kb
+            if id < output["context_sentence_count"]["kb"]:
+                result = search(text, self.__context, IndexClass.KEYWORDS, k=1)
+                if len(result) == 1: # i.e. if match was sucessful
+                                     # which sometimes it isn't
+                    metadata[id] = result[0]["metadata"]
+
+        # this key is not useful for any purpose except for matching
+        del output["context_sentence_count"]
+        output["metadata"] = metadata
 
         # save results into memory
         # print("SAVING")
@@ -184,13 +200,16 @@ class Assistant:
         return hash
 
     # kb getters
-    def search(self, query):
+    def search(self, query, return_provider_results=False):
         """search the knowledgebase for some piece of information
 
         Parameters
         ----------
         query : str
             the string query to search the kb with
+        return_provider_results : optional, bool
+            whether to return results that came from third-party providers.
+            default false as we default to simple search
 
         Returns
         -------
@@ -204,20 +223,29 @@ class Assistant:
         if res == "We found nothing. Please rephrase your question.":
             res = ""
         
-        # ask qm to choose what additinoal provider to use
-        option = self.__provider_qm(query)
 
-        # if an additional provider is chosen, we provide from it
-        if option.id != "error":
-            provider = self.__provider_options[option]
-            res += "\n---\n"+provider(query.strip('"').strip("'").strip("\n").strip())
+        provider_res = ""
 
+        if return_provider_results:
+            # ask qm to choose what additinoal provider to use
+            option = self.__provider_qm(query)
+
+            # if an additional provider is chosen, we provide from it
+            if option.id != "error":
+                provider = self.__provider_options[option]
+                provider_res = "\n---\n"+provider(query.strip('"').strip("'").strip("\n").strip())
+
+        # if provider result is just the prefix, its nothing
+        if provider_res.strip() == "---":
+            provider_res = ""
+            
         # if we indeed have nothing
-        if res.strip() == "":
+        if (res+provider_res).strip() == "":
             res = "We found nothing. Please rephrase your question."
+
         # return the actual data
         # with warning
-        return res
+        return (res, provider_res) if return_provider_results else (res)
 
     def autocomplete(self, query):
         """Autocomplete a document title
