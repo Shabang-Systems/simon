@@ -1,14 +1,12 @@
+# environment variables
+from check_environ import get_env_vars
+
+env_vars, _ = get_env_vars()
+KEY, ELASTIC_URL, ELASTIC_USER, ELASTIC_PASSWORD, GOOGLE_MAPS_KEY = env_vars
+
 # pipes
-from dotenv import load_dotenv
 import os
 import json
-load_dotenv()
-
-KEY=os.environ["OPENAI_KEY"]
-ELASTIC_URL=os.environ["ELASTIC_URL"]
-ELASTIC_USER=os.environ["ELASTIC_USER"]
-ELASTIC_PASSWORD=os.environ["ELASTIC_PASSWORD"]
-GOOGLE_MAPS_KEY=os.environ["GOOGLE_MAPS_KEY"]
 
 # LLM
 from langchain.agents import load_tools
