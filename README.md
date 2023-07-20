@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ```
 
 **Make sure all environment variables are set.**
-(Do this whenever you start a new terminal session + want to run code)
+(Do this whenever you want to run code)
 
 ```
 python environment.py
@@ -32,10 +32,10 @@ If you don't have a required environment variable set, you'll get a message like
 
 ```
 Not all required environment variables present, some code might not function properly.
-Missing vars: OPENAI_KEY, SOMETHING_ELSE
+Missing vars: OPENAI_KEY
 ```
 
-Set those variables through the `.env` file (copy `.env.exapmle` and set values after the = sign) or through simple `export` in your shell, e.g.:
+Set those variables through the `.env` file (copy `.env.example` and set values after the = sign) or through simple `export` in your shell, e.g.:
 
 ```
 export OPENAI_KEY=sk-some-api-key

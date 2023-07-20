@@ -2,7 +2,7 @@ import argparse
 
 from elasticsearch import Elasticsearch
 
-from check_environ import get_es_config
+from environment import get_es_config
 from simon.utils.elastic import _nuke_schema, _seed_schema
 
 
