@@ -1,4 +1,7 @@
-# Quickstart to run the code
+# Simon
+A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs.
+  
+## Quickstart to run the code
 
 **Create a Python virtual environment for dependencies, etc.**
 (Only need to do this once per computer)
