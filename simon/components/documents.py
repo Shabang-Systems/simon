@@ -45,8 +45,8 @@ def __chunk(text, delim="\n\n"):
     sentences = sent_tokenize(text)
      
     # makes groups of 5 sentences, joined, as the chunks
-    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+5]).strip().replace("\n", " ")).strip()
-                        for i in range(0, len(sentences), 5)]
+    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+4]).strip().replace("\n", " ")).strip()
+                        for i in range(0, len(sentences), 4)]
 
     # and also create the bigger document
     parsed_text = "\n".join(parsed_chunks)
@@ -555,15 +555,21 @@ def index_document(doc:ParsedDocument, context:AgentContext):
         context.elastic.indices.refresh(index="simon-paragraphs")
         return
 
+    documents = []
+    updates = []
+
+    print("Creating updates...")
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
     for indx, paragraph in enumerate(tqdm(doc.paragraphs)):
         # check if the we already have the element indexed
 
         indicies = context.elastic.search(index="simon-paragraphs",
-                                          query={"bool": {"must": [{"match": {"text": paragraph}},
-                                                                   {"term": {"user":
-                                                                             context.uid}}]}},
+                                          query={
+                                              "bool": {"must": [
+                                                  {"match": {"text": paragraph}},
+                                                  {"term": {"user": context.uid}}
+                                              ]}},
                                           size=1)["hits"]
         tf = tf_sum[indx]
 
@@ -572,17 +578,35 @@ def index_document(doc:ParsedDocument, context:AgentContext):
             context.elastic.update(index="simon-paragraphs", id=indicies["hits"][0]["_id"],
                                    body={"doc": {"hash": doc.hash,
                                                  "metadata.tf": tf}})
+        # if not, write it down for bulk operations
         else:
-            context.elastic.index(index="simon-paragraphs",
-                                  document={"user": context.uid,
-                                            "metadata": {"title": doc.meta.get("title"),
-                                                         "source": doc.meta.get("source"),
-                                                         "seq": indx,
-                                                         "tf": tf,
-                                                         "total": len(doc.paragraphs)},
-                                            "hash": doc.hash,
-                                            "text": paragraph,
-                                            "embedding": context.embedding.embed_documents([(doc.meta.get("title", "") if doc.meta.get("title", "") else "")+": "+paragraph.strip()])[0]})
+            documents.append((doc.meta.get("title", "")
+                              if doc.meta.get("title", "") else "")+": "+paragraph.strip())
+
+            updates.append({"user": context.uid,
+                            "metadata": {"title": doc.meta.get("title"),
+                                         "source": doc.meta.get("source"),
+                                         "seq": indx,
+                                         "tf": tf,
+                                         "total": len(doc.paragraphs)},
+                            "hash": doc.hash,
+                            "text": paragraph,
+                            "_op_type": "index",
+                            "_index": "simon-paragraphs"})
+
+    # create embeddings in bulk
+    print("Generating embeddings...")
+    embeddings = context.embedding.embed_documents(documents)
+
+    # slice the embeddings in
+    for i, em in zip(updates, embeddings):
+        i["embedding"] = em
+
+    # and bulk!
+    print("Submitting...")
+    bulk(context.elastic, updates)
+    print("Done!")
+
     # refresh indicies
     context.elastic.indices.refresh(index="simon-fulltext")
     context.elastic.indices.refresh(index="simon-paragraphs")

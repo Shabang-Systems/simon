@@ -59,13 +59,13 @@ assistant = Assistant(context, providers, verbose=True)
 # sent = "What did Elanor Roosevelt do?"
 
 # # # # assistant._forget_memory("DAR")
-import time
+# import time
 
-a = time.time()
-print(json.dumps(assistant("What was the relationship of Elanor Roosevelt with the Press?"), sort_keys=True, indent=4))
-b = time.time()
+# a = time.time()
+# print(json.dumps(assistant("What was the relationship of Elanor Roosevelt with the Press?"), sort_keys=True, indent=4))
+# b = time.time()
 
-print(b-a)
+# print(b-a)
 
 # assistant.search("american Immigration")
 
@@ -74,8 +74,10 @@ print(b-a)
 # assistant.read("https://arxiv.org/pdf/2305.10601")
 # assistant.forget("a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719")
 
-# assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 12ac6da669611e5c80ce88cf7c3dcfb9ac7a62f21be9ff0291e47a1ea0ba7357
-# assistant.forget("12ac6da669611e5c80ce88cf7c3dcfb9ac7a62f21be9ff0291e47a1ea0ba7357")
+# assistant.read("https://transfer.sh/A6oLurlAEX/AGRAbnormalurbanizationinAfrica.pdf") # 049ab665e4662ca9b789601ec06760dabf51a346eba29c31e898637bff006b14
+# assistant.forget("049ab665e4662ca9b789601ec06760dabf51a346eba29c31e898637bff006b14")
+
+# assistant.search("African Urbanization")
 
 # assistant.fetch("68c51fca152a5623420aea9543139e1a8d3c88435a4807b96e4b3c640eac4b31")
 
