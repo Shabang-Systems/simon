@@ -22,26 +22,27 @@ import re
 # You will be provided sources to come up with an answer. When creating your answer, adhere to the following four-element format:
 
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
+You are helping a human understand the state of a concept by being a research search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
 
-When responding, adhere to the following two section format. The sections are "Answer", "New Information". 
+When responding, adhere to the following two section format. The sections are "Answer", "Search Results". 
 
 ```output
-Answer: Provide markdown-formatted, easy to understand, *brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer: place them directly after each claim you make. [2] 
-New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a brief summary about how your citation connects to the main topic. 
-- Briefly explain why this extrapolation connect ot the main topic each list element should be a clear statement of fact which will be helpful to the user and how it connects. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
-- Three to five word connection of the point. Each element in this list should be < 10 words. [3] [5]
-- Three to five word connection point again. Reminder to keep this brief. [5] [8]
-[This can repeat N times, but the user hates reading so keep it short.]
+Answer: Provide markdown-formatted, easy to understand, *extremely brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer: place them directly after each claim you make. [2] 
+Search Results: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list like so:
+- Headline of your citation [1]
+- Headline here again [5]
+- yet another headline [8]
+- ...
+[This can repeat N times, but the user hates reading so keep it short. Like a search engine, put the most salient and relavent point on top, and order by relavence]
 ```
 
 For instance, here's an example format:
 
 ```output
 Answer: your answer here [3] with some citations. [4]
-New Information:
-- Why this info connects to the main topic [4]
-- Why other info connects to the main topic [6]
+Search Results:
+- Brief citation headline [4]
+- Another citatino headline [6]
 ```
 
 Begin!
@@ -70,18 +71,15 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?New Information\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
             answer = match.group(1).strip("\"").strip('"').strip("`").strip()
             extrapolations = match.group(2).strip("\"").strip('"').strip("`").strip()
         else:
-            return {
-                "answer": str,
-                "extrapolations": [],
-                "resources": []
-        }
+            answer = str.strip("\"").strip('"').strip("`").strip()
+            extrapolations = ""
 
         # collect up all the [citations]
         resource_regex = r"\[(\d+)\]"
@@ -89,7 +87,7 @@ class ReasonOutputParser(BaseOutputParser):
         for r in re.findall(resource_regex, str):
             resource_ids.append(int(r.strip()))
 
-        extrapolations = [i.strip()[2:].strip() for i in extrapolations.split("\n")]
+        extrapolations = [i.strip()[2:].strip("\"").strip('"').strip() for i in extrapolations.split("\n")]
 
         return {
             "answer": answer,
