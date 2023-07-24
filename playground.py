@@ -40,8 +40,9 @@ embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
 es = Elasticsearch(**ES_CONFIG)
-UID = "test-uid"
+# UID = "test-uid"
 # UID = "test-uid-alt"
+UID = "ingest_files"
 
 # # serialize all of the above together
 context = AgentContext(gpt3, gpt4, embedding, es, UID)
@@ -53,16 +54,32 @@ kb = KnowledgeBase(context)
 # create assistant
 assistant = Assistant(context)
 
-# sent = "What did Elanor Roosevelt do?"
+# assistant.search("migraines")
+# assistant._Assistant__kb("migraines")
 
-# # # # assistant._forget_memory("DAR")
-# import time
+# from simon.utils.elastic import kv_getall
 
-# a = time.time()
-# print(json.dumps(assistant("During his presidency, Franklin D. Roosevelt (FDR) created the New Deal, a set of policies that helped save the economy during the Great Depression [11]. This included saving the banks, providing unemployment relief, aiding industrial recovery, and supporting agriculture [12]. He also established the Works Progress Administration (WPA), the Social Security Administration, and the Rural Electrification Administration [12][13][14]. Furthermore, FDR expanded government regulation, increased the size of the government, and enhanced social welfare [7]."), sort_keys=True, indent=4))
-# b = time.time()
+# kv_getall(es, UID)
 
-# print(b-a)
+# from simon.components.documents import search
+# search("migraines", context)
+
+# assistant.search("migraines")
+
+
+# assistant.search("weight")
+# # assistant.se("Syste")
+
+# # sent = "What did Elanor Roosevelt do?"
+
+# # # # # assistant._forget_memory("DAR")
+import time
+
+a = time.time()
+print(json.dumps(assistant("What do I know about migraines?"), sort_keys=True, indent=4))
+b = time.time()
+
+print(b-a)
 
 # from simon.agents.queryfixer import QueryFixer
 # qf = QueryFixer(context)

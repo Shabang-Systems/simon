@@ -55,7 +55,7 @@ class KnowledgeBase(SimonProvider):
         total_text = "".join(i["text"] for i in results_semantic)
 
         # to prevent long contexts
-        while len(total_text) > 1500:
+        while len(total_text) > 4500 and len(results_semantic) > 2:
             results_semantic = results_semantic[:-1]
             total_text = "".join(i["text"] for i in results_semantic)
 
