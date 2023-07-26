@@ -40,9 +40,9 @@ embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
 es = Elasticsearch(**ES_CONFIG)
-# UID = "test-uid"
+UID = "test-uid"
 # UID = "test-uid-alt"
-UID = "ingest_files"
+# UID = "ingest_files"
 
 # # serialize all of the above together
 context = AgentContext(gpt3, gpt4, embedding, es, UID)
@@ -52,7 +52,7 @@ context = AgentContext(gpt3, gpt4, embedding, es, UID)
 kb = KnowledgeBase(context)
 
 # create assistant
-assistant = Assistant(context)
+assistant = Assistant(context, verbose=True)
 
 # assistant.search("migraines")
 # assistant._Assistant__kb("migraines")
@@ -73,13 +73,13 @@ assistant = Assistant(context)
 # # sent = "What did Elanor Roosevelt do?"
 
 # # # # # assistant._forget_memory("DAR")
-import time
+# import time
 
-a = time.time()
-print(json.dumps(assistant("What do I know about migraines?"), sort_keys=True, indent=4))
-b = time.time()
+# a = time.time()
+# print(json.dumps(assistant("Tell me about the journalistic endeavours of Eleanor Roosevelt"), sort_keys=True, indent=4))
+# b = time.time()
 
-print(b-a)
+# print(b-a)
 
 # from simon.agents.queryfixer import QueryFixer
 # qf = QueryFixer(context)
