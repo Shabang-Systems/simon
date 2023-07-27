@@ -65,9 +65,9 @@ class Assistant:
 
         #### MEMORY ####
         # create the entity memory
-        self.__entity_memory = ConversationEntityMemory(llm=context.llm, input_key="input")
-        kv = kv_getall(context.elastic, context.uid)
-        self.__entity_memory.entity_store.store = kv
+        # self.__entity_memory = ConversationEntityMemory(llm=context.llm, input_key="input")
+        # kv = kv_getall(context.elastic, context.uid)
+        # self.__entity_memory.entity_store.store = kv
 
         #### RIO, Followup, and Reason ####
         self.__rio = RIO(context, verbose)
@@ -78,7 +78,7 @@ class Assistant:
         #### Context ####
         self.__context = context
 
-    def __call__(self, query):
+    def __call__(self, query, groupby="source"):
         """invokes the inference cycle
 
         uses all of the Assistant's tools to create an inference
@@ -87,6 +87,8 @@ class Assistant:
         ----------
         query : str
             the string input query
+        groupby : str
+            the metadata field to group references by
 
         Returns
         -------
@@ -99,11 +101,11 @@ class Assistant:
         # print("START RECALL", query)
         # print("LOADING")
         # and create the first reasoning group
-        entities = self.__entity_memory.load_memory_variables({"input": query})["entities"]
+        # entities = self.__entity_memory.load_memory_variables({"input": query})["entities"]
 
         # print("FIXING")
         # fix the query
-        q = self.__fix(query, entities)
+        q = self.__fix(query)
         # first kb call always goes to internal knowledge
         # TODO is this a good idea?
         # print("SEARCHING")
@@ -116,7 +118,7 @@ class Assistant:
         # we now assemle the metadata all citations that come from a
         # provider. TODO BAD CODE AVERT YOUR EYESSSSSS
         metadata = {}
-        for id, text in output["resources"].items():
+        for id, text in output["references"].items():
             # if the id came from the kb (i.e. the index is smalller than kb
             if id < output["context_sentence_count"]["kb"]:
                 result = search(text, self.__context, IndexClass.KEYWORDS, k=1)
@@ -124,26 +126,43 @@ class Assistant:
                                      # which sometimes it isn't
                     metadata[id] = result[0]["metadata"]
 
+        # we now parse and group reference info by source
+        reference_sources = {}
+        for key, value in metadata.items():
+            group = value[groupby]
+
+            if not reference_sources.get(group):
+                reference_sources[group] = {}
+
+            reference_sources[group][key] = {
+                "text": output["references"][key],
+                "metadata": value
+            }
+
+        # for each one, we also sort based on their eq id
+
         # this key is not useful for any purpose except for matching
         del output["context_sentence_count"]
-        output["metadata"] = metadata
+        del output["resources"]
+        output["references"] = reference_sources
+        output["id_sources"] = {i:j[groupby] for i, j in metadata.items()}
 
         # save results into memory
         # print("SAVING")
-        input_dict = {"input": query}
-        self.__entity_memory.save_context(
-            input_dict,
-            {"output": output["answer"]}
-        )
+        # input_dict = {"input": query}
+        # self.__entity_memory.save_context(
+        #     input_dict,
+        #     {"output": output["answer"]}
+        # )
 
         # print("DONE")
 
         # and now, store memory results
-        kv = self.knowledge
+        # kv = self.knowledge
 
-        # store memory context key value in elastic
-        for key,value in kv.items():
-            kv_set(key, value, self.__context.elastic, self.__context.uid)
+        # # store memory context key value in elastic
+        # for key,value in kv.items():
+        #     kv_set(key, value, self.__context.elastic, self.__context.uid)
 
         # print({
         #     "load": onfix-onload,
@@ -226,7 +245,8 @@ class Assistant:
 
         provider_res = ""
 
-        if return_provider_results:
+
+        if return_provider_results and len(self.__provider_options) != 0:
             # ask qm to choose what additinoal provider to use
             option = self.__provider_qm(query)
 
@@ -234,6 +254,8 @@ class Assistant:
             if option.id != "error":
                 provider = self.__provider_options[option]
                 provider_res = "\n---\n"+provider(query.strip('"').strip("'").strip("\n").strip())
+        else:
+            provider_res = ""
 
         # if provider result is just the prefix, its nothing
         if provider_res.strip() == "---":
@@ -312,20 +334,20 @@ class Assistant:
 
         delete_document(hash, self.__context)
 
-    #### MEMORY ####
-    def _forget_memory(self, key):
-        """Forgets a piece of memory
+    # #### MEMORY ####
+    # def _forget_memory(self, key):
+    #     """Forgets a piece of memory
 
-        Parameters
-        ----------
-        key : str
-            The key-palue fact to delete.
-        """
+    #     Parameters
+    #     ----------
+    #     key : str
+    #         The key-palue fact to delete.
+    #     """
 
-        kv = kv_getall(self.__context.elastic, self.__context.uid)
-        del kv[key]
-        self.__entity_memory.entity_store.store = kv
-        kv_delete(key, self.__context.elastic, self.__context.uid) 
+    #     kv = kv_getall(self.__context.elastic, self.__context.uid)
+    #     del kv[key]
+    #     self.__entity_memory.entity_store.store = kv
+    #     kv_delete(key, self.__context.elastic, self.__context.uid) 
 
 
     #### RIO ####
@@ -353,17 +375,17 @@ class Assistant:
         # observe answe
         import time
 
-        entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        query = self.__fix(text, entities)
+        # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
+        query = self.__fix(text)
         kb = self.__kb(query) # we only search the kb because this is only a spot check
 
-        observation = self.__rio(text, kb, entities)
+        observation = self.__rio(text, kb)
         return observation
 
 
-    @property
-    def knowledge(self):
-        return self.__entity_memory.entity_store.store
+    # @property
+    # def knowledge(self):
+    #     return self.__entity_memory.entity_store.store
 
 
 

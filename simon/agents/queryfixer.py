@@ -27,18 +27,17 @@ Here are few examples of successful conversions:
 Provide your output in this format:
 
 ```output
-your full, new question/statement here
+your full, new question/statement here.
 ```
 
 Begin!
 
 Human:
-Here are some supporting information:
-{entities}
 Here is the question to answer:
 {input}
 
 AI:
+```output
 """
 
 class QueryPromptFormatter(StringPromptTemplate):

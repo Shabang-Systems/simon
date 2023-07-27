@@ -21,28 +21,33 @@ import re
 
 # You will be provided sources to come up with an answer. When creating your answer, adhere to the following four-element format:
 
+# Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list like so:
+# Provide a *full* full answer to the user's question. [4] Provide references to useful citation numbers in brackets found in the knowledge section *throughout* your answer after each claim; don't put a bunch all in the end. [2] You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. 
+
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge, there is a citation take in brakets [like so] which you will refer to.
+You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to.
 
-When responding, adhere to the following two section format. The sections are "Answer", "New Information". 
+When responding, you must provide two sections: the sections are "Answer", "Search Results". 
 
-```output
-Answer: Provide markdown-formatted, easy to understand, *brief*, full answer to the user's question. [4] You must only use information presented in the Knowledge section to provide your answer. You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. Provide references to useful citation numbers in brackets found in the knowledge section throughout your answer: place them directly after each claim you make. [2] 
-New Information: Help the user come up information they wouldn't have possibly thought of regarding the Concept and fill in any gaps in knowledge they have betrayed through their question by extrapolating in a markdown list. Begin each element with a brief summary about how your citation connects to the main topic. 
-- Briefly explain why this extrapolation connect ot the main topic each list element should be a clear statement of fact which will be helpful to the user and how it connects. Keep this <10 words. As with before, you must put citations in brackets. [1] [4]
-- Three to five word connection of the point. Each element in this list should be < 10 words. [3] [5]
-- Three to five word connection point again. Reminder to keep this brief. [5] [8]
-[This can repeat N times, but the user hates reading so keep it short.]
-```
+Answer: Provide a full, *brief (<4 sentences)*, and fact-supported answer the user's question. [2] After each of your claims, provide a tag to the sentence you used to support your claim, like so: [3]. Use **markdown** _styles_, lists, etc. if appropriate. If the Knowledge section does not provide enough information to be able to answer the question with some reasoning from you, place the letters N/A here. 
+Search Results: identify the sources from your search; if no results are found, place the letters N/A in this section. These should be resources from your knowledge section that directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; respond in a markdown list:
+- *extremely* brief headline here, don't use two parts like a colon; keep it short (<10 words) [1]
+- repeat this process, provide an *very very short* headline (<10 words) and a bracket link [5]
+- short headline (<10 words) and a link [8]
+- ...
+- ...
+- ...
+- ...
+[This can repeat N times, but the user hates reading so keep it short. Like a search engine, put the most salient and relavent point on top, and order by relavence]
 
 For instance, here's an example format:
 
-```output
-Answer: your answer here [3] with some citations. [4]
-New Information:
-- Why this info connects to the main topic [4]
-- Why other info connects to the main topic [6]
-```
+Answer: your answer here [3], some elaborations too [8]. More here.
+Search Results:
+- Brief citation headline [4]
+- Another citation headline [6]
+
+The user is smart, but is in a rush. Keep everything concise and precise.
 
 Begin!
 """
@@ -56,7 +61,6 @@ Question:
 """
 
 AI_TEMPLATE="""
-```output
 Answer:"""
 
 class ReasonPromptFormatter(BaseChatPromptTemplate):
@@ -70,18 +74,15 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?New Information\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
-            answer = match.group(1).strip("\"").strip('"').strip("`").strip()
-            extrapolations = match.group(2).strip("\"").strip('"').strip("`").strip()
+            answer = match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            extrapolations = match.group(2).strip("\"").strip('"').strip("`").replace("`", "").strip()
         else:
-            return {
-                "answer": str,
-                "extrapolations": [],
-                "resources": []
-        }
+            answer = str.strip("\"").strip('"').strip("`").strip()
+            extrapolations = ""
 
         # collect up all the [citations]
         resource_regex = r"\[(\d+)\]"
@@ -89,7 +90,7 @@ class ReasonOutputParser(BaseOutputParser):
         for r in re.findall(resource_regex, str):
             resource_ids.append(int(r.strip()))
 
-        extrapolations = [i.strip()[2:].strip() for i in extrapolations.split("\n")]
+        extrapolations = [i.strip()[2:].strip("\"").strip('"').strip() for i in extrapolations.split("\n")]
 
         return {
             "answer": answer,
@@ -111,7 +112,7 @@ class Reason(object):
         
         prompt = ReasonPromptFormatter(input_variables=["input", "kb"],
                                        output_parser=ReasonOutputParser())
-        self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
+        self.__chain = LLMChain(llm=context.reason_llm, prompt=prompt, verbose=verbose)
 
     def __call__(self, input, kb="", provider="", entities={}):
         provider_sentences = [j for i in provider.split("\n--\n") for j in sent_tokenize(i)]
@@ -130,7 +131,7 @@ class Reason(object):
         res =  self.__chain.predict_and_parse(input=input,
                                               kb=sentences)
         # we only leave useful resources
-        res["resources"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
+        res["references"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
         res["context_sentence_count"] = {
             "provider": len(provider_sentences),
             "kb": len(kb_sentences)

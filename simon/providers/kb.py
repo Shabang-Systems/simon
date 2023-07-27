@@ -42,7 +42,7 @@ class KnowledgeBase(SimonProvider):
 
     def provide(self, input):
         # use both types of search to create all possible hits
-        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=5)
+        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=10)
         # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
  
         # # we then go through to find everything similar to the results to provide
@@ -51,11 +51,13 @@ class KnowledgeBase(SimonProvider):
         #                    for i in results_semantic
         #                    for j in similar(i["id"], self.context, k=1, threshold=0.95)]
 
+
         total_text = "".join(i["text"] for i in results_semantic)
 
         # to prevent long contexts
-        if len(total_text) > 6000:
-            results_semantic = results_semantic[:3]
+        while len(total_text) > 2000 and len(results_semantic) > 2:
+            results_semantic = results_semantic[:-1]
+            total_text = "".join(i["text"] for i in results_semantic)
 
         results = results_semantic
         # breakpoint()

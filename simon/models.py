@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 @dataclass
 class AgentContext:
     llm: LLM
+    reason_llm: LLM
     embedding: Embeddings
     elastic: Elasticsearch
     uid: str

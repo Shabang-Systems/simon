@@ -34,46 +34,66 @@ from langchain.agents import AgentExecutor
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-# llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
-# llm = OpenAI(openai_api_key=KEY, model_name="text-davinci-003", temperature=0)
-llm = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
-# llm = OpenAI(openai_api_key=KEY, model_name="gpt-4")
+gpt3 = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
+gpt4 = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
 embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
 
 # db
 es = Elasticsearch(**ES_CONFIG)
 UID = "test-uid"
 # UID = "test-uid-alt"
+# UID = "ingest_files"
 
 # # serialize all of the above together
-context = AgentContext(llm, embedding, es, UID)
+context = AgentContext(gpt3, gpt4, embedding, es, UID)
 
 # provision our data sources (knowledgebase is provided by default
 # but initialized here for debug)
 kb = KnowledgeBase(context)
-providers = []
-
-# If we have a Google Maps API key, we can use it as a provider, too
-if GOOGLE_MAPS_KEY:
-    map = Map(GOOGLE_MAPS_KEY)
-    providers.append(map)
 
 # create assistant
-assistant = Assistant(context, providers, verbose=True)
+assistant = Assistant(context, verbose=True)
 
-# sent = "What did Elanor Roosevelt do?"
+# assistant.search("migraines")
+# assistant._Assistant__kb("migraines")
 
-# # # # assistant._forget_memory("DAR")
-# import time
+# from simon.utils.elastic import kv_getall
 
-# a = time.time()
-# print(json.dumps(assistant("What was the relationship of Elanor Roosevelt with the Press?"), sort_keys=True, indent=4))
-# b = time.time()
+# kv_getall(es, UID)
 
-# print(b-a)
+# from simon.components.documents import search
+# search("migraines", context)
 
+# assistant.search("migraines")
+
+
+# assistant.search("weight")
+# # assistant.se("Syste")
+
+# # sent = "What did Elanor Roosevelt do?"
+
+# # # # # assistant._forget_memory("DAR")
+import time
+
+a = time.time()
+print(json.dumps(assistant("What's an eigenvalue?"), sort_keys=True, indent=4))
+b = time.time()
+
+print(b-a)
+
+# from simon.agents.queryfixer import QueryFixer
+# qf = QueryFixer(context)
+# qf("Describe the legacy of Eleanor Roosevelt")
 # assistant.search("american Immigration")
 
+# assistant.store("Medical Record: Richard Ronson",
+#                 """Richard Ronson: birthday 09/28/88
+             
+# Weight: 150kg.
+
+# History of smoking and diabetes, probably caused by previous signs of concern. Suggested treatment immediately. Sign of hypothyroidism present.""") # b255abd881c78478bd7345a292b0580d3b575a82525118a0a5861b3a547ffb49
+
+# assistant.forget("b255abd881c78478bd7345a292b0580d3b575a82525118a0a5861b3a547ffb49")
 
 # assistant.read("https://cdn.discordapp.com/attachments/698384432725491754/1126315886903574548/Jack_and_Alb_on_simon_in_car.txt") # a52be95152fb1d627e2d3b3132edcc7e2ebe72b016262f2a69948d8db44f6719
 # assistant.read("https://arxiv.org/pdf/2305.10601")
