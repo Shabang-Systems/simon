@@ -73,13 +73,13 @@ assistant = Assistant(context, verbose=True)
 # # sent = "What did Elanor Roosevelt do?"
 
 # # # # # assistant._forget_memory("DAR")
-# import time
+import time
 
-# a = time.time()
-# print(json.dumps(assistant("Tell me about the journalistic endeavours of Eleanor Roosevelt"), sort_keys=True, indent=4))
-# b = time.time()
+a = time.time()
+print(json.dumps(assistant("What's an eigenvalue?"), sort_keys=True, indent=4))
+b = time.time()
 
-# print(b-a)
+print(b-a)
 
 # from simon.agents.queryfixer import QueryFixer
 # qf = QueryFixer(context)

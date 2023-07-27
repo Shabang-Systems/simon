@@ -78,7 +78,7 @@ class Assistant:
         #### Context ####
         self.__context = context
 
-    def __call__(self, query):
+    def __call__(self, query, groupby="source"):
         """invokes the inference cycle
 
         uses all of the Assistant's tools to create an inference
@@ -87,6 +87,8 @@ class Assistant:
         ----------
         query : str
             the string input query
+        groupby : str
+            the metadata field to group references by
 
         Returns
         -------
@@ -116,7 +118,7 @@ class Assistant:
         # we now assemle the metadata all citations that come from a
         # provider. TODO BAD CODE AVERT YOUR EYESSSSSS
         metadata = {}
-        for id, text in output["resources"].items():
+        for id, text in output["references"].items():
             # if the id came from the kb (i.e. the index is smalller than kb
             if id < output["context_sentence_count"]["kb"]:
                 result = search(text, self.__context, IndexClass.KEYWORDS, k=1)
@@ -124,9 +126,26 @@ class Assistant:
                                      # which sometimes it isn't
                     metadata[id] = result[0]["metadata"]
 
+        # we now parse and group reference info by source
+        reference_sources = {}
+        for key, value in metadata.items():
+            group = value[groupby]
+
+            if not reference_sources.get(group):
+                reference_sources[group] = {}
+
+            reference_sources[group][key] = {
+                "text": output["references"][key],
+                "metadata": value
+            }
+
+        # for each one, we also sort based on their eq id
+
         # this key is not useful for any purpose except for matching
         del output["context_sentence_count"]
-        output["metadata"] = metadata
+        del output["resources"]
+        output["references"] = reference_sources
+        output["id_sources"] = {i:j[groupby] for i, j in metadata.items()}
 
         # save results into memory
         # print("SAVING")

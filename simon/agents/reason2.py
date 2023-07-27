@@ -131,7 +131,7 @@ class Reason(object):
         res =  self.__chain.predict_and_parse(input=input,
                                               kb=sentences)
         # we only leave useful resources
-        res["resources"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
+        res["references"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
         res["context_sentence_count"] = {
             "provider": len(provider_sentences),
             "kb": len(kb_sentences)
