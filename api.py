@@ -6,6 +6,7 @@ is fine for now.
 """
 
 # flask!
+import flask
 from flask import Flask, request, jsonify
 from flask_cors import cross_origin
 
@@ -34,6 +35,8 @@ cache = {}
 
 # create the api object
 api = Flask("simon")
+api.config['JSON_SORT_KEYS'] = False
+flask.json.provider.DefaultJSONProvider.sort_keys = False
 
 # provider input handlers
 # they should take the request's arguments + body
@@ -106,15 +109,20 @@ def start():
         providers = arguments.get("providers", "")
 
         # create the base llms
-        llm = ChatOpenAI(openai_api_key = KEY,
-                         model_name = "gpt-3.5-turbo",
-                         temperature=0)
+        gpt3 = ChatOpenAI(openai_api_key = KEY,
+                          model_name = "gpt-3.5-turbo",
+                          temperature=0)
+
+        gpt4 = ChatOpenAI(openai_api_key = KEY,
+                          model_name = "gpt-4",
+                          temperature=0)
+
         embeddings = OpenAIEmbeddings(openai_api_key=KEY,
                                       model="text-embedding-ada-002")
         es = Elasticsearch(**ES_CONFIG)
 
         # create the context
-        context = AgentContext(llm, embeddings, es, UID)
+        context = AgentContext(gpt3, gpt4, embeddings, es, UID)
 
         # get the actual providers from provider string
         providers = handle_providers(providers, arguments, body, context)
@@ -133,9 +141,9 @@ def start():
                     "status": "success"})
 
 # call the llm directly
-@api.route('/chat', methods=['GET'])
+@api.route('/query', methods=['GET'])
 @cross_origin()
-def chat():
+def query():
     """ask your model a question
 
     @params
@@ -146,7 +154,6 @@ def chat():
     - response: JSON --- JSON paylod returned from the model
     - status: str --- status, usually success
     """
-    print("HI CHAT HI")
 
     try:
         arguments = request.args
@@ -175,7 +182,6 @@ def brainstorm():
     - response: JSON --- JSON paylod returned from the model
     - status: str --- status, usually success
     """
-    print("HI BRAINSTORM HI")
 
     try:
         arguments = request.args
@@ -316,7 +322,8 @@ def store():
         assistant = cache[arguments["session_id"].strip()]
         return {
             "resource_id": assistant.store(arguments["title"].strip(),
-                                           arguments["content"].strip()),
+                                           arguments["content"].strip(),
+                                           arguments["source"].strip()),
             "status": "success"
         }
     except KeyError:

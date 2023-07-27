@@ -115,9 +115,9 @@ class Assistant:
         output = self.__reason(query, kb, providers)
 
 
-        # we now assemle the metadata all citations that come from a
-        # provider. TODO BAD CODE AVERT YOUR EYESSSSSS
+        # we now assemle the metadata all citations that come from the kb
         metadata = {}
+        hashes = {}
         for id, text in output["references"].items():
             # if the id came from the kb (i.e. the index is smalller than kb
             if id < output["context_sentence_count"]["kb"]:
@@ -125,6 +125,7 @@ class Assistant:
                 if len(result) == 1: # i.e. if match was sucessful
                                      # which sometimes it isn't
                     metadata[id] = result[0]["metadata"]
+                    hashes[id] = result[0]["hash"]
 
         # we now parse and group reference info by source
         reference_sources = {}
@@ -139,13 +140,16 @@ class Assistant:
                 "metadata": value
             }
 
+            reference_sources[group]["_hash"] = hashes[key]
+
         # for each one, we also sort based on their eq id
 
         # this key is not useful for any purpose except for matching
         del output["context_sentence_count"]
         del output["resources"]
-        output["references"] = reference_sources
-        output["id_sources"] = {i:j[groupby] for i, j in metadata.items()}
+        del output["references"]
+        output["resource_references"] = reference_sources
+        output["resource_ids"] = {i:j[groupby] for i, j in metadata.items()}
 
         # save results into memory
         # print("SAVING")

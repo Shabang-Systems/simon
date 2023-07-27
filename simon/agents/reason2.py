@@ -29,11 +29,11 @@ You are helping a human understand the state of a concept by being a search engi
 
 When responding, you must provide two sections: the sections are "Answer", "Search Results". 
 
-Answer: Provide a full, *brief (<4 sentences)*, and fact-supported answer the user's question. [2] After each of your claims, provide a tag to the sentence you used to support your claim, like so: [3]. Use **markdown** _styles_, lists, etc. if appropriate. If the Knowledge section does not provide enough information to be able to answer the question with some reasoning from you, place the letters N/A here. 
+Answer: Provide a full, *brief (<4 sentences)*, and fact-supported answer the user's question. [2] After each of your claims, provide a tag to the sentence you used to support your claim, like so: [3]. Use **markdown** _styles_, lists, etc. if appropriate. If the Knowledge section does not provide enough information to be able to answer the question with some reasoning from you, place *ONLY* the letters N/A here. 
 Search Results: identify the sources from your search; if no results are found, place the letters N/A in this section. These should be resources from your knowledge section that directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; respond in a markdown list:
 - *extremely* brief headline here, don't use two parts like a colon; keep it short (<10 words) [1]
-- repeat this process, provide an *very very short* headline (<10 words) and a bracket link [5]
-- short headline (<10 words) and a link [8]
+- repeat this process, provide an *very very short* headline (<10 words) and a *single* bracket link [5]
+- short headline (<10 words) and a *single* link [8]
 - ...
 - ...
 - ...
@@ -92,9 +92,25 @@ class ReasonOutputParser(BaseOutputParser):
 
         extrapolations = [i.strip()[2:].strip("\"").strip('"').strip() for i in extrapolations.split("\n")]
 
+        # collect up the extrapolation citations
+        ex_citations = []
+        for extrapolation in extrapolations:
+            # get the extrapolation id
+            results = list(re.findall(resource_regex, extrapolation))
+            if len(results) == 0:
+                ex_citations.append(-1)
+                continue
+
+            for r in results:
+                ex_citations.append(int(r.strip()))
+                continue
+        # and we now remove all the citatinos from the extrapolations
+        extrapolations = [re.sub(resource_regex, "", i).strip() for i in extrapolations]
+
         return {
             "answer": answer,
-            "extrapolations": extrapolations,
+            "results": [{"headline": i,
+                         "resource_id": j} for i,j in zip(extrapolations, ex_citations)],
             "resources": resource_ids
         }
 

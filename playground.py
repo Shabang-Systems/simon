@@ -76,8 +76,11 @@ assistant = Assistant(context, verbose=True)
 import time
 
 a = time.time()
-print(json.dumps(assistant("What's an eigenvalue?"), sort_keys=True, indent=4))
+result = assistant("What's an eigenvalue?")
 b = time.time()
+print(result)
+
+# assistant("What's an eigenvalue?")
 
 print(b-a)
 
