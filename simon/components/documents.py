@@ -36,6 +36,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 
 # utilities
+import json
+
 from ..utils.elastic import *
 from ..models import *
 
@@ -492,6 +494,11 @@ def delete_document(hash:str, context:AgentContext):
                                                                    context.uid}}]}})
 
 
+    context.elastic.indices.refresh(index="simon-fulltext")
+    context.elastic.indices.refresh(index="simon-paragraphs")
+    context.elastic.indices.refresh(index="simon-cache")
+
+
 #### SETTERS ####
 def index_document(doc:ParsedDocument, context:AgentContext):
     """Indexes a document, if needed.
@@ -557,20 +564,37 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     documents = []
     updates = []
+    prefetch = []
 
-    print("Creating updates...")
+
+    # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
+    # requires a new index note
+    for indx, paragraph in enumerate(tqdm(doc.paragraphs)):
+        prefetch.append({"index": "simon-paragraphs"})
+        prefetch.append({
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match": {"text": paragraph}},
+                        {"term": {"user": context.uid}}
+                    ],
+                }},
+            "size": 1
+        })
+
+    request = ""
+
+    for i in prefetch:
+        request += f"{json.dumps(i)} \n"
+
+    prefetch = context.elastic.msearch(body=request)["responses"]
+
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
-    for indx, paragraph in enumerate(tqdm(doc.paragraphs)):
+    for indx, (paragraph, indicies) in enumerate(zip(tqdm(doc.paragraphs), prefetch)):
         # check if the we already have the element indexed
 
-        indicies = context.elastic.search(index="simon-paragraphs",
-                                          query={
-                                              "bool": {"must": [
-                                                  {"match": {"text": paragraph}},
-                                                  {"term": {"user": context.uid}}
-                                              ]}},
-                                          size=1)["hits"]
+        indicies = indicies["hits"]
         tf = tf_sum[indx]
 
         # if so, just update their hashes
@@ -595,17 +619,15 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                             "_index": "simon-paragraphs"})
 
     # create embeddings in bulk
-    print("Generating embeddings...")
     embeddings = context.embedding.embed_documents(documents)
+    print(f"embedding {len(documents)} documents...")
 
     # slice the embeddings in
     for i, em in zip(updates, embeddings):
         i["embedding"] = em
 
     # and bulk!
-    print("Submitting...")
     bulk(context.elastic, updates)
-    print("Done!")
 
     # refresh indicies
     context.elastic.indices.refresh(index="simon-fulltext")
