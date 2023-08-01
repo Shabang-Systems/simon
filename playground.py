@@ -73,16 +73,16 @@ assistant = Assistant(context, verbose=True)
 # # sent = "What did Elanor Roosevelt do?"
 
 # # # # # assistant._forget_memory("DAR")
-import time
+# import time
 
-a = time.time()
-result = assistant("What's an eigenvalue?")
-b = time.time()
-print(result)
+# a = time.time()
+# result = assistant("What's an eigenvalue?")
+# b = time.time()
+# print(result)
 
-# assistant("What's an eigenvalue?")
+# # assistant("What's an eigenvalue?")
 
-print(b-a)
+# print(b-a)
 
 # from simon.agents.queryfixer import QueryFixer
 # qf = QueryFixer(context)
