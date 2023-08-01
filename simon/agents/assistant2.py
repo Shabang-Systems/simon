@@ -381,7 +381,7 @@ class Assistant:
 
         # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
         query = self.__fix(text)
-        kb = self.__kb(query) # we only search the kb because this is only a spot check
+        kb = self.__kb(text) # we only search the kb because this is only a spot check
 
         observation = self.__rio(text, kb)
         return observation

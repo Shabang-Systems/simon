@@ -19,9 +19,11 @@ TEMPLATE = """
 System:
 You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. These comment should be able to be searched in the knowledgebase.
 
-Pay attention to the lack of knowledge the human's partial thoughts betray and fix them by coming up with good questions/comments that help the human discover that facet of knowledge.
+Include only information that is
+1. in the Knowledge you are provided
+2. which you think the human wouldn't possibly have thought of without the Knowledge you are provided
 
-When replying with your comments, adhere to the following format.
+Keep everything extremely brief. Adhere to the following format.
 
 ```output
 Comments: A markdown list with good, salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. This list can contain at *most four elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
@@ -40,14 +42,12 @@ Title: Smithtown airport instructions -- Go to Terminal 3, and turn left to hail
 
 ```output
 Comments:
-- Could you please tell me more about John, who lives in Smithtown?
-- What are some other people we can visit at Syscorp, headquartered in Smithtown?
-- Here are some specific instructions to hailig a cab at the Smithtown airport:
-1. Go to terminal 3
-2. Turn left 
+- Who is John from Smithtown?
+- Who else can we visit at Syscorp?
+- Cab hailing instructions at Smithown
 ```
 
-Remember, you maybe passed a *PARTIAL* slice of your thoughts. Hence, try to guess what the human is trying to say if their text is cut off awkwardly. Be warned: *some information you are porivded as knowledge is likely irrelavent*; you should pick if it is relevant. Order the results, such as your first result is the most relavent to the human's question.
+Remember to return at most 4 results.
 
 Question:
 {input}
