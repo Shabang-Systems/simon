@@ -1,7 +1,6 @@
-from .base import *
-from ..models import *
-from ..utils.elastic import *
-from ..components.documents import *
+from .models import *
+from .utils.elastic import *
+from .documents import *
 
 import itertools
 
@@ -26,7 +25,7 @@ def dedup(k):
 
     return new_k
 
-class KnowledgeBase(SimonProvider):
+class KnowledgeBase():
     """General Elastic Knowledgebase Provider
 
     Parameters
@@ -34,8 +33,6 @@ class KnowledgeBase(SimonProvider):
     context : AgentContext
         The context with which to seed the kb.
     """
-
-    purpose="Looks up any and all knowledge about the user's world and the world in general. This tool should be used very often."
 
     def __init__(self, context):
         self.context = context

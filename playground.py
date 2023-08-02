@@ -72,7 +72,7 @@ assistant = Assistant(context, verbose=False)
 
 # assistant.search("migraines")
 # assistant._Assistant__kb("migraines")
-assistant("What's an eigenvalue?")
+# assistant("What's an eigenvalue?")
 
 # from simon.utils.elastic import kv_getall
 
