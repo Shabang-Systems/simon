@@ -39,7 +39,9 @@ if DEBUG:
 else:
     L.basicConfig(format=LOG_FORMAT, level=L.INFO)
 
-# L.getLogger('elastic_transport.transport').setLevel(L.WARNING)
+L.getLogger('elastic_transport.transport').setLevel(L.WARNING)
+L.getLogger('openai').setLevel(L.WARNING)
+L.getLogger('urllib3').setLevel(L.WARNING)
 
 
 # llms
@@ -70,6 +72,7 @@ assistant = Assistant(context, verbose=False)
 
 # assistant.search("migraines")
 # assistant._Assistant__kb("migraines")
+assistant("What's an eigenvalue?")
 
 # from simon.utils.elastic import kv_getall
 
@@ -94,7 +97,6 @@ assistant = Assistant(context, verbose=False)
 # b = time.time()
 # L.info(result)
 
-# # assistant("What's an eigenvalue?")
 
 # L.info(b-a)
 
