@@ -42,6 +42,7 @@ else:
 L.getLogger('elastic_transport.transport').setLevel(L.WARNING)
 L.getLogger('openai').setLevel(L.WARNING)
 L.getLogger('urllib3').setLevel(L.WARNING)
+L.getLogger('simon').setLevel(L.DEBUG)
 
 
 # llms
@@ -68,11 +69,25 @@ context = AgentContext(gpt3, gpt4, embedding, es, UID)
 kb = KnowledgeBase(context)
 
 # create assistant
-assistant = Assistant(context, verbose=False)
+assistant = Assistant(context, verbose=True)
 
-# assistant.search("migraines")
+# assistant.brainstorm("visiting minnisioda")
+# assistant.search("Visiting Minnesota.")
+# assistant.brainstorm("visiting minnisoda")
+
+# from simon.agents.queryfixer import QueryFixer
+
+# qf = QueryFixer(context, True)
+# qf("visiting minnisioda")
+
+# assistant.search("Visiting Minnesota.")
+
+# assistant.search("Visiting Minnisoda")
+
+
+
 # assistant._Assistant__kb("migraines")
-assistant("What's an eigenvalue?")
+# assistant("What's an eigenvalue?")
 
 # from simon.utils.elastic import kv_getall
 

@@ -19,9 +19,7 @@ TEMPLATE = """
 System:
 You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. These comment should be able to be searched in the knowledgebase.
 
-Include only information that is
-1. in the Knowledge you are provided
-2. which you think the human wouldn't possibly have thought of without the Knowledge you are provided
+Pay attention to the lack of knowledge the human's partial thoughts betray and fix them by coming up with good questions/comments that help the human discover that facet of knowledge.
 
 Keep everything extremely brief. Adhere to the following format.
 

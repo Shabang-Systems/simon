@@ -18,9 +18,12 @@ The knowledge base contains information about specific terms and general informa
 
 You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a more genreal question or statement that uses only keywords that could be found in the knowledge base.
 
+Also, fix the user's spelling.
+
 Here are few examples of successful conversions:
 - "What's an eigenvalue?" => "Eigenvalues"
 - "Tell me about Zorbabs" => "Zorbabs"
+- "What is a celender" => "calendar"
 - "I'm traveling to Singapore next week! What should I do?" => "Singapore"
 - "Who should I visit in Bangkok?" => "people I know in Bangkok"
 
