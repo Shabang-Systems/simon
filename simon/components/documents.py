@@ -13,6 +13,10 @@ from typing import List
 from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
+
+import logging
+L = logging.getLogger(__name__)
+
 # Networking
 import requests
 
@@ -33,7 +37,6 @@ from bs4 import BeautifulSoup
 # TFIDF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from tqdm import tqdm
 
 # utilities
 import json
@@ -558,7 +561,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
         X = vectorizer.fit_transform(doc.paragraphs)
         tf_sum = X.sum(1).squeeze().tolist()[0]
     except ValueError:
-        print(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
+        L.info(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
         context.elastic.indices.refresh(index="simon-paragraphs")
         return
 
@@ -569,7 +572,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
     # requires a new index note
-    for indx, paragraph in enumerate(tqdm(doc.paragraphs)):
+    for indx, paragraph in enumerate(doc.paragraphs):
         prefetch.append({"index": "simon-paragraphs"})
         prefetch.append({
             "query": {
@@ -591,7 +594,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
-    for indx, (paragraph, indicies) in enumerate(zip(tqdm(doc.paragraphs), prefetch)):
+    for indx, (paragraph, indicies) in enumerate(zip(doc.paragraphs, prefetch)):
         # check if the we already have the element indexed
 
         indicies = indicies["hits"]
@@ -620,7 +623,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     # create embeddings in bulk
     embeddings = context.embedding.embed_documents(documents)
-    print(f"embedding {len(documents)} documents...")
+    L.debug(f"embedding {len(documents)} documents...")
 
     # slice the embeddings in
     for i, em in zip(updates, embeddings):
@@ -768,8 +771,7 @@ def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, de
 
     # pop each into the index
     # and pop each into the cache and index
-    from tqdm import tqdm
-    for i in tqdm(docs):
+    for i in docs:
         index_document(i, context)
         source = i.meta.get("source")
         if source and source.strip() != "":

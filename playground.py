@@ -28,6 +28,20 @@ from simon import *
 # fun
 from langchain.agents import AgentExecutor
 
+# logging
+import logging as L
+
+DEBUG=True
+
+LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
+if DEBUG:
+    L.basicConfig(format=LOG_FORMAT, level=L.DEBUG)
+else:
+    L.basicConfig(format=LOG_FORMAT, level=L.INFO)
+
+# L.getLogger('elastic_transport.transport').setLevel(L.WARNING)
+
+
 # llms
 # llm = LlamaCpp(model_path="./opt/open_llama_7b/ggml-model-f16-q4_0.bin",
 #                n_gpu_layers=1,
@@ -52,7 +66,7 @@ context = AgentContext(gpt3, gpt4, embedding, es, UID)
 kb = KnowledgeBase(context)
 
 # create assistant
-assistant = Assistant(context, verbose=True)
+assistant = Assistant(context, verbose=False)
 
 # assistant.search("migraines")
 # assistant._Assistant__kb("migraines")
@@ -76,13 +90,13 @@ assistant = Assistant(context, verbose=True)
 # import time
 
 # a = time.time()
-# result = assistant("What's an eigenvalue?")
+# assistant("What's an eigenvalue?")
 # b = time.time()
-# print(result)
+# L.info(result)
 
 # # assistant("What's an eigenvalue?")
 
-# print(b-a)
+# L.info(b-a)
 
 # from simon.agents.queryfixer import QueryFixer
 # qf = QueryFixer(context)
@@ -123,13 +137,13 @@ assistant = Assistant(context, verbose=True)
 # import time
 
 # a = time.time()
-# print(json.dumps(assistant.brainstorm("""
+# L.info(json.dumps(assistant.brainstorm("""
 # Debate surrounding Urbanization in Africa
 # - 
 # """), sort_keys=True, indent=4))
 # b = time.time()
 
-# print(b-a)
+# L.info(b-a)
 
 
 
@@ -167,7 +181,7 @@ assistant = Assistant(context, verbose=True)
 
 # assistant.search("Minnesota people")
 
-# print(json.dumps(assistant("Tell me about PreTA"), sort_keys=True, indent=4))
+# L.info(json.dumps(assistant("Tell me about PreTA"), sort_keys=True, indent=4))
 
 
 # from simon.components.documents import *
@@ -216,14 +230,14 @@ assistant = Assistant(context, verbose=True)
 # assistant.knowledge["Robert"]
 # assistant("Can you suggest a Chinese restaurant where I can take him?")
 # scholar = Scholar()
-# print(scholar("state of the art speech diarization"))
+# L.info(scholar("state of the art speech diarization"))
 
 # assistant.knowledge["Robert"]
 
 # from semanticscholar import SemanticScholar
 # res = enumerate(SemanticScholar().search_paper("Speech dierization", limit=5))
 # for i, result in res:
-    # print("HI", i)
+    # L.info("HI", i)
 
 # some utter non-sense:
 
@@ -292,8 +306,8 @@ assistant = Assistant(context, verbose=True)
 
 # thoughts
 # Robert dietary restrictions
-# print(json.dumps(assistant("I am trying to come up with ideas for people the human could potentially meet with during their trip to Minnesota. Does the human have any connections or acquaintances in Minnesota that they could potentially meet up with?"), sort_keys=True, indent=4))
-# print(json.dumps(assistant("which restaurant do you recommend for Robert?"), sort_keys=True, indent=4))
+# L.info(json.dumps(assistant("I am trying to come up with ideas for people the human could potentially meet with during their trip to Minnesota. Does the human have any connections or acquaintances in Minnesota that they could potentially meet up with?"), sort_keys=True, indent=4))
+# L.info(json.dumps(assistant("which restaurant do you recommend for Robert?"), sort_keys=True, indent=4))
 
 
 # thoughts
@@ -301,11 +315,11 @@ assistant = Assistant(context, verbose=True)
 #                  sort_keys=True, indent=4))
 
 # assistant.brainstorm("")
-# print(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
+# L.info(json.dumps(assistant(thoughts), sort_keys=True, indent=4))
 
 # assistant("do you know if any good Chinese places I should go with Robert?")
 
-# print(json.dumps(assistant(followup),
+# L.info(json.dumps(assistant(followup),
 #                  sort_keys=True, indent=4))
 
 # assistant.search("PETase")
@@ -314,21 +328,21 @@ assistant = Assistant(context, verbose=True)
 # rio = RIO(context)
 # rio("TODO: lunch with Robert next Tuesday")
 
-# print(json.dumps(assistant("Can you give me more info about the restaurant Robert would like the best?"),
+# L.info(json.dumps(assistant("Can you give me more info about the restaurant Robert would like the best?"),
 #                  sort_keys=True, indent=4))
-# print(json.dumps(assistant("Which of my friends do you think I should talk about PETAse with?"),
-#                  sort_keys=True, indent=4))
-
-# print(json.dumps(assistant("I think the human is trying to schedule a lunch meeting with someone named Robert on a specific date and time. Where would the human like to have lunch?"),
+# L.info(json.dumps(assistant("Which of my friends do you think I should talk about PETAse with?"),
 #                  sort_keys=True, indent=4))
 
-# print(assistant.search("user's friends"))
+# L.info(json.dumps(assistant("I think the human is trying to schedule a lunch meeting with someone named Robert on a specific date and time. Where would the human like to have lunch?"),
+#                  sort_keys=True, indent=4))
+
+# L.info(assistant.search("user's friends"))
 # assistant.
 
 # from simon.components.documents import *
 # search("companies to visit in Minnesota".lower(), context)
 
-# print(kb("companies in Minnesota"))
+# L.info(kb("companies in Minnesota"))
 # assistant.read("https://machinelearning.apple.com/research/panoptic-segmentation")
 # from simon.components.documents import *
 
@@ -379,18 +393,18 @@ assistant = Assistant(context, verbose=True)
 # assistant._forget("Minnesota")
 
 # assistant.read("https://kaden.rice.edu/p2023-2.pdf")
-# print(assistant("Should I share this with any of my friends?"))
-# print(assistant("Which of my friend should I share it with?"))
-# print(assistant("Which of my friend should I share it with?"))
-# print(assistant("Hmmmm. I wonder if I have a friend who may also be interested in this topic?"))
+# L.info(assistant("Should I share this with any of my friends?"))
+# L.info(assistant("Which of my friend should I share it with?"))
+# L.info(assistant("Which of my friend should I share it with?"))
+# L.info(assistant("Hmmmm. I wonder if I have a friend who may also be interested in this topic?"))
 
-# print(kb("What is in Minnesota?"))
+# L.info(kb("What is in Minnesota?"))
 
 # assistant.knowledge["Minnesota"]
-# print(assistant("What is Acmia?"))
-# print(assistant("What does DementiaBank do? What are some interesting projects it works on?"))
-# print(assistant("Can you summarize the contribution of RoseTTAFold2?"))
-# print(assistant("Can you rewrite that summary and include a glossery of all the jargon?"))
+# L.info(assistant("What is Acmia?"))
+# L.info(assistant("What does DementiaBank do? What are some interesting projects it works on?"))
+# L.info(assistant("Can you summarize the contribution of RoseTTAFold2?"))
+# L.info(assistant("Can you rewrite that summary and include a glossery of all the jargon?"))
 # assistant.knowledge["Minnesota"]
 # queries = [QuerySelectorOption("", "knowledgebase"),
 #            QuerySelectorOption("Looks up the contents, addressees, and date and times of the emails sent by the user.", "email"),
@@ -430,8 +444,8 @@ assistant = Assistant(context, verbose=True)
 
 # delete_document("6108645a3b902739691b6a6cfed328844f7a263f6de55ed2668385d28377f9b6", context)
 
-# print(assistant("Write an email in my tone to my boss Prof. MacWhinney, announcing batchalign 0.2.26, which fixed the issues with benchmarking. However, WER is still at 20%, which he can see with the attached .diff file. Tenses and contractions contribute the majority of the errors."))
-# print(assistant("What are the differences between the installation instructions of batchalign vs. the re-installation instructions?"))
+# L.info(assistant("Write an email in my tone to my boss Prof. MacWhinney, announcing batchalign 0.2.26, which fixed the issues with benchmarking. However, WER is still at 20%, which he can see with the attached .diff file. Tenses and contractions contribute the majority of the errors."))
+# L.info(assistant("What are the differences between the installation instructions of batchalign vs. the re-installation instructions?"))
 # read_remote("https://pypi.org/project/bpe/", context)
 
 # 
@@ -471,7 +485,7 @@ assistant = Assistant(context, verbose=True)
 
 # # # index_remote_file("https://www.mdpi.coaoenustahom/1996-1944/15/18/6283/pdf?version=1663048430", es, embedding, UID)
 
-# # print(assistant.run("What are the state-of-the-art speech diarization models?"))
+# # L.info(assistant.run("What are the state-of-the-art speech diarization models?"))
 # def nah(doc, context):
 #     embedded = context.embedding.embed_documents(doc.paragraphs)
 #     docs = [{"embedding": a,

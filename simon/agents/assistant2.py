@@ -22,6 +22,9 @@ from .followup import *
 from .reason2 import *
 
 
+import logging
+L = logging.getLogger(__name__)
+
 class Assistant:
     def __init__(self, context, providers=[], widgets=[], verbose=False):
         """Creates a simon assistant
@@ -98,20 +101,20 @@ class Assistant:
 
         import time
 
-        # print("START RECALL", query)
-        # print("LOADING")
+        # L.debug("START RECALL")
+        # L.debug("LOADING")
         # and create the first reasoning group
         # entities = self.__entity_memory.load_memory_variables({"input": query})["entities"]
 
-        # print("FIXING")
+        # L.debug("FIXING")
         # fix the query
         q = self.__fix(query)
         # first kb call always goes to internal knowledge
         # TODO is this a good idea?
-        # print("SEARCHING")
+        # L.debug("SEARCHING")
         kb, providers = self.search(q, return_provider_results=True)
 
-        # print("REASONING")
+        # L.debug("REASONING")
         output = self.__reason(query, kb, providers)
 
 
@@ -152,15 +155,15 @@ class Assistant:
         output["resource_ids"] = {i:j[groupby] for i, j in metadata.items()}
 
         # save results into memory
-        # print("SAVING")
+        # L.debug("SAVING")
         # input_dict = {"input": query}
         # self.__entity_memory.save_context(
         #     input_dict,
         #     {"output": output["answer"]}
         # )
 
-        # print("DONE")
-
+        # L.debug("DONE")
+        # 
         # and now, store memory results
         # kv = self.knowledge
 
@@ -168,7 +171,6 @@ class Assistant:
         # for key,value in kv.items():
         #     kv_set(key, value, self.__context.elastic, self.__context.uid)
 
-        # print({
         #     "load": onfix-onload,
         #     "fix": onsearch-onfix,
         #     "search": onreason-onsearch,
@@ -177,7 +179,7 @@ class Assistant:
         #     "post": ondone-onpost,
         # })
         # and render it as the correct widget
-        # print("WIDGETING")
+        # L.debug("WIDGETING")
         # widget_option = self.__widget_qm(answer)
         # widget = self.__widget_options[widget_option]
 

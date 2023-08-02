@@ -14,6 +14,10 @@ from langchain.schema import (
     SystemMessage
 )
 
+
+import logging
+L = logging.getLogger(__name__)
+
 from ..models import *
 
 import re
@@ -68,7 +72,7 @@ class ReasonOutputParser(BaseOutputParser):
         regex = r"\s*(.*)\n\n?Answer\s*:\s*(.*)\n\n?Reasoning\s*:\s*(.*)\n\n?Update\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
-        print(str)
+        L.debug(str)
 
         if match:
             citation = "-"+match.group(1).strip("\"").strip('"').strip("`").strip()
