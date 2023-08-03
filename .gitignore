@@ -13,3 +13,6 @@ __pycache__/
 .DS_Store
 opt/
 media
+
+# Editor configs
+/.vscode

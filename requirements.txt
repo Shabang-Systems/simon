@@ -1,4 +1,5 @@
 beautifulsoup4==4.12.2
+boto3==1.28.15
 elasticsearch==8.8.2
 Flask==2.3.2
 flask_cors==4.0.0
