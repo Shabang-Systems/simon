@@ -388,11 +388,3 @@ class Assistant:
         observation = self.__rio(text, kb)
         return observation
 
-
-    # @property
-    # def knowledge(self):
-    #     return self.__entity_memory.entity_store.store
-
-
-
-        

@@ -705,6 +705,7 @@ def read_remote(url:str, context:AgentContext):
         # read hash off of the doc
         hash = doc.hash
 
+        
         # and pop it into the cache and index
         context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash,
                                                              "user": context.uid})

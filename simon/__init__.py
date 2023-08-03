@@ -1,6 +1,5 @@
-from .agents.assistant2 import Assistant
-from .models import *
-from .widgets import *
-from .providers import *
-
+# directory which contains shortcut imports
+from .search import Search
+from .models import AgentContext
+from .components.documents import *
 

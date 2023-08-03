@@ -2,57 +2,12 @@ import logging
 import os
 import time
 
-from elasticsearch import Elasticsearch
-
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-
-from simon import models
-from simon.components import documents
-from simon.environment import get_env_vars
-
-from simon.ingestion import aws
-
-
-def _build_agent_context(uid):
-    logging.info('Setting up AgentContext...')
-
-    env_vars = get_env_vars()
-    logging.debug(f'Loaded environment variables: {env_vars}')
-
-    openai_key = env_vars['OPENAI_KEY']
-    llm = ChatOpenAI(
-        openai_api_key=openai_key,
-        model_name="gpt-3.5-turbo",
-        temperature=0
-    )
-    embeddings = OpenAIEmbeddings(
-        openai_api_key=openai_key,
-        model="text-embedding-ada-002"
-    )
-
-    es_config = env_vars['ES_CONFIG']
-    es = Elasticsearch(**es_config)
-
-    context = models.AgentContext(
-        llm=llm,
-        reason_llm=llm,
-        embedding=embeddings,
-        elastic=es,
-        uid=uid,
-    )
-    return context
-
+from ..models import *
+from ..components import documents, aws
 
 class FileIngester:
-    def __init__(self, agent_context=None, uid=None, source_prefix=None):
-        if not agent_context and not uid:
-            raise Exception(
-                'Must provide either an AgentContext or a Simon UID to create AgentContext with.')
-        if not agent_context:
-            agent_context = _build_agent_context(uid)
-
-        self.agent_context = agent_context
+    def __init__(self, context:AgentContext, source_prefix=None):
+        self.agent_context = context
         self.source_prefix = source_prefix
 
     def _load_file(self, file_path):

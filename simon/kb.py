@@ -1,6 +1,10 @@
 from .models import *
 from .utils.elastic import *
-from .documents import *
+from .components.documents import *
+
+from abc import ABC, abstractproperty, abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional, Union
 
 import itertools
 
@@ -77,3 +81,19 @@ class KnowledgeBase():
 
         return responses
         
+    def __call__(self, input):
+        # get the responses
+        results = self.provide(input)
+
+        if type(results) == SimonProviderError:
+            return results.error
+
+        # and then, serialize the metadata
+        metadata = [i.metadata if i.metadata else {} for i in results]
+        metadata_strings = [[f"Title: {i.title}"]+[f"{key}: {val}" for key,val in j.items()] for i,j in zip(results, metadata)]
+        # and actually join them into a string
+        metadata_strings = [", ".join(i) for i in metadata_strings]
+        # and then, formulate responses
+        response_string = [f"{meta} -- "+i.body for i, meta in zip(results, metadata_strings)]
+
+        return "\n--\n".join(response_string)
