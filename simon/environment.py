@@ -53,7 +53,7 @@ def get_env_vars(raise_on_missing=False):
     # Entries in this list are required.
     needed = ['OPENAI_KEY']
     # Entries in this list are optional/less important.
-    wanted = ['GOOGLE_MAPS_KEY']
+    wanted = []
     env_data = {'_MISSING': []}
 
     config = {

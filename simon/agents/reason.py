@@ -8,6 +8,8 @@ from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.schema import BaseOutputParser
 
+from collections import defaultdict
+
 from nltk import sent_tokenize
 from langchain.schema import (
     AIMessage,
@@ -25,14 +27,14 @@ import re
 # Provide a *full* full answer to the user's question. [4] Provide references to useful citation numbers in brackets found in the knowledge section *throughout* your answer after each claim; don't put a bunch all in the end. [2] You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. 
 
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to.
+You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
 
 When responding, you must provide two sections: the sections are "Answer", "Search Results". 
 
 Answer: Provide a full, *brief (<4 sentences)*, and fact-supported answer the user's question. [2] After each of your claims, provide a tag to the sentence you used to support your claim, like so: [3]. Use **markdown** _styles_, lists, etc. if appropriate. If the Knowledge section does not provide enough information to be able to answer the question with some reasoning from you, place *ONLY* the letters N/A here. 
-Search Results: identify the sources from your search; if no results are found, place the letters N/A in this section. These should be resources from your knowledge section that directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; respond in a markdown list:
-- *extremely* brief headline here, don't use two parts like a colon; keep it short (<10 words) [1]
-- repeat this process, provide an *very very short* headline (<10 words) and a *single* bracket link [5]
+Search Results: identify the sources from your search; if no results are found, place the letters N/A in this section. These should be resources from your knowledge section that directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; the top result should be a resource that directly answers the user's question; respond in a markdown list:
+- *extremely* brief headline here, don't use two parts like a colon; keep it short (<10 words); most relavent result that directly answers the question [1]
+- repeat this process, provide an *very very short* headline (<10 words) and a *single* bracket link; feel free to begin to extrapolate to further reading now [5]
 - short headline (<10 words) and a *single* link [8]
 - ...
 - ...
@@ -49,6 +51,8 @@ Search Results:
 
 The user is smart, but is in a rush. Keep everything concise and precise.
 
+Note that the knowledge you are provided *is not ordered* and can contain irrelavent content. Very selectively pick what would be useful to answer the users' question, and answer them using relavent sections of knowledge.
+
 Begin!
 """
 
@@ -56,7 +60,7 @@ HUMAN_TEMPLATE = """
 Knowledge: 
 {kb}
 
-Question:
+Query:
 {input}
 """
 
@@ -87,7 +91,7 @@ class ReasonOutputParser(BaseOutputParser):
         # collect up all the [citations]
         resource_regex = r"\[(\d+)\]"
         resource_ids = []
-        for r in re.findall(resource_regex, str):
+        for r in re.findall(resource_regex, answer):
             resource_ids.append(int(r.strip()))
 
         extrapolations = [i.strip()[2:].strip("\"").strip('"').strip() for i in extrapolations.split("\n")]
@@ -109,9 +113,9 @@ class ReasonOutputParser(BaseOutputParser):
 
         return {
             "answer": answer,
-            "results": [{"headline": i,
-                         "resource_id": j} for i,j in zip(extrapolations, ex_citations)],
-            "resources": resource_ids
+            "answer_resources": resource_ids,
+            "search_results": [{"headline": i,
+                                "resource": j} for i,j in zip(extrapolations, ex_citations)],
         }
 
 class Reason(object):
@@ -130,28 +134,42 @@ class Reason(object):
                                        output_parser=ReasonOutputParser())
         self.__chain = LLMChain(llm=context.reason_llm, prompt=prompt, verbose=verbose)
 
-    def __call__(self, input, kb="", provider="", entities={}):
-        provider_sentences = [j for i in provider.split("\n--\n") for j in sent_tokenize(i)]
-        provider_sentences = [j for i in provider_sentences for j in i.split("\n")]
+    def __call__(self, input, kb):
+        # initialize the dictionary for text-to-number labeling
+        # this dictionary increments a number for every new key
+        resource_ids = defaultdict(lambda : len(resource_ids))
 
-        num_provider_sents = len(provider_sentences)
+        # chunk the resource into sentences and label them
+        # this is a dictionary of resource_id:kb_entry
+        chunks = {k:v
+                  for indx, i in enumerate(kb)
+                  for k,v in [(resource_ids[j], indx)
+                              for j in sent_tokenize(i["text"])]}
 
-        kb_sentences = [j for i in kb.split("\n--\n") for j in sent_tokenize(i)]
-        kb_sentences = [j for i in kb_sentences for j in i.split("\n")]
+        # freeze and reverse the resource id dictionary
+        # so this is now a dict of resource_id:text
+        resource_ids = {v:k for k, v in resource_ids.items()}
 
-        sentences = kb_sentences + provider_sentences
+        # tack the numerical labels onto the actual chunks into a big
+        # context string
+        sentences = "".join([text+f" [{indx}]\n " for indx, text in resource_ids.items()])
 
-        sentence_dict = {indx:i.strip() for indx, i in enumerate(sentences)}
-        sentences = "".join([i+f" [{indx}] " for indx, i in enumerate(sentences)])
-
+        # run llm prediciton
         res =  self.__chain.predict_and_parse(input=input,
-                                              kb=sentences)
-        # we only leave useful resources
-        res["references"] = {int(i):sentence_dict.get(i, "") for i in res["resources"]}
-        res["context_sentence_count"] = {
-            "provider": len(provider_sentences),
-            "kb": len(kb_sentences)
-        }
+                                              kb=sentences.strip())
+
+        # if we have no response, return
+        if res["answer"].lower().strip() == "n/a":
+            return 
+
+        # set answer citations and the result citations
+        res["answer_resources"] = {i: {"quote": resource_ids[i],
+                                       "chunk": kb[chunks[i]]} for i in res["answer_resources"]}
+        for i in res["search_results"]:
+            id = i["resource"]
+
+            i["resource"] = {"quote": resource_ids[id],
+                             "chunk": kb[chunks[id]]}
 
         return res
 

@@ -3,7 +3,7 @@ import argparse
 from elasticsearch import Elasticsearch
 
 from simon.environment import get_es_config
-from simon.utils.elastic import _nuke_schema, _seed_schema
+from simon.components.elastic import _nuke_schema, _seed_schema
 
 
 if __name__ == '__main__':

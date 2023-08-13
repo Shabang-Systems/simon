@@ -5,9 +5,8 @@ import os
 import signal
 import threading
 
-from simon.ingestion import aws
-from simon.ingestion.ingester import FileIngester
-
+from simon.components import aws
+from simon.ingestion import TextFileIngester
 
 def _setup_log_file(log_file):
     # Make intermediate directories if necessary
@@ -97,7 +96,7 @@ def _configure_worker_logger(logger_queue=None, debug=False):
 def _make_ingestion_worker(files=[], ingester_args={}, logger_args={}):
     def process_target():
         _configure_worker_logger(**logger_args)
-        ingester = FileIngester(**ingester_args)
+        ingester = TextFileIngester(**ingester_args)
         ingester.ingest_all(files)
 
     return multiprocessing.Process(target=process_target)

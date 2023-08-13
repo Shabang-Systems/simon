@@ -37,57 +37,25 @@ class Search:
         Returns
         -------
         dict
-            the output, with widget information, etc.
+            the output, with resource information, etc.
         """
 
-        # fix the query
-        q = self.__fix(query)
-        # first kb call always goes to internal knowledge
-        # TODO is this a good idea?
-        # L.debug("SEARCHING")
-        kb = self.__kb(q)
+        # fix the query and brainstorm possible
+        # tangentia questions. use both to search the resource
+        # we first query for relavent resources, then performing
+        # search with them. if no results are return, don't worry
+        # we just filter them out
+        questions = [query] + self.brainstorm(query) 
+        resources = [self.search(i) for i in questions]
+        resources = [j for i in resources if i for j in i] # to filter out errors and flatten
 
-        if not kb and kb == "":
-            kb = "No documents was found in your knowledge base regarding this topic."
+        if resources == 0:
+            # if there's no valid resources found,
+            # return nothing
+            return None
 
         # L.debug("REASONING")
-        output = self.__reason(query, kb)
-
-        # we now assemble the metadata all citations that come from the kb
-        metadata = {}
-        hashes = {}
-        for id, text in output["references"].items():
-            # if the id came from the kb (i.e. the index is smalller than kb
-            if id < output["context_sentence_count"]["kb"]:
-                result = search(text, self.__context, IndexClass.KEYWORDS, k=1)
-                if len(result) == 1: # i.e. if match was sucessful
-                                     # which sometimes it isn't
-                    metadata[id] = result[0]["metadata"]
-                    hashes[id] = result[0]["hash"]
-
-        # we now parse and group reference info by source
-        reference_sources = {}
-        for key, value in metadata.items():
-            group = value[groupby]
-
-            if not reference_sources.get(group):
-                reference_sources[group] = {}
-
-            reference_sources[group][key] = {
-                "text": output["references"][key],
-                "metadata": value
-            }
-
-            reference_sources[group]["_hash"] = hashes[key]
-
-        # for each one, we also sort based on their eq id
-
-        # this key is not useful for any purpose except for matching
-        del output["context_sentence_count"]
-        del output["resources"]
-        del output["references"]
-        output["resource_references"] = reference_sources
-        output["resource_ids"] = {i:j[groupby] for i, j in metadata.items()}
+        output = self.__reason(query, resources)
 
         return output
 
@@ -118,3 +86,23 @@ class Search:
 
         observation = self.__rio(text, kb)
         return observation
+
+    def search(self, text):
+        # query the kb first
+        res = self.__kb(text)
+
+        if type(res) == SimonProviderError:
+            return
+
+        # unserialize the provider responses
+        serialized = [{"text": r.body,
+                       "metadata": {
+                           "source": r.metadata["source"],
+                           "hash": r.metadata["hash"],
+                           "title": r.title,
+                       }} for r in res]
+
+
+        return serialized
+
+

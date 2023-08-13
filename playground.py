@@ -1,16 +1,11 @@
 # environment variables
 from simon.environment import get_env_vars
-env_vars = get_env_vars()
-KEY = env_vars.get("OPENAI_KEY")
-ES_CONFIG = env_vars.get('ES_CONFIG')
-GOOGLE_MAPS_KEY = env_vars.get('GOOGLE_MAPS_KEY')
 
 # pipes
 import os
 import json
 
 # LLM
-from langchain.agents import load_tools
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import DuckDuckGoSearchRun
@@ -20,7 +15,6 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import LlamaCpp
 
 # DB
-from elasticsearch import Elasticsearch
 
 # our toolkits
 from simon import *
@@ -34,15 +28,23 @@ import logging as L
 DEBUG=True
 
 LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
-if DEBUG:
-    L.basicConfig(format=LOG_FORMAT, level=L.DEBUG)
-else:
-    L.basicConfig(format=LOG_FORMAT, level=L.INFO)
+L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 
-L.getLogger('elastic_transport.transport').setLevel(L.WARNING)
-L.getLogger('openai').setLevel(L.WARNING)
-L.getLogger('urllib3').setLevel(L.WARNING)
-L.getLogger('simon').setLevel(L.DEBUG)
+if DEBUG:
+    L.getLogger('simon').setLevel(L.DEBUG)
+
+from simon.search import Search
+from simon.start import create_context_oai
+
+context = create_context_oai("test-uid")
+
+s = Search(context)
+
+s.search("eigenvalues")
+s.brainstorm("what are eigenvalues?")
+s.search("what are eigenvalues?")
+
+s.query("Who is Elanor Roosevelt?")
 
 
 # llms
@@ -51,25 +53,18 @@ L.getLogger('simon').setLevel(L.DEBUG)
 #                n_batch=128,
 #                n_ctx=2048,
 #                verbose=False)
-gpt3 = ChatOpenAI(openai_api_key=KEY, model_name="gpt-3.5-turbo", temperature=0)
-gpt4 = ChatOpenAI(openai_api_key=KEY, model_name="gpt-4", temperature=0)
-embedding = OpenAIEmbeddings(openai_api_key=KEY, model="text-embedding-ada-002")
-
-# db
-es = Elasticsearch(**ES_CONFIG)
-UID = "test-uid"
 # UID = "test-uid-alt"
 # UID = "ingest_files"
 
-# # serialize all of the above together
-context = AgentContext(gpt3, gpt4, embedding, es, UID)
+# # # serialize all of the above together
+# context = AgentContext(gpt3, gpt4, embedding, es, UID)
 
-# provision our data sources (knowledgebase is provided by default
-# but initialized here for debug)
-kb = KnowledgeBase(context)
+# # provision our data sources (knowledgebase is provided by default
+# # but initialized here for debug)
+# kb = KnowledgeBase(context)
 
-# create assistant
-assistant = Assistant(context, verbose=True)
+# # create assistant
+# assistant = Assistant(context, verbose=True)
 
 # assistant.brainstorm("visiting minnisioda")
 # assistant.search("Visiting Minnesota.")
@@ -154,13 +149,12 @@ assistant = Assistant(context, verbose=True)
 # import time
 
 # a = time.time()
-# L.info(json.dumps(assistant.brainstorm("""
-# Debate surrounding Urbanization in Africa
-# - 
-# """), sort_keys=True, indent=4))
+# # L.info()
+# res = s.query("Panama canal")
+# print(json.dumps(res, indent=4))
 # b = time.time()
 
-# L.info(b-a)
+# b-a
 
 
 

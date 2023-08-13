@@ -41,7 +41,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from ..utils.elastic import *
+from .elastic import *
 from ..models import *
 
 #### SANITIZERS ####
@@ -715,81 +715,6 @@ def read_remote(url:str, context:AgentContext):
     # retrun hash
     return hash
 
-### Ingest Remote Helpers ###
-# These helpers should take a URL, and return an
-# array of flat dictionaries with flat data fields.
-# Like [ {"this": 1, "that": "two"}, {"what": 1, "the": "hell"} ]
-def __ingest_remote_helper__JSON(url):
-    # download page
-    headers = {'user-agent': 'Mozilla/5.0'}
-    r = requests.get(url, headers=headers)
-
-    return r.json()
-
-### Ingest Remote Function ###
-def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, delim="\n"):
-    """Read and index a remote resource into Elastic with a field mapping
-
-    Note
-    ----
-    This function is useful for STRUCTURED DATA. For SINGLE FILES/PAGES,
-    use `ingest_remote`
-
-
-    Parameters
-    ----------
-    url : str
-        URL to read.
-    context : AgentContext
-        Context to use.
-    type : DataType
-        What are we indexing?? JSON? SQL?
-    mappings : Mapping
-        Which fields match with what index? 
-    delim : optional, str
-        How do we deliminate chunks? Perhaps smarter in the future but
-        for now we are just splitting by a character.
-    
-    Return
-    ------
-    List[str]
-        List of hashes of the data we have read
-    """
-
-    # check mappings
-    mappings.check()
-
-    # get the data with the right parser
-    if type == DataType.JSON:
-        data = __ingest_remote_helper__JSON(url)
-
-    # create documents
-    docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
-                    delim=delim)
-            for i in data]
-    # filter for those that are indexed
-    docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
-
-    # pop each into the index
-    # and pop each into the cache and index
-    for i in docs:
-        index_document(i, context)
-        source = i.meta.get("source")
-        if source and source.strip() != "":
-            # remove docs surrounding old hash 
-            oldhash = get_hash(source, context)
-            if oldhash:
-                delete_document(oldhash, context)
-            # index new one
-            context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
-                                                                 "user": context.uid})
-    # refresh
-    context.elastic.indices.refresh(index="simon-cache")
-
-    # return hashes
-    return [i.hash for i in docs]
-
-
 #### GLUE ####
 # A function to assemble CHUNK-type search results
 
@@ -854,7 +779,7 @@ def assemble_chunks(results, context, padding=1):
         range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
                                 for i,j in smooth_chunks])
         # metadat
-        stitched_ranges.append((mean_score, title, range_text))
+        stitched_ranges.append((mean_score, title, range_text, source, hash))
 
     stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 

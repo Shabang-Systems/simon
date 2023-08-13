@@ -10,8 +10,7 @@ from typing import List, Union
 from datetime import datetime
 
 from ..models import *
-from ..utils.elastic import kv_set, kv_getall
-
+from ..components.elastic import kv_set, kv_getall
 from ..components.documents import *
 from .querymaster import *
 from .queryfixer import *

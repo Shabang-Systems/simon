@@ -5,7 +5,17 @@ import time
 from ..models import *
 from ..components import documents, aws
 
-class FileIngester:
+class TextFileIngester:
+    """Ingestor used for Local and S3 Text Files
+
+    Parameters
+    ----------
+    context : AgentContext
+        The context to ingest into
+    source_prefix : str
+        @RPC FIXME TODO
+    """
+
     def __init__(self, context:AgentContext, source_prefix=None):
         self.agent_context = context
         self.source_prefix = source_prefix
@@ -37,6 +47,19 @@ class FileIngester:
         return self.source_prefix.rstrip('/') + '/' + file_name.lstrip('/')
 
     def ingest_file(self, file_path):
+        """Ingest a single file based on its URI.
+
+        Parameters
+        ----------
+        file_path : str
+            Single file paths (local or S3) to ingest.
+
+        Returns
+        -------
+        str
+            Hash of the ingested file, used for deletion later.
+        """
+        
         title = os.path.basename(file_path)
         source = self._make_source_str(file_path)
 
@@ -68,14 +91,32 @@ class FileIngester:
                 logging.exception(
                     f'Error indexing {title}. Retrying...')
 
+        return document.hash
+
     def ingest_all(self, files):
+        """Ingest a group of files based on their URIs.
+
+        Parameters
+        ----------
+        file_path : List[str]
+            List of file paths (local or S3) to ingest.
+
+        Returns
+        -------
+        List[str]
+            Hashes of the ingested files, used for deletion later.
+        """
+
         ingest_all_st = time.time()
+        file_hashes = []
         for i, path in enumerate(files):
             file_name = os.path.basename(path)
             logging.info(
                 f'Ingesting file {file_name} into ElasticSearch ({i} of {len(files)})...')
-            self.ingest_file(path)
+            file_hashes.append(self.ingest_file(path))
         ingest_all_et = time.time()
         logging.info('Ingestion done!')
         logging.info(
             f'Ingested {len(files)} files in {(ingest_all_et - ingest_all_st):.2f} seconds.')
+
+        return file_hashes
