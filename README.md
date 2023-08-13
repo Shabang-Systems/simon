@@ -63,7 +63,7 @@ To serve a copy of the API, you can run:
 gunicorn -w 5 rest:simon_api -b [binding ip]:[binding port] --timeout 10000000 --preload
 ```
 
-though it is not production ready, you can play around with the API this way as well.
+**don't use the above unless you are sure you can't use the Python API and roll your own REST solution**: the above is _not supported_ and just a demo use case.
 
 ## Misc notes
 
