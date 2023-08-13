@@ -6,7 +6,7 @@ Hello! Welcome to Simon. Simon is an open-source pipeline which allows for the i
 </p>
 
 
-We are working on demos of salient use cases soon, as well as a hosted instance of Simon. This document serves as a very-minimal quickstart.
+We are working on demos of salient use cases soon, as well as a hosted instance of Simon. This document serves as a very-minimal quickstart as we work to build this tool. Needless to say, this tool is alpha, at best. Proceed for your own risk and fun!
   
 ## Quickstart to run the code
 
