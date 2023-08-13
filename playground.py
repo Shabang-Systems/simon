@@ -31,7 +31,7 @@ LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
 L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 
 if DEBUG:
-    L.getLogger('simon').setLevel(L.DEBUG)
+    L.getLogger('simon').setLevel(L.INFO)
 
 from simon.search import Search
 from simon.start import create_context_oai
@@ -40,11 +40,20 @@ context = create_context_oai("test-uid")
 
 s = Search(context)
 
+# from simon.ingestion import OCRIngester
+
+# ingestor = OCRIngester(context)
+# ingestor.ingest_file("/Users/houjun/Downloads/tmp.png")
+# ingestor.ingest_remote("https://neo.substack.com/p/neo-welcomes-suzanne-xie-as-investing")
+
+# get_fulltext("c84597fc368a6dfd2f26ffe2581152740302005cdee878f80e6212c6e5260f8c", context)
+# delete_document("c84597fc368a6dfd2f26ffe2581152740302005cdee878f80e6212c6e5260f8c", context)
+
 # s.search("eigenvalues")
 # s.brainstorm("what are eigenvalues?")
 # s.search("what are eigenvalues?")
 
-s.query("Who is Elanor Roosevelt?")
+# s.query("Who is Elanor Roosevelt?")
 
 # from simon.ingestion import JSONIngester
 
