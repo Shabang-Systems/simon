@@ -51,7 +51,7 @@ def get_es_config(raise_on_missing=False):
 
 def get_env_vars(raise_on_missing=False):
     # Entries in this list are required.
-    needed = ['OPENAI_KEY']
+    needed = ['OPENAI_API_KEY']
     # Entries in this list are optional/less important.
     wanted = []
     env_data = {'_MISSING': []}
