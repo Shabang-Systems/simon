@@ -29,12 +29,12 @@ UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
 cache = {}
 
 # create the api object
-api = Flask("simon")
-api.config['JSON_SORT_KEYS'] = False
+simon_api = Flask("simon")
+simon_api.config['JSON_SORT_KEYS'] = False
 flask.json.provider.DefaultJSONProvider.sort_keys = False
 
 # generate new llm
-@api.route('/start', methods=['POST'])
+@simon_api.route('/start', methods=['POST'])
 @cross_origin()
 def start():
     """start a chat instance
@@ -73,7 +73,7 @@ def start():
                     "status": "success"})
 
 # call the llm directly
-@api.route('/query', methods=['GET'])
+@simon_api.route('/query', methods=['GET'])
 @cross_origin()
 def query():
     """ask your model a question
@@ -100,7 +100,7 @@ def query():
 
 # engage RIO, which helps brainstorm possible prompts given a textual input
 # for instance, while taking notes
-@api.route('/brainstorm', methods=['GET'])
+@simon_api.route('/brainstorm', methods=['GET'])
 @cross_origin()
 def brainstorm():
     """come up with possible queries
@@ -126,7 +126,7 @@ def brainstorm():
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
 
-@api.route('/fetch', methods=['GET'])
+@simon_api.route('/fetch', methods=['GET'])
 @cross_origin()
 def fetch():
     """fetch a document based the hash
@@ -152,7 +152,7 @@ def fetch():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # automcomplete document title
-@api.route('/autocomplete', methods=['GET'])
+@simon_api.route('/autocomplete', methods=['GET'])
 @cross_origin()
 def autocomplete():
     """come up with possible documents based on the title
@@ -182,7 +182,7 @@ def autocomplete():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # OCR a document
-@api.route('/store', methods=['PUT'])
+@simon_api.route('/store', methods=['PUT'])
 @cross_origin()
 def store():
     """make the assistant store a URL
@@ -210,7 +210,7 @@ def store():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # forget a document
-@api.route('/forget', methods=['POST'])
+@simon_api.route('/forget', methods=['POST'])
 @cross_origin()
 def forget():
     """make the assistant unread a URL based on the hash
@@ -238,5 +238,5 @@ def forget():
 
 # run
 if __name__ == "__main__":
-    api.run()
+    simon_api.run()
 
