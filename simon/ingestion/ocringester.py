@@ -103,11 +103,22 @@ class OCRIngester:
 
 
     def ingest_remote(self, uri, title=None, source=None):
-        """
+        """OCR and Ingest a remote file using Tika
+
+        Parameters
+        ----------
+        uri : str
+            The path to the online URI.
+        title : optional, str
+            The title of the document, passed to the LLM.
+        source : optional, str
+            The "source" of the LLM, arbiturary string not exposed to
+            the LLM.
+
         Returns
         ------
-        List[str]
-            List of hashes of the data we have read
+        str
+            Hash of the document we have read.
         """
 
         L.info(f"OCR Ingesting Remote {uri}...")
