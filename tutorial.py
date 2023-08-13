@@ -25,15 +25,18 @@ start guide to Simon's API.
 """
 
 ### 0: Setup
-## We are only setting up logging here, making Simon extremely verbose while
-## muting the warning of most everything else.
-## When you are debugging with Simon, this is the recommended verbosity.
+# We are only setting up logging here, making Simon extremely verbose while
+# muting the warning of most everything else.
+# When you are debugging with Simon, this is the recommended verbosity.
 
 import logging as L
 
 LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
 L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 L.getLogger('simon').setLevel(L.DEBUG)
+
+# You should have your .env file and elastic instance set up accordingly.
+# if you haev not done so, follow instructions in README.md to get started.
 
 # we now import the package
 import simon
