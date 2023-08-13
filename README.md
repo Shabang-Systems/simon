@@ -57,6 +57,14 @@ You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` 
 
 We also included an example for how a possible REST api can be structured in `rest.py`. This is not meant to be production ready (yet), but can be a good starting point for your own APIs. We hope to eventually support the REST use case in the future.
 
+To serve a copy of the API, you can run:
+
+```python
+gunicorn -w 5 rest:simon_api -b [binding ip]:[binding port] --timeout 10000000 --preload
+```
+
+though it is not production ready, you can play around with the API this way as well.
+
 ## Misc notes
 
 You'll need java installed/available to run `Tika` which is used for fetching/manipulating external data.
