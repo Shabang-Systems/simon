@@ -1,2 +1,2 @@
-from fileingester import FileIngester
-from jsoningestor import JSONIngester
+from .textfileingester import TextFileIngester
+from .jsoningester import JSONIngester

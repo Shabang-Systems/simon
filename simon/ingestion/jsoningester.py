@@ -37,6 +37,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import json
 
 from ..components.elastic import *
+from ..components.documents import *
 from ..models import *
 
 
@@ -47,7 +48,7 @@ from ..models import *
 
 class JSONIngester:
     def __init__(self, context:AgentContext):
-        self.__content = context
+        self.__context = context
 
     ## Ingest Remote Function ###
     def ingest(self, url, mappings:Mapping, delim="\n"):
@@ -76,6 +77,7 @@ class JSONIngester:
         """
 
         context = self.__context
+        L.info(f"Creating JSON indexing task on {url}...")
 
         # check mappings
         mappings.check()
@@ -86,12 +88,16 @@ class JSONIngester:
 
         data = r.json()
 
+        L.debug(f"Succesfuly fetched {url}.")
+
         # create documents
         docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
                         delim=delim)
                 for i in data]
         # filter for those that are indexed
         docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
+
+        L.debug(f"Going to index {len(docs)} documents for JSON indexing.")
 
         # pop each into the index
         # and pop each into the cache and index
@@ -108,6 +114,7 @@ class JSONIngester:
                                                                     "user": context.uid})
         # refresh
         context.elastic.indices.refresh(index="simon-cache")
+        L.info(f"Done creating JSON index on {url}")
 
         # return hashes
         return [i.hash for i in docs]

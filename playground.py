@@ -40,11 +40,20 @@ context = create_context_oai("test-uid")
 
 s = Search(context)
 
-s.search("eigenvalues")
-s.brainstorm("what are eigenvalues?")
-s.search("what are eigenvalues?")
+# s.search("eigenvalues")
+# s.brainstorm("what are eigenvalues?")
+# s.search("what are eigenvalues?")
 
-s.query("Who is Elanor Roosevelt?")
+# s.query("Who is Elanor Roosevelt?")
+
+from simon.ingestion import JSONIngester
+
+ing = JSONIngester(context)
+ing.ingest("https://www.jemoka.com/index.json", JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
+                                                             StringMappingField("contents", MappingTarget.TEXT),
+                                                             StringMappingField("title", MappingTarget.TITLE)]))
+
+
 
 
 # llms
