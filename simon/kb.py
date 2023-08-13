@@ -6,6 +6,12 @@ from abc import ABC, abstractproperty, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional, Union
 
+
+import logging
+L = logging.getLogger(__name__)
+
+
+
 import itertools
 
 def dedup(k):
@@ -42,6 +48,7 @@ class KnowledgeBase():
         self.context = context
 
     def __call__(self, input):
+        L.info(f"Semantic searching for query \"{input}\"...")
         # use both types of search to create all possible hits
         results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=3)
         # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
@@ -52,6 +59,7 @@ class KnowledgeBase():
         #                    for i in results_semantic
         #                    for j in similar(i["id"], self.context, k=1, threshold=0.95)]
 
+        L.debug(f"Results identified for \"{input}\" Got {len(results_semantic)} results.")
 
         total_text = "".join(i["text"] for i in results_semantic)
 
@@ -59,6 +67,7 @@ class KnowledgeBase():
         while len(total_text) > 1500 and len(results_semantic) > 2:
             results_semantic = results_semantic[:-1]
             total_text = "".join(i["text"] for i in results_semantic)
+        L.debug(f"Filtering complete for \"{input}\". {len(results_semantic)} results remain.")
 
         results = results_semantic
         # breakpoint()
@@ -68,6 +77,7 @@ class KnowledgeBase():
 
         # create chunks: list of tuples of (score, title, text with context)
         chunks = assemble_chunks(results, self.context)
+        L.debug(f"Assembled chunks for \"{input}\".")
 
         responses = [SimonProviderResponse(title, body, {"source": source,
                                                          "hash": hash})

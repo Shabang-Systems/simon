@@ -40,13 +40,16 @@ class Search:
             the output, with resource information, etc.
         """
 
+        L.info(f"Serving query \"{query}\"...")
         # fix the query and brainstorm possible
         # tangentia questions. use both to search the resource
         # we first query for relavent resources, then performing
         # search with them. if no results are return, don't worry
         # we just filter them out
         questions = [query] + self.brainstorm(query) 
+        L.debug(f"Prefetch on \"{query}\" complete")
         resources = [self.search(i) for i in questions]
+        L.debug(f"Search on \"{query}\" complete")
         resources = [j for i in resources if i for j in i] # to filter out errors and flatten
 
         if resources == 0:
@@ -56,6 +59,7 @@ class Search:
 
         # L.debug("REASONING")
         output = self.__reason(query, resources)
+        L.debug(f"Reasoning on \"{query}\" complete")
 
         return output
 
@@ -80,11 +84,15 @@ class Search:
             }]
         """
 
+        L.info(f"Serving prefetch \"{text}\"...")
         # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
         query = self.__fix(text)
+        L.debug(f"Query semantic patching for \"{text}\" complete; patched query \"{query}\"")
         kb = self.__kb(text) # we only search the kb because this is only a spot check
+        L.info(f"Search complete for \"{text}\".")
 
         observation = self.__rio(text, kb)
+        L.debug(f"Prefetch reasoning complete for \"{text}\"")
         return observation
 
     def search(self, text):

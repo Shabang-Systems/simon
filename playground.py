@@ -44,14 +44,14 @@ s = Search(context)
 # s.brainstorm("what are eigenvalues?")
 # s.search("what are eigenvalues?")
 
-# s.query("Who is Elanor Roosevelt?")
+s.query("Who is Elanor Roosevelt?")
 
-from simon.ingestion import JSONIngester
+# from simon.ingestion import JSONIngester
 
-ing = JSONIngester(context)
-ing.ingest("https://www.jemoka.com/index.json", JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
-                                                             StringMappingField("contents", MappingTarget.TEXT),
-                                                             StringMappingField("title", MappingTarget.TITLE)]))
+# ing = JSONIngester(context)
+# ing.ingest("https://www.jemoka.com/index.json", JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
+#                                                              StringMappingField("contents", MappingTarget.TEXT),
+#                                                              StringMappingField("title", MappingTarget.TITLE)]))
 
 
 
