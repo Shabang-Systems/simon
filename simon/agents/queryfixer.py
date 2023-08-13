@@ -30,17 +30,19 @@ Here are few examples of successful conversions:
 Provide your output in this format:
 
 ```output
+New, shortened statement for the database:
 your full, new question/statement here.
 ```
 
 Begin!
 
 Human:
-Here is the question to answer:
+Here is the question for you to patch:
 {input}
 
 AI:
 ```output
+New, shortened statement for the database:
 """
 
 class QueryPromptFormatter(StringPromptTemplate):

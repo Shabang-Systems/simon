@@ -24,7 +24,7 @@ Pay attention to the lack of knowledge the human's partial thoughts betray and f
 Keep everything extremely brief. Adhere to the following format.
 
 ```output
-Comments: A markdown list with good, salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. This list can contain at *most four elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
+Comments: A markdown list with good, salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. This list can contain at *most five elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
 ```
 
 For instance:
@@ -39,13 +39,13 @@ Title: Syscorp -- Syscorp is an Canadian company with headquarters in Smithtown.
 Title: Smithtown airport instructions -- Go to Terminal 3, and turn left to hail a cab. That will be the easiest.
 
 ```output
-Comments:
+Five Information-Rich Insightful Comments:
 - Who is John from Smithtown?
 - Who else can we visit at Syscorp?
 - Cab hailing instructions at Smithown
 ```
 
-Remember to return at most 4 results.
+The list of Five Comments: must be only 5 elements long or shorter. Select questions which will reveal the most amount of new information.
 
 Question:
 {input}
@@ -54,10 +54,10 @@ Knowledge:
 {entities}
 {kb}
 
-Begin!
+Begin! Remember to come up information-rich questions.
 
 ```output
-Comments:"""
+Five Information-Rich Insightful Comments:"""
 
 class RIOPromptFormatter(StringPromptTemplate):
     def format(self, **kwargs):
