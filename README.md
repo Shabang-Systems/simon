@@ -27,13 +27,9 @@ pip install -r requirements.txt
 all versions are figured with `Python 3.11`; all versions `>3.9` should be supported.
 
 ### Set Environment Variables
-Collect your credentials from the steps before, and create an `.env` file (copy `.env.example` and set values after the = sign) or through simple `export` in your shell, e.g.:
+Collect your credentials from the steps before, and create an `.env` file (copy `.env.example` and set values after the = sign) or through simple `export` directive in your bash shell.
 
-```
-export OPENAI_KEY=sk-some-api-key
-```
-
-An example of all the environment variables needed is in the .env.example file.
+An example of all the environment variables needed is in the `.env.example` file.
 
 Values set in your shell will override those in the `.env` file.
 
