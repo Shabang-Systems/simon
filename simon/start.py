@@ -11,7 +11,7 @@ from elasticsearch import Elasticsearch
 from .models import *
 from .environment import get_env_vars
 
-def create_context_oai(uid:str, openai_key:str=None, es_config:dict=None):
+def create_context(uid:str, openai_key:str=None, es_config:dict=None):
     """Quickstart function to build a Simon context with OpenAI
 
     Parameters
