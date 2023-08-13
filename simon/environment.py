@@ -82,6 +82,13 @@ def get_env_vars(raise_on_missing=False):
     # Handle ES config separately because it's a bit more complicated
     env_data['ES_CONFIG'] = get_es_config(raise_on_missing=raise_on_missing)
 
+    # Collect OpenAI config into one place
+    env_data["OAI_CONFIG"] = {
+        "openai_api_key": config["OPENAI_API_KEY"],
+        "openai_api_base": config.get("OPENAI_API_BASE", None),
+        "openai_api_type": config.get("OPENAI_API_TYPE", None),
+    }
+
     for var in wanted:
         if var in config and config[var]:
             env_data[var] = config[var]
