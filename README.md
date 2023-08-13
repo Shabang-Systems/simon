@@ -53,7 +53,9 @@ python setup_es.py --nuke
 
 ### Run the code!
 
-You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` to get a full overview of the API.
+You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` to get a full overview of the Python API.
+
+We also included an example for how a possible REST api can be structured. This is not meant to be production ready (yet), but can be a good starting point for your own APIs. We hope to eventually support the REST use case in the future.
 
 ## Misc notes
 

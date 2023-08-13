@@ -186,5 +186,8 @@ results = search.autocomplete("linear ma")
 # They are meant to be helpful utilities with their own CLI interface to maange
 # a Simon instance. Consult them to get started with setting up your instance.
 #
+# `api.py` also includes a reference implementation of a minimal REST api for
+# the service. You can use this as a starting point for your own web-based applications.
+#
 # Good luck! 
 

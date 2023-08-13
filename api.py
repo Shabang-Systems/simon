@@ -13,11 +13,6 @@ from flask_cors import cross_origin
 # importing everything
 import simon
 
-# llm tooling
-from elasticsearch import Elasticsearch
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-
 # uuid generator
 from uuid import uuid4
 
