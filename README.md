@@ -1,6 +1,12 @@
 # #!/Simon
 Hello! Welcome to Simon. Simon is an open-source pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs. 
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Shabang-Systems/simon/main/static/promo.png" />
+  <i>Weee image of the codebase weee!</i>
+</p>
+
+
 We are working on demos of salient use cases soon, as well as a hosted instance of Simon. This document serves as a very-minimal quickstart.
   
 ## Quickstart to run the code
