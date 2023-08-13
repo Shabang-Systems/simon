@@ -50,7 +50,7 @@ class KnowledgeBase():
     def __call__(self, input):
         L.info(f"Semantic searching for query \"{input}\"...")
         # use both types of search to create all possible hits
-        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=3)
+        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=2)
         # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
  
         # # we then go through to find everything similar to the results to provide
@@ -64,7 +64,7 @@ class KnowledgeBase():
         total_text = "".join(i["text"] for i in results_semantic)
 
         # to prevent long contexts
-        while len(total_text) > 1500 and len(results_semantic) > 2:
+        while len(total_text) > 1000 and len(results_semantic) > 1:
             results_semantic = results_semantic[:-1]
             total_text = "".join(i["text"] for i in results_semantic)
         L.debug(f"Filtering complete for \"{input}\". {len(results_semantic)} results remain.")

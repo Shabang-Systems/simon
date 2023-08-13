@@ -8,6 +8,9 @@ from langchain.embeddings import OpenAIEmbeddings
 
 from elasticsearch import Elasticsearch
 
+import logging
+L = logging.getLogger("simon")
+
 from .models import *
 from .environment import get_env_vars
 
@@ -37,13 +40,19 @@ def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
         oai_config = env_vars.get('OAI_CONFIG')
 
     # create openai stuff
-    if oai_config.get("openai_api_type", "").lower() == "azure":
-        gpt3 = AzureChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config)
-        gpt4 = AzureChatOpenAI(model_name="gpt-4", temperature=0, **oai_config)
+    if oai_config.get("openai_api_type", "") == "azure":
+        L.warn("Simon's Azure API is *UNSTABLE* PRE_ALPHA as of now. Expect things to break.")
+        L.warn("We recommend you use the public OpenAI Services, if possible.")
+        gpt3 = AzureChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config,
+                               deployment_name="gpt-35-turbo")
+        gpt4 = AzureChatOpenAI(model_name="gpt-4", temperature=0, **oai_config,
+                               deployment_name="gpt-4")
+        embedding = OpenAIEmbeddings(model="text-embedding-ada-002", **oai_config,
+                                     deployment="text-embedding-ada-002")
     else:
-        gpt3 = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config)
-        gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, **oai_config)
-    embedding = OpenAIEmbeddings(model="text-embedding-ada-002", **oai_config)
+        gpt3 = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=oai_config["openai_api_key"])
+        gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, openai_api_key=oai_config["openai_api_key"])
+        embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=oai_config["openai_api_key"])
 
     # create elastic instance
     es = Elasticsearch(**es_config)
