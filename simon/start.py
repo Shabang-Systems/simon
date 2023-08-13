@@ -3,7 +3,7 @@ quick.py
 Utilities that act as helper functions
 """
 
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 
 from elasticsearch import Elasticsearch
@@ -37,8 +37,12 @@ def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
         oai_config = env_vars.get('OAI_CONFIG')
 
     # create openai stuff
-    gpt3 = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config)
-    gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, **oai_config)
+    if oai_config.get("openai_api_type", "").lower() == "azure":
+        gpt3 = AzureChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config)
+        gpt4 = AzureChatOpenAI(model_name="gpt-4", temperature=0, **oai_config)
+    else:
+        gpt3 = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config)
+        gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, **oai_config)
     embedding = OpenAIEmbeddings(model="text-embedding-ada-002", **oai_config)
 
     # create elastic instance

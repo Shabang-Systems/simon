@@ -87,6 +87,7 @@ def get_env_vars(raise_on_missing=False):
         "openai_api_key": config["OPENAI_API_KEY"],
         "openai_api_base": config.get("OPENAI_API_BASE", None),
         "openai_api_type": config.get("OPENAI_API_TYPE", None),
+        "openai_api_version": config.get("OPENAI_API_VERSION", None),
     }
 
     for var in wanted:
