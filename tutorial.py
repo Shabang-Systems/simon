@@ -51,7 +51,7 @@ import simon
 # followed the quick-start guide in the README of this repo,  Simon can read
 # the .env file you have setup already to get your context easily.
 
-context = simon.create_context("test-uid") # the UID here is an arbiturary string, think about it like database tables.
+context = simon.create_context("test-uid")  # the UID here is an arbiturary string, think about it like database tables.
                                             # Data stored in `AgentContext`s belonging to one UID are not accessible by
                                             # Simon operations initialized with a context belonging to another UID.
 # Note that this quickstart function takes a lot more options to directly,
