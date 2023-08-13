@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 
 
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 # Networking
 import requests

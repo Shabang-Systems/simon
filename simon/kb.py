@@ -8,7 +8,7 @@ from typing import List, Optional, Union
 
 
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 
 

@@ -15,7 +15,7 @@ from tempfile import TemporaryDirectory
 
 
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 # Networking
 import requests
@@ -185,7 +185,6 @@ def get_fulltext(hash:str, context:AgentContext):
     Optional[str]
         str full text, or None.
     """
-
     doc = context.elastic.search(index="simon-fulltext",
                                  query={"bool": {"must": [{"term": {"hash": hash}},
                                                           {"term": {"user":
@@ -639,81 +638,6 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # if an old hash was detected, we delete any traces of the old document
     if old_hash:
         delete_document(old_hash, context)
-        
-#### SPECIAL SETTERS ####
-
-### Read Remote Helpers ###
-# These helpers should take a URL, and return an
-# object of class ParsedDocument
-def __read_remote_helper__DOCUMENT(r, url):
-    # Retrieve and parse the document
-    with TemporaryDirectory() as tmpdir:
-        f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
-        with open(f, 'wb') as fp:
-            fp.write(r.content)
-            doc = parse_tika(f, source=url)
-            hash = doc.hash
-
-    return doc
-
-def __read_remote_helper__WEBPAGE(r, url):
-    # parse!
-    doc = parse_web(r.content, source=url)
-    hash = doc.hash
-
-    return doc
-
-### Read Remote Function ###
-def read_remote(url:str, context:AgentContext):
-    """Read and index a remote file into Elastic.
-
-    Note
-    ----
-    This function is useful for single FILES/WEB PAGES. Filled with TEXT. For DATA,
-    use `ingest_remote`
-    
-
-    Parameters
-    ----------
-    url : str
-        URL to read.
-    context : AgentContext
-        Context to use.
-
-    Return
-    ------
-    str
-        Hash of the file we are reading, useful for searching, etc.
-    """
-
-    # Search for the URL in the cache if it exists
-    hash = get_hash(url, context)
-
-    # If there is no cache retrieve the doc
-    if not hash:
-        headers = {'user-agent': 'Mozilla/5.0'}
-        r = requests.get(url, headers=headers)
-        content_type = r.headers['content-type'].split(";")[0].strip()
-
-        if "text" in content_type:
-            doc = __read_remote_helper__WEBPAGE(r, url)
-        elif "application" in content_type:
-            doc = __read_remote_helper__DOCUMENT(r, url)
-        elif "image" in content_type:
-            doc = __read_remote_helper__DOCUMENT(r, url)
-
-        # read hash off of the doc
-        hash = doc.hash
-
-        
-        # and pop it into the cache and index
-        context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash,
-                                                             "user": context.uid})
-        context.elastic.indices.refresh(index="simon-cache")
-        index_document(doc, context)
-
-    # retrun hash
-    return hash
 
 #### GLUE ####
 # A function to assemble CHUNK-type search results
@@ -785,24 +709,3 @@ def assemble_chunks(results, context, padding=1):
 
     # and now, assemble everything with slashes between and return
     return stitched_ranges
-
-# context = ""
-# hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context)
-# delete_document(hash, context)
-
-
-# hash = read_remote("https://arxiv.org/pdf/2004.07606.pdf", context)
-# top_tf(hash, context)
-# # hash
-
-# results = search("what's a linear map?", context, k=3)
-# print(assemble_chunks(results, context))
-
-# ingest_remote("https://www.jemoka.com/index.json",
-#               context,
-#               DataType.JSON,
-#               JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
-#                            StringMappingField("contents", MappingTarget.TEXT),
-#                            StringMappingField("title", MappingTarget.TITLE)]))
-              
-

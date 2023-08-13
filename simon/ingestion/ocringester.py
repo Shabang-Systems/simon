@@ -21,7 +21,7 @@ import tempfile
 
 
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 # Networking
 import requests
@@ -133,6 +133,11 @@ class OCRIngester:
             hash = self.__ingest_remote_document(r, uri, title, source)
         elif "image" in content_type:
             hash = self.__ingest_remote_document(r, uri, title, source)
+
+        # and pop it into the cache and index
+        self.__context.elastic.index(index="simon-cache", document={"uri": uri, "hash": hash,
+                                                                    "user": self.__context.uid})
+        self.__context.elastic.indices.refresh(index="simon-cache")
 
         # return hashes
         return hash

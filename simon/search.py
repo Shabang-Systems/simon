@@ -1,5 +1,5 @@
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 # import our tools
 from .models import *
@@ -112,5 +112,22 @@ class Search:
 
 
         return serialized
+
+    def autocomplete(self, query:str):
+        """Autocomplete the document with the given title
+
+        Parameters
+        ----------
+        query : str
+            The partial title of the document to start suggesting from.
+
+        Returns
+        -------
+        List[Tuple[str, str]]
+            A list of (title, text).
+        """
+        
+        return suggest(query, self.__context)
+
 
 
