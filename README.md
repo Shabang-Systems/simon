@@ -3,7 +3,6 @@ Hello! Welcome to Simon. Simon is an open-source pipeline which allows for the i
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Shabang-Systems/simon/main/static/promo.png" />
-  <i>Weee image of the codebase weee!</i>
 </p>
 
 
