@@ -15,7 +15,7 @@ from tempfile import TemporaryDirectory
 
 
 import logging
-L = logging.getLogger(__name__)
+L = logging.getLogger("simon")
 
 # Networking
 import requests
@@ -41,7 +41,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from ..utils.elastic import *
+from .elastic import *
 from ..models import *
 
 #### SANITIZERS ####
@@ -185,7 +185,6 @@ def get_fulltext(hash:str, context:AgentContext):
     Optional[str]
         str full text, or None.
     """
-
     doc = context.elastic.search(index="simon-fulltext",
                                  query={"bool": {"must": [{"term": {"hash": hash}},
                                                           {"term": {"user":
@@ -639,155 +638,6 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # if an old hash was detected, we delete any traces of the old document
     if old_hash:
         delete_document(old_hash, context)
-        
-#### SPECIAL SETTERS ####
-
-### Read Remote Helpers ###
-# These helpers should take a URL, and return an
-# object of class ParsedDocument
-def __read_remote_helper__DOCUMENT(r, url):
-    # Retrieve and parse the document
-    with TemporaryDirectory() as tmpdir:
-        f = os.path.join(tmpdir, f"simon-cache-{time.time()}")
-        with open(f, 'wb') as fp:
-            fp.write(r.content)
-            doc = parse_tika(f, source=url)
-            hash = doc.hash
-
-    return doc
-
-def __read_remote_helper__WEBPAGE(r, url):
-    # parse!
-    doc = parse_web(r.content, source=url)
-    hash = doc.hash
-
-    return doc
-
-### Read Remote Function ###
-def read_remote(url:str, context:AgentContext):
-    """Read and index a remote file into Elastic.
-
-    Note
-    ----
-    This function is useful for single FILES/WEB PAGES. Filled with TEXT. For DATA,
-    use `ingest_remote`
-    
-
-    Parameters
-    ----------
-    url : str
-        URL to read.
-    context : AgentContext
-        Context to use.
-
-    Return
-    ------
-    str
-        Hash of the file we are reading, useful for searching, etc.
-    """
-
-    # Search for the URL in the cache if it exists
-    hash = get_hash(url, context)
-
-    # If there is no cache retrieve the doc
-    if not hash:
-        headers = {'user-agent': 'Mozilla/5.0'}
-        r = requests.get(url, headers=headers)
-        content_type = r.headers['content-type'].split(";")[0].strip()
-
-        if "text" in content_type:
-            doc = __read_remote_helper__WEBPAGE(r, url)
-        elif "application" in content_type:
-            doc = __read_remote_helper__DOCUMENT(r, url)
-        elif "image" in content_type:
-            doc = __read_remote_helper__DOCUMENT(r, url)
-
-        # read hash off of the doc
-        hash = doc.hash
-
-        # and pop it into the cache and index
-        context.elastic.index(index="simon-cache", document={"uri": url, "hash": hash,
-                                                             "user": context.uid})
-        context.elastic.indices.refresh(index="simon-cache")
-        index_document(doc, context)
-
-    # retrun hash
-    return hash
-
-### Ingest Remote Helpers ###
-# These helpers should take a URL, and return an
-# array of flat dictionaries with flat data fields.
-# Like [ {"this": 1, "that": "two"}, {"what": 1, "the": "hell"} ]
-def __ingest_remote_helper__JSON(url):
-    # download page
-    headers = {'user-agent': 'Mozilla/5.0'}
-    r = requests.get(url, headers=headers)
-
-    return r.json()
-
-### Ingest Remote Function ###
-def ingest_remote(url, context:AgentContext, type:DataType, mappings:Mapping, delim="\n"):
-    """Read and index a remote resource into Elastic with a field mapping
-
-    Note
-    ----
-    This function is useful for STRUCTURED DATA. For SINGLE FILES/PAGES,
-    use `ingest_remote`
-
-
-    Parameters
-    ----------
-    url : str
-        URL to read.
-    context : AgentContext
-        Context to use.
-    type : DataType
-        What are we indexing?? JSON? SQL?
-    mappings : Mapping
-        Which fields match with what index? 
-    delim : optional, str
-        How do we deliminate chunks? Perhaps smarter in the future but
-        for now we are just splitting by a character.
-    
-    Return
-    ------
-    List[str]
-        List of hashes of the data we have read
-    """
-
-    # check mappings
-    mappings.check()
-
-    # get the data with the right parser
-    if type == DataType.JSON:
-        data = __ingest_remote_helper__JSON(url)
-
-    # create documents
-    docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
-                    delim=delim)
-            for i in data]
-    # filter for those that are indexed
-    docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
-
-    # pop each into the index
-    # and pop each into the cache and index
-    for i in docs:
-        index_document(i, context)
-        source = i.meta.get("source")
-        if source and source.strip() != "":
-            # remove docs surrounding old hash 
-            oldhash = get_hash(source, context)
-            if oldhash:
-                delete_document(oldhash, context)
-            # index new one
-            context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
-                                                                 "user": context.uid})
-    # refresh
-    context.elastic.indices.refresh(index="simon-cache")
-
-    # return hashes
-    return [i.hash for i in docs]
-
 
 #### GLUE ####
 # A function to assemble CHUNK-type search results
@@ -853,30 +703,9 @@ def assemble_chunks(results, context, padding=1):
         range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
                                 for i,j in smooth_chunks])
         # metadat
-        stitched_ranges.append((mean_score, title, range_text))
+        stitched_ranges.append((mean_score, title, range_text, source, hash))
 
     stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 
     # and now, assemble everything with slashes between and return
     return stitched_ranges
-
-# context = ""
-# hash = read_remote("https://arxiv.org/pdf/1706.03762.pdf", context)
-# delete_document(hash, context)
-
-
-# hash = read_remote("https://arxiv.org/pdf/2004.07606.pdf", context)
-# top_tf(hash, context)
-# # hash
-
-# results = search("what's a linear map?", context, k=3)
-# print(assemble_chunks(results, context))
-
-# ingest_remote("https://www.jemoka.com/index.json",
-#               context,
-#               DataType.JSON,
-#               JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
-#                            StringMappingField("contents", MappingTarget.TEXT),
-#                            StringMappingField("title", MappingTarget.TITLE)]))
-              
-
