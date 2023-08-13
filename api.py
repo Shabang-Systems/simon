@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify
 from flask_cors import cross_origin
 
 # importing everything
-from simon import *
+import simon
 
 # llm tooling
 from elasticsearch import Elasticsearch
@@ -28,7 +28,7 @@ KEY = env_vars.get("OPENAI_KEY")
 ES_CONFIG = env_vars.get('ES_CONFIG')
 
 # TODO TODO TODO AUTHHH
-UID = "test-uid"
+UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
 
 # TODO TODO better cache
 cache = {}
@@ -37,49 +37,6 @@ cache = {}
 api = Flask("simon")
 api.config['JSON_SORT_KEYS'] = False
 flask.json.provider.DefaultJSONProvider.sort_keys = False
-
-# provider input handlers
-# they should take the request's arguments + body
-# as input, and return an instance of the initialized
-# providers
-def provider__map(_1, body, _2):
-    try:
-        key = body["google_maps_key"]
-        provider = Map(key.strip())
-    except KeyError:
-        raise KeyError("simon: missing google_maps_key")
-
-    return provider
-
-PROVIDER_HANDLERS = {
-    "map": provider__map
-}
-
-# handle provider string for /start
-def handle_providers(providers, arguments, body, context):
-    """uniform interface to initialize string providers
-
-    Parameters
-    ----------
-    providers : str
-        provider string, seperated by commas, to initialize
-    arguments : Dict[str,str]
-        the entirety of the request arguments from Flask
-    body : Dict[str,str]
-        the JSON body of the request
-    context : AgentContext
-        the LLM context to use 
-
-    Returns
-    -------
-    List[SimonProvider]
-        A list of providers the model can use
-    """
-    
-    providers = [i.strip() for i in providers.split(",") if i.strip() != ""]
-    providers = [PROVIDER_HANDLERS[i](arguments, body, context) for i in providers]
-
-    return providers
 
 # generate new llm
 @api.route('/start', methods=['POST'])
@@ -105,32 +62,12 @@ def start():
     id = str(uuid4())
 
     try:
-        # get needed variables 
-        providers = arguments.get("providers", "")
-
-        # create the base llms
-        gpt3 = ChatOpenAI(openai_api_key = KEY,
-                          model_name = "gpt-3.5-turbo",
-                          temperature=0)
-
-        gpt4 = ChatOpenAI(openai_api_key = KEY,
-                          model_name = "gpt-4",
-                          temperature=0)
-
-        embeddings = OpenAIEmbeddings(openai_api_key=KEY,
-                                      model="text-embedding-ada-002")
-        es = Elasticsearch(**ES_CONFIG)
-
-        # create the context
-        context = AgentContext(gpt3, gpt4, embeddings, es, UID)
-
-        # get the actual providers from provider string
-        providers = handle_providers(providers, arguments, body, context)
-
-        # make the assistant
-        assistant = Assistant(context, providers)
-
-        cache[id] = assistant
+        context = simon.create_context(UID)
+        cache[id] = {
+            "context": context,
+            "search": simon.Search(context),
+            "management": simon.Datastore(context),
+        }
 
     except KeyError:
         return jsonify({"status": "error",
@@ -157,9 +94,9 @@ def query():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
+        assistant = cache[arguments["session_id"].strip()]["search"]
         return {
-            "response": assistant(arguments["q"].strip()),
+            "response": assistant.query(arguments["q"].strip()),
             "status": "success"
         }
     except KeyError:
@@ -185,7 +122,7 @@ def brainstorm():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
+        assistant = cache[arguments["session_id"].strip()]["search"]
         return {
             "response": assistant.brainstorm(arguments["q"].strip()),
             "status": "success"
@@ -210,40 +147,14 @@ def fetch():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
+        assistant = cache[arguments["session_id"].strip()]["management"]
         return {
-            "response": assistant.fetch(arguments["resource_id"].strip()),
+            "response": assistant.get(arguments["resource_id"].strip()),
             "status": "success"
         }
     except KeyError:
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
-
-@api.route('/summarize', methods=['GET'])
-@cross_origin()
-def summarize():
-    """summarizes a document
-
-    @params
-    - resource_id : str --- the hash of the document to fetch
-    - session_id : str --- session id that you should have gotten from /start
-
-    @returns JSON
-    - response: JSON --- JSON paylod returned from the model
-    - status: str --- status, usually success
-    """
-
-    try:
-        arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
-        return {
-            "response": assistant.summarize(arguments["resource_id"].strip()),
-            "status": "success"
-        }
-    except KeyError:
-        return jsonify({"status": "error",
-                        "message": "malformed request, or invalid session_id"}), 400
-
 
 # automcomplete document title
 @api.route('/autocomplete', methods=['GET'])
@@ -262,7 +173,7 @@ def autocomplete():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
+        assistant = cache[arguments["session_id"].strip()]["search"]
         results = assistant.autocomplete(arguments["q"].strip())
 
         results_serialized = [{"title": i, "text": j, "resource_id": k} for i,j,k in results]
@@ -276,40 +187,14 @@ def autocomplete():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # OCR a document
-@api.route('/read', methods=['PUT'])
-@cross_origin()
-def read():
-    """make the assistant read a URL
-
-    @params
-    - resource : str --- URL of PDF/text to be read by the assistant
-    - session_id : str --- session id that you should have gotten from /start
-
-    @returns JSON
-    - resource_id: str --- string hash representing the ID of the document, useful for /forget
-    - status: str --- status, usually success
-    """
-
-    try:
-        arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
-        return {
-            "resource_id": assistant.read(arguments["resource"].strip()),
-            "status": "success"
-        }
-    except KeyError:
-        return jsonify({"status": "error",
-                        "message": "malformed request, or invalid session_id"}), 400
-
-# store some information
 @api.route('/store', methods=['PUT'])
 @cross_origin()
 def store():
-    """make the assistant remember some info
+    """make the assistant store a URL
 
     @params
-    - title : str --- the title to store the document
-    - content : str --- the content to store
+    - resource : str --- URL of PDF/text to be read by the assistant
+    - title : str --- title of the assistant
     - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
@@ -319,11 +204,10 @@ def store():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
+        assistant = cache[arguments["session_id"].strip()]["management"]
         return {
-            "resource_id": assistant.store(arguments["title"].strip(),
-                                           arguments["content"].strip(),
-                                           arguments["source"].strip()),
+            "resource_id": assistant.store(arguments["resource"].strip(),
+                                           title=arguments["title"].strip()),
             "status": "success"
         }
     except KeyError:
@@ -347,8 +231,8 @@ def forget():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]
-        assistant.forget(arguments["resource_id"].strip())
+        assistant = cache[arguments["session_id"].strip()]["management"]
+        assistant.delete(arguments["resource_id"].strip())
 
         return {
             "status": "success"

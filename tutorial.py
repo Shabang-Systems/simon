@@ -54,6 +54,7 @@ import simon
 context = simon.create_context("test-uid")  # the UID here is an arbiturary string, think about it like database tables.
                                             # Data stored in `AgentContext`s belonging to one UID are not accessible by
                                             # Simon operations initialized with a context belonging to another UID.
+
 # Note that this quickstart function takes a lot more options to directly,
 # if you don't want to set up a .env file. If you have an .env file, the example above
 # is enough to get you off and running.
