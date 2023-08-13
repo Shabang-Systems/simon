@@ -31,7 +31,7 @@ LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
 L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 
 if DEBUG:
-    L.getLogger('simon').setLevel(L.INFO)
+    L.getLogger('simon').setLevel(L.DEBUG)
 
 from simon.search import Search
 from simon.start import create_context_oai
