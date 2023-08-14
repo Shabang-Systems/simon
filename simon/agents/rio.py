@@ -17,12 +17,14 @@ from ..models import *
 
 TEMPLATE = """
 System:
-You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. Provide these questions as extension brainstorm questions: think ONE STEP FURTHER than what is is the human's knowledge and the knowlege you are provided.
+You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. These comment should be able to be searched in the knowledgebase.
+
+Pay attention to the lack of knowledge the human's partial thoughts betray and fix them by coming up with good questions/comments that help the human discover that facet of knowledge.
 
 Keep everything extremely brief. Adhere to the following format.
 
 ```output
-Comments: A markdown list with good, salient questions or comments the human would've asked if they had read the knowledge you are provided, but which the human couldn't have possibly thought of without the knowledge base. This list can contain at *most five elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
+Comments: A markdown list with good, salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. This list can contain at *most five elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
 ```
 
 For instance:
@@ -37,13 +39,13 @@ Title: Syscorp -- Syscorp is an Canadian company with headquarters in Smithtown.
 Title: Smithtown airport instructions -- Go to Terminal 3, and turn left to hail a cab. That will be the easiest.
 
 ```output
-Five Information-Rich Insightful Comments:
-- Tell me more about John.
+Five Comments:
+- Who is John?
 - Who else can we visit at Syscorp?
-- Smithtown cab instructions
+- Cab hailing instructions at Smithown
 ```
 
-The list of Five Comments: must be only 5 elements long or shorter. Select questions which will reveal the most amount of new information. Do not repeat the keywords already present in the human's question: the human already knows them! In the example above, for example, "Smithtown" was only referred to once. 
+Remember to return at most 5 results.
 
 Question:
 {input}
@@ -52,10 +54,10 @@ Knowledge:
 {entities}
 {kb}
 
-Begin! Remember to come up information-rich questions.
+Begin!
 
 ```output
-Five Information-Rich Insightful Comments:"""
+Five Comments:"""
 
 class RIOPromptFormatter(StringPromptTemplate):
     def format(self, **kwargs):
