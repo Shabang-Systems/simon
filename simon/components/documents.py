@@ -50,8 +50,8 @@ def __chunk(text, delim="\n\n"):
     sentences = sent_tokenize(text)
      
     # makes groups of 5 sentences, joined, as the chunks
-    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+4]).strip().replace("\n", " ")).strip()
-                        for i in range(0, len(sentences), 4)]
+    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+3]).strip().replace("\n", " ")).strip()
+                        for i in range(0, len(sentences), 3)]
 
     # and also create the bigger document
     parsed_text = "\n".join(parsed_chunks)
