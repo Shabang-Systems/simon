@@ -17,14 +17,12 @@ from ..models import *
 
 TEMPLATE = """
 System:
-You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. These comment should be able to be searched in the knowledgebase.
-
-Pay attention to the lack of knowledge the human's partial thoughts betray and fix them by coming up with good questions/comments that help the human discover that facet of knowledge.
+You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. Provide these questions as extension brainstorm questions: think ONE STEP FURTHER than what is is the human's knowledge and the knowlege you are provided.
 
 Keep everything extremely brief. Adhere to the following format.
 
 ```output
-Comments: A markdown list with good, salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. This list can contain at *most five elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
+Comments: A markdown list with good, salient questions or comments the human would've asked if they had read the knowledge you are provided, but which the human couldn't have possibly thought of without the knowledge base. This list can contain at *most five elements*, but should be usually kept to 2-3. They can be statements or questions. They should stand independently and not build off of each other.
 ```
 
 For instance:
@@ -40,12 +38,12 @@ Title: Smithtown airport instructions -- Go to Terminal 3, and turn left to hail
 
 ```output
 Five Information-Rich Insightful Comments:
-- Who is John from Smithtown?
+- Tell me more about John.
 - Who else can we visit at Syscorp?
-- Cab hailing instructions at Smithown
+- Smithtown cab instructions
 ```
 
-The list of Five Comments: must be only 5 elements long or shorter. Select questions which will reveal the most amount of new information.
+The list of Five Comments: must be only 5 elements long or shorter. Select questions which will reveal the most amount of new information. Do not repeat the keywords already present in the human's question: the human already knows them! In the example above, for example, "Smithtown" was only referred to once. 
 
 Question:
 {input}

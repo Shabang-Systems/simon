@@ -46,7 +46,8 @@ class Search:
         # we first query for relavent resources, then performing
         # search with them. if no results are return, don't worry
         # we just filter them out
-        questions = [query] + self.brainstorm(query) 
+        brainstorms =self.brainstorm(query) 
+        questions = [query] + brainstorms
         L.debug(f"Prefetch on \"{query}\" complete")
         resources = [self.search(i) for i in questions]
         L.debug(f"Search on \"{query}\" complete")
@@ -58,7 +59,7 @@ class Search:
             return None
 
         # L.debug("REASONING")
-        output = self.__reason(query, resources)
+        output = self.__reason(query, resources, brainstorms)
         L.debug(f"Reasoning on \"{query}\" complete")
 
         return output

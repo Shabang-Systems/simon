@@ -65,7 +65,7 @@ class KnowledgeBase():
 
         # to prevent long contexts
         if not large:
-            while len(total_text) > 1000 and len(results_semantic) > 1:
+            while len(total_text) > 3000 and len(results_semantic) > 1:
                 results_semantic = results_semantic[:-1]
                 total_text = "".join(i["text"] for i in results_semantic)
         else:
