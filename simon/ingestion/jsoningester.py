@@ -51,7 +51,7 @@ class JSONIngester:
         self.__context = context
 
     ## Ingest Remote Function ###
-    def ingest(self, url, mappings:Mapping, delim="\n"):
+    def ingest(self, url, mappings:Mapping, delim="\n", local=False):
         """Read and index a remote resource into Elastic with a field mapping
 
         Note
@@ -69,6 +69,8 @@ class JSONIngester:
         delim : optional, str
             How do we deliminate chunks? Perhaps smarter in the future but
             for now we are just splitting by a character.
+        local : optional, bool
+            Is this JSON a local file?
 
         Return
         ------
@@ -83,16 +85,20 @@ class JSONIngester:
         mappings.check()
 
         # download page
-        headers = {'user-agent': 'Mozilla/5.0'}
-        r = requests.get(url, headers=headers)
+        if local:
+            with open(url, 'r') as df:
+                data = json.load(df)
+        else:
+            headers = {'user-agent': 'Mozilla/5.0'}
+            r = requests.get(url, headers=headers)
 
-        data = r.json()
+            data = r.json()
 
         L.debug(f"Succesfuly fetched {url}.")
 
         # create documents
         docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
-                        delim=delim)
+                           delim=delim)
                 for i in data]
         # filter for those that are indexed
         docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))

@@ -16,14 +16,9 @@ import simon
 # uuid generator
 from uuid import uuid4
 
-# environment variables
-from simon.environment import get_env_vars
-env_vars = get_env_vars()
-KEY = env_vars.get("OPENAI_KEY")
-ES_CONFIG = env_vars.get('ES_CONFIG')
-
 # TODO TODO TODO AUTHHH
-UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
+# UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
+UID = "c0189eaa-0424-480e-a12c-1c039fdbddbc"
 
 # TODO TODO better cache
 cache = {}
