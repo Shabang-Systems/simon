@@ -19,8 +19,6 @@ TEMPLATE = """
 System:
 You will be given the human's partial thoughts and some knowledge. Your job is to come up with salient comments which the human couldn't have possible thought of without knowing the knowledge you have. These comment should be able to be searched in the knowledgebase.
 
-Pay attention to the lack of knowledge the human's partial thoughts betray and fix them by coming up with good questions/comments that help the human discover that facet of knowledge.
-
 Keep everything extremely brief. Adhere to the following format.
 
 ```output
@@ -39,7 +37,9 @@ Title: Syscorp -- Syscorp is an Canadian company with headquarters in Smithtown.
 Title: Smithtown airport instructions -- Go to Terminal 3, and turn left to hail a cab. That will be the easiest.
 
 ```output
-Five Comments:
+AI Thought: I am going to make five comments which only rely on the information I am provided above now.
+
+Comments:
 - Who is John?
 - Who else can we visit at Syscorp?
 - Cab hailing instructions at Smithown
@@ -57,7 +57,9 @@ Knowledge:
 Begin!
 
 ```output
-Five Comments:"""
+AI Thought: I am going to make five comments which only rely on the information I am provided above now.
+
+Comments:"""
 
 class RIOPromptFormatter(StringPromptTemplate):
     def format(self, **kwargs):
@@ -97,5 +99,6 @@ class RIO(object):
                                     output_parser=RIOOutputParser())
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
-    def __call__(self, input, kb="", entities={}):
+    def __call__(self, input, kb=[], entities={}):
+        kb = "\n---\n".join([i.body for i in kb])
         return self.__chain.predict_and_parse(input=input, kb=kb, entities=entities)

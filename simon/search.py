@@ -51,7 +51,7 @@ class Search:
         resources = self.search(query) # to filter out errors and flatten
         L.debug(f"Search on \"{query}\" complete")
 
-        if resources == 0:
+        if not resources:
             # if there's no valid resources found,
             # return nothing
             return None
