@@ -157,7 +157,8 @@ class Reason(object):
 
         # tack the numerical labels onto the actual chunks into a big
         # context string
-        sentences = "".join([text+f" [{indx}]\n " for indx, text in resource_ids.items()])
+        # hard limit of 5500
+        sentences = "".join([text+f" [{indx}]\n " for indx, text in resource_ids.items()])[:5500]
 
         L.debug(f"Starting reasoning request with context: -----\n{sentences}\n----- !!!")
 
