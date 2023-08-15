@@ -90,7 +90,7 @@ def parse_text(text, title=None, source=None, delim="\n\n") -> ParsedDocument:
     parsed_chunks, parsed_text, hash = __chunk(text, delim)
 
     # return!
-    return ParsedDocument(parsed_text, parsed_chunks, hash, meta)
+    return ParsedDocument(parsed_text, parsed_chunks, meta)
 
 def parse_tika(uri, title=None, source=None) -> ParsedDocument:
     """Parse a local document using Tika and Tesseract
@@ -589,7 +589,14 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     for i in prefetch:
         request += f"{json.dumps(i)} \n"
 
-    prefetch = context.elastic.msearch(body=request)["responses"]
+    success = False
+
+    while not success:
+        try:
+            prefetch = context.elastic.msearch(body=request)["responses"]
+            success = True
+        except:
+            pass
 
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
@@ -621,8 +628,8 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                             "_index": "simon-paragraphs"})
 
     # create embeddings in bulk
-    embeddings = context.embedding.embed_documents(documents)
     L.debug(f"embedding {len(documents)} documents...")
+    embeddings = context.embedding.embed_documents(documents)
 
     # slice the embeddings in
     for i, em in zip(updates, embeddings):

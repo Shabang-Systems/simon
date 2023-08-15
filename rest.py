@@ -5,6 +5,14 @@ This should eventually be a larger package, but one file
 is fine for now.
 """
 
+# logging
+import logging as L
+
+LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
+L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
+L.getLogger('simon').setLevel(L.DEBUG)
+
+
 # flask!
 import flask
 from flask import Flask, request, jsonify
@@ -18,7 +26,7 @@ from uuid import uuid4
 
 # TODO TODO TODO AUTHHH
 UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
-# UID = "c0189eaa-0424-480e-a12c-1c039fdbddbc"
+UID = "4e000ccf-55fd-4793-8966-cfc44cf35516"
 
 # TODO TODO better cache
 cache = {}

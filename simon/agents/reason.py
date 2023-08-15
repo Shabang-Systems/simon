@@ -31,7 +31,7 @@ import re
 # Provide a *full* full answer to the user's question. [4] Provide references to useful citation numbers in brackets found in the knowledge section *throughout* your answer after each claim; don't put a bunch all in the end. [2] You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. 
 
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer, in addition to some extra extension questions to help you while you answer the question. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
+You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
 
 When responding, you must provide two sections: the sections are "Answer", "Search Results". 
 
@@ -66,20 +66,17 @@ Knowledge:
 
 Query:
 {input}
-
-Extension Questions (don't answer these, but ponder them for their relavence):
-{extensions}
 """
 
 AI_TEMPLATE="""
-Answer:"""
+Answer:
+"""
 
 class ReasonPromptFormatter(BaseChatPromptTemplate):
     def format_messages(self, **kwargs):
         return [SystemMessage(content=SYSTEM_TEMPLATE),
                 HumanMessage(content=HUMAN_TEMPLATE.format(kb=kwargs["kb"],
-                                                           input=kwargs["input"],
-                                                           extensions=kwargs["extensions"])),
+                                                           input=kwargs["input"])),
                 AIMessage(content=AI_TEMPLATE)]
 
 
@@ -138,11 +135,11 @@ class Reason(object):
             Whether the chain should be verbose
         """
         
-        prompt = ReasonPromptFormatter(input_variables=["input", "kb", "extensions"],
+        prompt = ReasonPromptFormatter(input_variables=["input", "kb"],
                                        output_parser=ReasonOutputParser())
         self.__chain = LLMChain(llm=context.reason_llm, prompt=prompt, verbose=verbose)
 
-    def __call__(self, input, kb, rio_output=[]):
+    def __call__(self, input, kb):
         # initialize the dictionary for text-to-number labeling
         # this dictionary increments a number for every new key
         resource_ids = defaultdict(lambda : len(resource_ids))
@@ -166,8 +163,7 @@ class Reason(object):
 
         # run llm prediciton
         res =  self.__chain.predict_and_parse(input=input,
-                                              kb=sentences.strip(),
-                                              extensions="\n---\n".join(rio_output))
+                                              kb=sentences.strip())
 
         # if we have no response, return
         if res["answer"].lower().strip() == "n/a":

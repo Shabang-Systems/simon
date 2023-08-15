@@ -5,6 +5,7 @@ from elasticsearch import Elasticsearch
 from typing import List, Dict, Optional
 from enum import Enum
 from abc import ABC, abstractmethod
+import hashlib
 
 @dataclass
 class AgentContext:
@@ -18,8 +19,11 @@ class AgentContext:
 class ParsedDocument:
     main_document: str
     paragraphs: List[str]
-    hash: str
     meta: Dict
+
+    @property
+    def hash(self):
+        return hashlib.sha256(self.main_document.encode()).hexdigest()
 
 class IndexClass(Enum):
     CHUNK = 0
