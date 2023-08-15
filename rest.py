@@ -27,7 +27,7 @@ from uuid import uuid4
 # TODO TODO TODO AUTHHH
 UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
 # UID = "4e000ccf-55fd-4793-8966-cfc44cf35516"
-UID = "paper2graph"
+# UID = "paper2graph"
 
 # TODO TODO better cache
 cache = {}
