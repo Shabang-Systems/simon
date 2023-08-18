@@ -47,7 +47,7 @@ Search Results: identify the results of your search. This list should only conta
 
 For instance, here's an example format:
 
-Thought: what is relavent, what is not
+Thought: what is relavent, what is not (< 10 words)
 Search Results:
 - Brief citation headline answering why this is an answer; don't paraphrase the resource [4]
 - Another citation headline; don't paraphrase [6]
@@ -57,6 +57,7 @@ Four important tips:
 2. The knowledge you are provided *is not ordered* and can contain irrelavent content
 3. Very selectively pick what would be useful to answer the users' question
 4. Keep everything concise and precise; make it EASY TO READ.
+5. MOST IMPORTANTLY: *order the results of your search by RELAVENCE; keep the most direct answer to the user's query on top*
 
 Begin!
 """

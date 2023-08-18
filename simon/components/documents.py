@@ -533,6 +533,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # If not, do so!
     if indicies["total"]["value"] == 0:
         # change detected, remove elements of the same title
+        L.debug(f"Detecting historical versions {doc.hash}...")
         title = doc.meta.get("title", "")
         if title and title != "":
             titles = context.elastic.search(index="simon-fulltext",
@@ -547,6 +548,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
             # [delete_document(doc["_source"]["hash"], context) for doc in titles["hits"]["hits"]]
 
+        L.debug(f"Fulltext indexing {doc.hash}...")
         context.elastic.index(index="simon-fulltext",
                               document={"user": context.uid,
                                         "metadata": {"title": doc.meta.get("title"),
@@ -556,6 +558,8 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     else:
         L.debug(f"{doc.hash} is already indexed, skipping...")
         return # if we have already indexed this, just leave
+
+    L.debug(f"TFIDF analyzing {doc.hash}...")
 
     # calculate tfidf for use later
     vectorizer = TfidfVectorizer()
@@ -572,6 +576,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     prefetch = []
 
 
+    L.debug(f"Chuck analyzing {doc.hash}...")
     # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
     # requires a new index note
     for indx, paragraph in enumerate(doc.paragraphs):
@@ -601,6 +606,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
         except:
             pass
 
+    L.debug(f"Chunk patching {doc.hash}...")
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
     for indx, (paragraph, indicies) in enumerate(zip(doc.paragraphs, prefetch)):
@@ -638,6 +644,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     for i, em in zip(updates, embeddings):
         i["embedding"] = em
 
+    L.debug(f"submittig {doc.hash}...")
     # and bulk!
     bulk(context.elastic, updates)
 
@@ -648,6 +655,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     # if an old hash was detected, we delete any traces of the old document
     if old_hash:
         delete_document(old_hash, context)
+    L.debug(f"Done analyzing {doc.hash}...")
 
 #### GLUE ####
 # A function to assemble CHUNK-type search results
