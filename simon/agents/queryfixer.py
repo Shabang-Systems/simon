@@ -31,7 +31,7 @@ Provide your output in this format:
 
 ```output
 New, shortened statement for the database:
-your full, new question/statement here.
+""your full, new question/statement here.""
 ```
 
 Begin!
@@ -43,6 +43,7 @@ Here is the question for you to patch:
 AI:
 ```output
 New, shortened statement for the database:
+""
 """
 
 class QueryPromptFormatter(StringPromptTemplate):
@@ -55,7 +56,7 @@ class QueryPromptFormatter(StringPromptTemplate):
 
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
-        str = str.strip("```output").strip("`").strip("'").strip('"').strip()
+        str = str.strip("`").strip("'").strip('"').strip()
 
         return str
 

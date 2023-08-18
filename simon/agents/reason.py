@@ -44,7 +44,7 @@ Search Results: identify the results of your search. This list should only conta
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
-Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer to the users' query, include tages [3] to the search results you have above [2]
+Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer to the users' query, include tages [3] to the search results you have above [2] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources.
 
 For instance, here's an example format:
 
@@ -52,7 +52,7 @@ Thought: what is relavent, what is not (< 10 words)
 Search Results:
 - Brief citation headline answering why this is an answer; don't paraphrase the resource [4]
 - Another citation headline; don't paraphrase [6]
-Answer: your answer [3] goes here [2]
+Answer: your answer [3] goes here [2]; summarizing what you see across the resources
 
 Four important tips:
 1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
