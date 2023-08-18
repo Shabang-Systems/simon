@@ -33,7 +33,7 @@ import re
 SYSTEM_TEMPLATE = """
 You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
 
-When responding, you must provide two sections: the sections are "Headline", "Search Results". 
+When responding, you must provide three sections: the sections are "Headline", "Search Results", "Answer". 
 
 Thought: ONE SENTENCE (< 10 words) summarizing which elements of the knowledge base answers user's question, and which is likely irrelavent or opposite.
 Search Results: identify the results of your search. This list should only contain things that you mentioned above as being relavent, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question:
@@ -44,6 +44,7 @@ Search Results: identify the results of your search. This list should only conta
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
+Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer to the users' query, include tages [3] to the search results you have above [2]
 
 For instance, here's an example format:
 
@@ -51,6 +52,7 @@ Thought: what is relavent, what is not (< 10 words)
 Search Results:
 - Brief citation headline answering why this is an answer; don't paraphrase the resource [4]
 - Another citation headline; don't paraphrase [6]
+Answer: your answer [3] goes here [2]
 
 Four important tips:
 1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
@@ -85,12 +87,13 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)"
+        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)\n\n?Answer\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
-            answer = match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            thought = match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
             extrapolations = match.group(2).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            answer = match.group(3).strip("\"").strip('"').strip("`").replace("`", "").strip()
         else:
             answer = str.strip("\"").strip('"').strip("`").strip()
             extrapolations = ""
