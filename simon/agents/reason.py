@@ -33,29 +33,30 @@ import re
 SYSTEM_TEMPLATE = """
 You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
 
-When responding, you must provide two sections: the sections are "Answer", "Search Results". 
+When responding, you must provide two sections: the sections are "Headline", "Search Results". 
 
-Answer: Provide a full, *brief (<4 sentences)*, and fact-supported answer the user's question. [2] After each of your claims, provide a tag to the sentence you used to support your claim, like so: [3]. Use **markdown** _styles_, lists, etc. if appropriate. 
-Search Results: identify the sources from your search.  These should be resources from your knowledge section that directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; the top result should be a resource that directly answers the user's question; respond in a markdown list:
-- *extremely* brief headline here, don't use two parts like a colon; keep it short (<10 words); most relavent result that directly answers the question [1]
-- repeat this process, provide an *very very short* headline (<10 words) and a *single* bracket link; feel free to begin to extrapolate to further reading now [5]
-- short headline (<10 words) and a *single* link [8]
+Thought: ONE SENTENCE (< 10 words) summarizing which elements of the knowledge base answers user's question, and which is likely irrelavent or opposite.
+Search Results: identify the results of your search. This list should only contain things that you mentioned above as being relavent, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question:
+- headline for the resource (in your headline, be sure to have an answer to if this is what the user is searching for?) (<10 words); don't just paraphrase the resource [1]
+- repeat this; answer again is this what the user is searching for again in a headline (<10 words) and a *single* bracket link; do NOT paraphrase the resource [5]
 - ...
 - ...
 - ...
 - ...
-[This can repeat N times, but the user hates reading so keep it short. Like a search engine, put the most salient and relavent point on top, and order by relavence]
+[This can repeat *at most* 5 times, but the user hates reading so keep it short.]
 
 For instance, here's an example format:
 
-Answer: your answer here [3], some elaborations too [8]. More here.
+Thought: what is relavent, what is not
 Search Results:
-- Brief citation headline [4]
-- Another citation headline [6]
+- Brief citation headline answering why this is an answer; don't paraphrase the resource [4]
+- Another citation headline; don't paraphrase [6]
 
-The user is smart, but is in a rush. Keep everything concise and precise.
-
-Note that the knowledge you are provided *is not ordered* and can contain irrelavent content. Very selectively pick what would be useful to answer the users' question, and answer them using relavent sections of knowledge.
+Four important tips:
+1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
+2. The knowledge you are provided *is not ordered* and can contain irrelavent content
+3. Very selectively pick what would be useful to answer the users' question
+4. Keep everything concise and precise; make it EASY TO READ.
 
 Begin!
 """
@@ -69,7 +70,7 @@ Query:
 """
 
 AI_TEMPLATE="""
-Answer:
+Thought:
 """
 
 class ReasonPromptFormatter(BaseChatPromptTemplate):
