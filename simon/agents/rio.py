@@ -100,5 +100,8 @@ class RIO(object):
         self.__chain = LLMChain(llm=context.llm, prompt=prompt, verbose=verbose)
 
     def __call__(self, input, kb=[], entities={}):
-        kb = "\n---\n".join([i.body for i in kb])
+        if type(kb) == SimonProviderError:
+            kb = ""
+        else:
+            kb = "\n---\n".join([i.body for i in kb])
         return self.__chain.predict_and_parse(input=input, kb=kb, entities=entities)

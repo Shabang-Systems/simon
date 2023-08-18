@@ -49,6 +49,31 @@ class Datastore:
 
         return self.__ingester.ingest_remote(uri, title)
 
+    def store_text(self, text:str, title:str, source=None):
+        """Write a bit of text into the store
+
+        Parameters
+        ----------
+        text : str
+            An internet address pointing to the document to index.
+        title : optional, str
+            The title of the document you are storing, which is
+            exposed to the LLM.
+        source : optional, str
+            The source string
+
+        Returns
+        -------
+        str
+            The hash of the newly indexed document.
+        """
+        
+        document = parse_text(text, title, source)
+        hash = index_document(document, self.__context)
+
+        return document.hash
+
+
     def delete(self, hash:str):
         """Delete a document by its hash.
 

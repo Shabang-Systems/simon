@@ -62,7 +62,7 @@ class Search:
 
         return output
 
-    def brainstorm(self, text, fix=True):
+    def brainstorm(self, text):
         """Use the RIO to brainstorm followup questions
 
         Uses the RIO to come up with follow-up questions given a
@@ -87,10 +87,7 @@ class Search:
 
         L.info(f"Serving prefetch \"{text}\"...")
         # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        if fix:
-            query = self.__fix(text)
-        else:
-            query = text
+        query = self.__fix(text)
         L.debug(f"Query semantic patching for \"{text}\" complete; patched query \"{query}\"")
         kb = self.__kb(query, True) # we only search the kb because this is only a spot check
         L.info(f"Search complete for \"{query}\".")

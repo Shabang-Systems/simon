@@ -521,6 +521,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     after all.
     """
 
+    L.info(f"Indexing {doc.hash}...")
     # try to cache the old cache
     old_hash = None
 
@@ -552,7 +553,9 @@ def index_document(doc:ParsedDocument, context:AgentContext):
                                                      "source": doc.meta.get("source")},
                                         "hash": doc.hash,
                                         "text": doc.main_document})
-    else: return # if we have already indexed this, just leave
+    else:
+        L.debug(f"{doc.hash} is already indexed, skipping...")
+        return # if we have already indexed this, just leave
 
     # calculate tfidf for use later
     vectorizer = TfidfVectorizer()
