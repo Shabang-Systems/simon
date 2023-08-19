@@ -10,6 +10,7 @@ from typing import List, Optional, Union
 import logging
 L = logging.getLogger("simon")
 
+from .agents.querybreaker import QueryBreaker
 
 
 import itertools
@@ -46,38 +47,36 @@ class KnowledgeBase():
 
     def __init__(self, context):
         self.context = context
+        self.__qb = QueryBreaker(context)
 
-    def __call__(self, input, large=False):
-        L.info(f"Semantic searching for query \"{input}\"...")
+    def __call__(self, *inputs):
+        L.info(f"Semantic searching for query \"{inputs}\"...")
+        # break the query
+        queries = [j for i in inputs for j in self.__qb(i)]
+
         # use both types of search to create all possible hits
-        results_semantic = search(input, self.context, search_type=IndexClass.CHUNK, k=12)
-        # results_keywords = search(input, self.context, search_type=IndexClass.KEYWORDS, k=2)
- 
-        # # we then go through to find everything similar to the results to provide
-        # # the model more content
-        # results_similar = [j
-        #                    for i in results_semantic
-        #                    for j in similar(i["id"], self.context, k=1, threshold=0.95)]
+        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=8)
+        results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
+        # breakpoint()
 
-        L.debug(f"Results identified for \"{input}\" Got {len(results_semantic)} results.")
+        L.debug(f"Results identified for \"{inputs}\" Got {len(results_semantic)} results.")
 
         total_text = "".join(i["text"] for i in results_semantic)
 
         # to prevent long contexts
-        while len(total_text) > 4500 and len(results_semantic) > 2:
+        while len(total_text) > 6500 and len(results_semantic) > 2:
             results_semantic = results_semantic[:-1]
             total_text = "".join(i["text"] for i in results_semantic)
-        L.debug(f"Filtering complete for \"{input}\". {len(results_semantic)} results remain.")
+        L.debug(f"Filtering complete for \"{inputs}\". {len(results_semantic)} results remain.")
 
         results = results_semantic
-        # breakpoint()
 
         if len(results) == 0:
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
         # create chunks: list of tuples of (score, title, text with context)
         chunks = assemble_chunks(results, self.context)
-        L.debug(f"Assembled chunks for \"{input}\".")
+        L.debug(f"Assembled chunks for \"{inputs}\".")
 
         responses = [SimonProviderResponse(title, body, {"source": source,
                                                          "hash": hash})

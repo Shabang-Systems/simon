@@ -1,3 +1,3 @@
 from .rio import RIO
-from .queryfixer import QueryFixer
+from .querybreaker import QueryBreaker
 from .reason import Reason

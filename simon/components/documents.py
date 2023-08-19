@@ -326,21 +326,21 @@ def suggest(query:str, context:AgentContext, k=8):
 
     return matching
 
-def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
-           doc_hash=None, k=5, threshold=None, tf_threshold=0.3):
+def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK,
+           k=5, threshold=None, tf_threshold=0.3):
     """ElasticSearch the database based on a keyword query!
 
     Parameters
     ----------
-    query : str
-        The query to ask.
     context : AgentContext
         Context pointer to be used for operations.
+    query : str
+        The query to ask.
+    queries : List[str]
+        For associative searches, the queries to ask.
     search_type : IndexClass
         Which index to search. Options include
         IndexClass.CHUNK or IndexClass.FULLTEXT.
-    doc_hash : str
-        The document (in hashed form) to limit search on.
     k : optional, int
         Number of values to return.
     threshold : optional, float
@@ -359,41 +359,50 @@ def search(query:str, context:AgentContext, search_type=IndexClass.CHUNK,
     elif not threshold:
         threshold = 5
 
+    if not queries:
+        queries = [query]
+
     # get results
     squery = {
         "bool": {"must": [
             {"term": {"user": context.uid}},
-            {"match": {"text": query}}
         ]}
     }
 
-    kquery = None
+    for query in queries:
+        squery["bool"]["must"].append({"match": {"text": query}})
+
+    kquery = []
 
     if search_type == IndexClass.CHUNK:
-        kquery = {"field": "embedding",
-                "query_vector": context.embedding.embed_query(query),
-                "k": k,
-                "num_candidates": 800,
-                "filter": [{"term": {"user": context.uid}}]}
+        for query in queries:
+            kquery.append({"field": "embedding",
+                           "query_vector": context.embedding.embed_query(query),
+                           "k": k*5,
+                           "num_candidates": 800,
+                           "filter": [{"term": {"user": context.uid}}]})
 
-    if doc_hash:
-        squery["bool"]["must"].append({"term": {"hash": doc_hash}})
+    # if doc_hash:
+    #     squery["bool"]["must"].append({"term": {"hash": doc_hash}})
 
-        if kquery:
-            kquery["filter"].append({"term": {"hash": doc_hash}})
+    #     if kquery:
+    #         kquery["filter"].append({"term": {"hash": doc_hash}})
 
     if tf_threshold!=None and search_type != IndexClass.FULLTEXT:
         squery["bool"]["must"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
 
-        if kquery:
-            kquery["filter"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
+        if len(kquery) > 0:
+            for i in kquery:
+                i["filter"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
 
+    L.debug("BEGIN SEARCH")
     if search_type == IndexClass.CHUNK:
         results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k))
     elif search_type == IndexClass.FULLTEXT:
         results = context.elastic.search(index="simon-fulltext", query=squery, size=str(k))
     elif search_type == IndexClass.KEYWORDS:
         results = context.elastic.search(index="simon-paragraphs", query=squery, size=str(k))
+    L.debug("END SEARCH")
 
     results = [{"id": i["_id"],
                 "text": i["_source"]["text"],

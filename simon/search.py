@@ -16,7 +16,7 @@ class Search:
 
         # agents
         self.__rio = RIO(context, verbose)
-        self.__fix = QueryFixer(context, verbose)
+        self.__fix = QueryBreaker(context, verbose)
         self.__reason = Reason(context, verbose)
 
         #### Context ####
@@ -41,16 +41,13 @@ class Search:
             otherwise its passed to streaming
         """
 
-        L.info(f"Serving query \"{text}\"...")
-        query = self.__fix(text)
-        L.debug(f"Fixing on \"{text}\" complete. Fixed query {query}")
         # fix the query and brainstorm possible
         # tangentia questions. use both to search the resource
         # we first query for relavent resources, then performing
         # search with them. if no results are return, don't worry
         # we just filter them out
-        resources = self.search(query) # to filter out errors and flatten
-        L.debug(f"Search on \"{query}\" complete")
+        resources = self.search(text) # to filter out errors and flatten
+        L.debug(f"Search on \"{text}\" complete")
 
         if not resources:
             # if there's no valid resources found,
@@ -59,7 +56,7 @@ class Search:
 
         # L.debug("REASONING")
         if streaming:
-            L.debug(f"Streaming handler recieved for \"{query}\", output will NOT be returned and will instead be streamed.")
+            L.debug(f"Streaming handler recieved for \"{text}\", output will NOT be returned and will instead be streamed.")
         output = self.__reason(text, resources, streaming)
         L.debug(f"Reasoning on \"{text}\" complete")
 
@@ -90,10 +87,8 @@ class Search:
 
         L.info(f"Serving prefetch \"{text}\"...")
         # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        query = self.__fix(text)
-        L.debug(f"Query semantic patching for \"{text}\" complete; patched query \"{query}\"")
-        kb = self.__kb(query, True) # we only search the kb because this is only a spot check
-        L.info(f"Search complete for \"{query}\".")
+        kb = self.__kb(text) # we only search the kb because this is only a spot check
+        L.info(f"Search complete for \"{text}\".")
 
         observation = self.__rio(text, kb)
         L.debug(f"Prefetch reasoning complete for \"{text}\"")
