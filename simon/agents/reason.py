@@ -36,7 +36,7 @@ You are helping a human understand the state of a concept by being a search engi
 When responding, you must provide three sections: the sections are "Headline", "Search Results", "Answer". 
 
 Thought: ONE SENTENCE (< 10 words) summarizing which elements of the knowledge base answers user's question, and which is likely irrelavent or opposite.
-Search Results: identify the results of your search. This list should only contain things that you mentioned above as being relavent, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question:
+Search Results: identify the results of your search. This list should only contain things that you mentioned above as being relavent, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; do NOT include quote marks around the headline:
 - headline for the resource (in your headline, be sure to have an answer to if this is what the user is searching for?) (<10 words); don't just paraphrase the resource [1]
 - repeat this; answer again is this what the user is searching for again in a headline (<10 words) and a *single* bracket link; do NOT paraphrase the resource [5]
 - ...
@@ -44,15 +44,7 @@ Search Results: identify the results of your search. This list should only conta
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
-Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer to the users' query, include tages [3] to the search results you have above [2] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources.
-
-For instance, here's an example format:
-
-Thought: what is relavent, what is not (< 10 words)
-Search Results:
-- Brief citation headline answering why this is an answer; don't paraphrase the resource [4]
-- Another citation headline; don't paraphrase [6]
-Answer: your answer [3] goes here [2]; summarizing what you see across the resources
+Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3][5][8] to the search results you have above [2][5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
 
 Four important tips:
 1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
@@ -86,6 +78,7 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
 
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
+        L.debug(f"Raw LLM output {str}")
         str = str.strip("```output").strip("`").strip()
         regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)\n\n?Answer\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
