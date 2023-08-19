@@ -16,7 +16,7 @@ TEMPLATE = """
 System:
 The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel sheet for last year's tax return" is not. Pay attention to logical keywords.
 
-You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a list of questions that together, incrementally identifies what the user is searching.
+You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a list of key terms. These terms terms should together clarify and point to the exact thing the human is trying to look for.
 
 Also, fix the user's spelling.
 

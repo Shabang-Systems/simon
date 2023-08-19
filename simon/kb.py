@@ -53,9 +53,10 @@ class KnowledgeBase():
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
         queries = [j for i in inputs for j in self.__qb(i)]
+        L.info(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
-        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=8)
+        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=24, threshold=0.75)
         results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 

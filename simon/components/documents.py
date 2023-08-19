@@ -378,8 +378,8 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
         for query in queries:
             kquery.append({"field": "embedding",
                            "query_vector": context.embedding.embed_query(query),
-                           "k": k*5,
-                           "num_candidates": 800,
+                           "k": k*2,
+                           "num_candidates": 900,
                            "filter": [{"term": {"user": context.uid}}]})
 
     # if doc_hash:

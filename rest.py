@@ -26,8 +26,8 @@ import simon
 from uuid import uuid4
 
 # TODO TODO TODO AUTHHH
-# UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
-UID = "d075096b-130f-4e35-af70-aa98b41bc1fc" # books
+UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
+# UID = "d075096b-130f-4e35-af70-aa98b41bc1fc" # books
 # UID = "4e000ccf-55fd-4793-8966-cfc44cf35516" # discord
 # UID = "paper2graph"
 
