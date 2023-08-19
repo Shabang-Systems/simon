@@ -124,6 +124,8 @@ def streamquery():
 
     stream_session = str(uuid4())
 
+    cache[stream_session] = {"output": {"search_results": []}}
+
     def callback(x):
         cache[stream_session] = x
 
