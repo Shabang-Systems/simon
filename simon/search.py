@@ -22,7 +22,7 @@ class Search:
         #### Context ####
         self.__context = context
 
-    def query(self, text, groupby="source"):
+    def query(self, text, streaming=None):
         """invokes the inference cycle
 
         uses all of the Assistant's tools to create an inference
@@ -31,13 +31,14 @@ class Search:
         ----------
         text : str
             the string input query
-        groupby : str
-            the metadata field to group references by
+        streaming : callable
+            pass stream-style outputs through this function
 
         Returns
         -------
-        dict
-            the output, with resource information, etc.
+        Optional[dict]
+            the output, with resource information, etc. if not streaming;
+            otherwise its passed to streaming
         """
 
         L.info(f"Serving query \"{text}\"...")
@@ -57,7 +58,9 @@ class Search:
             return None
 
         # L.debug("REASONING")
-        output = self.__reason(text, resources)
+        if streaming:
+            L.debug(f"Streaming handler recieved for \"{query}\", output will NOT be returned and will instead be streamed.")
+        output = self.__reason(text, resources, streaming)
         L.debug(f"Reasoning on \"{text}\" complete")
 
         return output

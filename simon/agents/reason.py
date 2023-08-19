@@ -7,6 +7,7 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import CommaSeparatedListOutputParser
 from langchain.prompts import BaseChatPromptTemplate
 from langchain.schema import BaseOutputParser
+from langchain.callbacks.base import BaseCallbackHandler
 
 import logging
 L = logging.getLogger("simon")
@@ -37,14 +38,14 @@ When responding, you must provide three sections: the sections are "Headline", "
 
 Thought: ONE SENTENCE (< 10 words) summarizing which elements of the knowledge base answers user's question, and which is likely irrelavent or opposite.
 Search Results: identify the results of your search. This list should only contain things that you mentioned above as being relavent, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; do NOT include quote marks around the headline:
-- headline for the resource (in your headline, be sure to have an answer to if this is what the user is searching for?) (<10 words); don't just paraphrase the resource [1]
-- repeat this; answer again is this what the user is searching for again in a headline (<10 words) and a *single* bracket link; do NOT paraphrase the resource [5]
+- headline for the resource (in your headline, be sure to have an answer to if this is what the user is searching for?) (<10 words); don't just paraphrase the resource. Finally, leave a *single* tag to the resource. [1]
+- repeat this; answer again is this what the user is searching for again in a headline (<10 words) and a *single* bracket link; do NOT paraphrase the resource. Leave again a single tag like so: [5]
 - ...
 - ...
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
-Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3][5][8] to the search results you have above [2][5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
+Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
 
 Four important tips:
 1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
@@ -75,18 +76,25 @@ class ReasonPromptFormatter(BaseChatPromptTemplate):
                                                            input=kwargs["input"])),
                 AIMessage(content=AI_TEMPLATE)]
 
-
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
-        L.debug(f"Raw LLM output {str}")
         str = str.strip("```output").strip("`").strip()
-        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)\n\n?Answer\s*:\s*(.*)"
+
+        regex = r"\n\n?Answer\s*:\s*(.*)"
+        answer_match = re.search(regex, str, re.DOTALL)
+
+        str = re.sub(regex, "", str).strip()
+
+        regex = r"\s*(.*)\n\n?Search Results\s*:\s*(.*)"
         match = re.search(regex, str, re.DOTALL)
 
         if match:
             thought = match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
             extrapolations = match.group(2).strip("\"").strip('"').strip("`").replace("`", "").strip()
-            answer = match.group(3).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            if answer_match and answer_match.group(1):
+                answer = answer_match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            else:
+                answer = ""
         else:
             answer = str.strip("\"").strip('"').strip("`").strip()
             extrapolations = ""
@@ -115,11 +123,37 @@ class ReasonOutputParser(BaseOutputParser):
         extrapolations = [re.sub(resource_regex, "", i).strip() for i in extrapolations]
 
         return {
-            "answer": answer,
+            "answer": answer if answer != "" else None,
             "answer_resources": resource_ids,
             "search_results": [{"headline": i,
                                 "resource": j} for i,j in zip(extrapolations, ex_citations)],
         }
+
+
+# TODO the streaming API is currently really poorly designed
+# so TODO make it better lol - hjl
+class ReasonSingleUseCallbackHandler(BaseCallbackHandler):
+    def __init__(self, callback, formatter, destructor):
+        self.__scratchpad = ""
+        self.__callback = callback
+        self.__formatter = formatter
+        self.__destructor = destructor
+        self.__cache = None
+
+    def on_llm_new_token(self, **kwargs):
+        self.__scratchpad += kwargs["token"]
+
+        out = self.__formatter(self.__scratchpad)
+        if out and out != self.__cache:
+            self.__cache = out
+
+            self.__callback({"output": self.__cache,
+                             "done": False})
+
+    def on_llm_end(self, res, **kwargs):
+        self.__callback({"output": self.__cache,
+                         "done": True})
+        self.__destructor()
 
 class Reason(object):
     def __init__(self, context, verbose=False):
@@ -133,11 +167,31 @@ class Reason(object):
             Whether the chain should be verbose
         """
         
-        prompt = ReasonPromptFormatter(input_variables=["input", "kb"],
-                                       output_parser=ReasonOutputParser())
-        self.__chain = LLMChain(llm=context.reason_llm, prompt=prompt, verbose=verbose)
+        self.__prompt = ReasonPromptFormatter(input_variables=["input", "kb"],
+                                              output_parser=ReasonOutputParser())
+        self.__chain = LLMChain(llm=context.reason_llm, prompt=self.__prompt, verbose=verbose)
 
-    def __call__(self, input, kb):
+
+    def __postprocess_res(self, res, kb, resource_ids, chunks):
+        # if we have no response, return
+        if res["answer"] and res["answer"].lower().strip() == "n/a":
+            return 
+
+        # set answer citations and the result citations
+        res["answer_resources"] = {i: {"quote": resource_ids[i],
+                                       "chunk": kb[chunks[i]]} for i in res["answer_resources"]}
+        try:
+            for i in res["search_results"]:
+                id = i["resource"]
+
+                i["resource"] = {"quote": resource_ids[id],
+                                 "chunk": kb[chunks[id]]}
+        except KeyError:
+            return
+
+        return res
+
+    def __call__(self, input, kb, streaming=None):
         # initialize the dictionary for text-to-number labeling
         # this dictionary increments a number for every new key
         resource_ids = defaultdict(lambda : len(resource_ids))
@@ -161,21 +215,39 @@ class Reason(object):
         L.debug(f"Starting reasoning request with context: -----\n{sentences}\n----- !!!")
 
         # run llm prediciton
-        res =  self.__chain.predict_and_parse(input=input,
-                                              kb=sentences.strip())
 
-        # if we have no response, return
-        if res["answer"].lower().strip() == "n/a":
-            return 
+        # if we are streaming, inject the streaming tools into the llm
+        # and parse accordingly
+        if streaming:
+            def format_callback(output):
+                res = self.__prompt.output_parser.parse(output)
+                return self.__postprocess_res(res, kb, resource_ids, chunks)
 
-        # set answer citations and the result citations
-        res["answer_resources"] = {i: {"quote": resource_ids[i],
-                                       "chunk": kb[chunks[i]]} for i in res["answer_resources"]}
-        for i in res["search_results"]:
-            id = i["resource"]
+            def remove_callback():
+                self.__chain.llm.callbacks = [i for i in self.__chain.llm.callbacks if type(i) != ReasonSingleUseCallbackHandler]
+                
+            # create the callback handler 
+            callback = ReasonSingleUseCallbackHandler(streaming, format_callback, remove_callback)
 
-            i["resource"] = {"quote": resource_ids[id],
-                             "chunk": kb[chunks[id]]}
+            # and bind it to the llm
+            self.__chain.llm.streaming = True
+            if type(self.__chain.llm.callbacks) == list:
+                self.__chain.llm.callbacks.append(callback)
+            else:
+                self.__chain.llm.callbacks = [callback]
 
-        return res
+            self.__chain.llm.temperature = 0
+
+            # kick that puppy into motion 
+            self.__chain.predict(input=input, kb=sentences.strip())
+
+            # return nothing
+            return
+        
+        output = self.__chain.predict(input=input,
+                                      kb=sentences.strip())
+        res = self.__prompt.output_parser.parse(output)
+
+        # perform postprocessing and return
+        return self.__postprocess_res(res, kb, resource_ids, chunks)
 
