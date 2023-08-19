@@ -12,6 +12,7 @@ LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
 L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 L.getLogger('simon').setLevel(L.DEBUG)
 
+import threading
 
 # flask!
 import flask
@@ -102,6 +103,56 @@ def query():
     except KeyError:
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
+
+# call the llm directly, with stream
+@simon_api.route('/streamquery', methods=['POST', 'GET'])
+@cross_origin()
+def streamquery():
+    """ask your model a question
+
+    @POST params
+    - q : str --- string question/query to provide to the model
+    - session_id : str --- session id that you should have gotten from /start
+
+    @GET params
+    - stream_id : str --- the stream you want to get the results from
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    stream_session = str(uuid4())
+
+    def callback(x):
+        cache[stream_session] = x
+
+    try:
+        arguments = request.args
+        if request.method == "POST":
+            assistant = cache[arguments["session_id"].strip()]["search"]
+
+            # run the call on a different thread
+            thread = threading.Thread(target=assistant.query,
+                                      args=(arguments["q"].strip(), callback))
+            thread.start()
+
+            return {
+                "stream_id": stream_session,
+                "status": "success"
+            }
+        elif request.method == "GET":
+            res = cache.get(arguments["stream_id"].strip(), {})
+            return {
+                "response": res,
+                "status": "success"
+            }
+            
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+
 
 # engage RIO, which helps brainstorm possible prompts given a textual input
 # for instance, while taking notes
