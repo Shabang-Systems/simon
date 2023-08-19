@@ -23,7 +23,7 @@ class Datastore:
         self.__context = context
         self.__ingester = OCRIngester(context)
 
-    def store(self, uri:str, title:str=None, warn=True):
+    def store(self, uri:str, title:str=None):
         """Ingest a single document from the internet (PDF, websites, etc.)
 
         Parameters
@@ -33,8 +33,6 @@ class Datastore:
         title : optional, str
             The title of the document you are storing, which is
             exposed to the LLM.
-        warn : optional, str
-            Whether to point the dummy-usage warning.
 
         Returns
         -------
@@ -42,11 +40,6 @@ class Datastore:
             The hash of the newly indexed document.
         """
         
-        if warn:
-            L.warn(f"You are using the high-level DataStore API to ingest a single URI from the internet with OCR, which is pretty limiting set of options.")
-            L.warn(f"Though this works to quickly index a URL, you are encouraged to check out the full suite of ingesters at `simon.ingesters`.")
-            L.warn(f"To mute this warning, pass warn=False to this function.")
-
         return self.__ingester.ingest_remote(uri, title)
 
     def store_text(self, text:str, title:str, source=None):

@@ -87,6 +87,7 @@ ds = simon.Datastore(context)
 # and a "title" identifying the document. 
 
 doc_hash = ds.store("https://example.com", "Example Website")
+doc_hash = ds.store_text("words words words", "title of the words", "source text here")
 
 # This function returns a hash identifying the document, which is used universally
 # to identify this exact text (i.e., if a different URL served the same text
@@ -99,13 +100,6 @@ ds.delete(doc_hash)
 
 # There are a lot more cool things you can do with a Datastore, but you can read
 # all about it in the documentation.
-#
-# If you use the store function introduced above, however, you will get a big
-# warning to use a custom ingestor from `simon.ingestion` instead of .store.
-# You see, the store function above is very constraining: it OCRs a document on
-# the public internet. Which... I guess its fine for quickly doing that, but there's
-# a lot more things to read than single docs on the internet. To deal with those,
-# introducing...
 
 ### 3: Ingesters
 # Simon makes available a suite of ingesters to read all sorts of resources.
@@ -123,17 +117,6 @@ ingester.ingest_remote("https://example.com", "Example Website")
 #    AWS S3
 # - `OCRIngester`, which secretly Parses/Reads/OCRs (last ditch) your local or remote
 #   (on HTTP) document
-# and, my favourite, `JSONIngester`, which programatically maps the fields of a JSON to documents.
-#
-# Here's an example of indexing @jemoka's notes (how's that for self-promotion?):
-
-from simon.ingestion import JSONIngester
-from simon import JSONMapping, StringMappingField, MappingTarget
-
-ingester = JSONIngester(context)
-ingester.ingest("https://www.jemoka.com/index.json", JSONMapping([StringMappingField("permalink", MappingTarget.SOURCE),
-                                                                  StringMappingField("contents", MappingTarget.TEXT),
-                                                                  StringMappingField("title", MappingTarget.TITLE)]))
 
 ### 4: Search
 # Ok, but all that talk of ingestion is nothing if not for the main event. Search!
