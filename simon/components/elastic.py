@@ -28,7 +28,7 @@ def _seed_schema(es:Elasticsearch, dim=1546):
                                                                          "text": {"type": "text"},
                                                                          "embedding": {"type": "dense_vector",
                                                                                        "dims": 1536,
-                                                                                       "similarity": "cosine",
+                                                                                       "similarity": "dot_product",
                                                                                        "index": "true"},
                                                                          "user": {"type": "keyword"}}})
     es.indices.create(index="simon-kv", mappings={"properties": {"key": {"type": "keyword"},

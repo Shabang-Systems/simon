@@ -27,4 +27,9 @@ context.elastic.indices.delete(index="simon-paragraphs")
 context.elastic.indices.clone(index="simon-paragraphs-staging", target="simon-paragraphs")
 # allow writes again
 context.elastic.indices.put_settings(settings={"index.blocks.write", "false"}, index="simon-paragraphs-staging")
+context.elastic.indices.put_settings(settings={"index.blocks.write", "false"}, index="simon-paragraphs")
+
+#### DO NOT UNCOMMENT THE FOLLOWING LINE ####
+# Once you are done and have *checked* the new simon-paragraphs index, issue
+# context.elastic.indices.delete(index="simon-paragraphs-staging")
 
