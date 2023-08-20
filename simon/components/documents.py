@@ -571,10 +571,14 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
     tfs = []
 
     for doc in filtered_documents:
-        vectorizer = TfidfVectorizer()
-        X = vectorizer.fit_transform(doc.paragraphs)
-        tf_sum = X.sum(1).squeeze().tolist()[0]
-        tfs.append(tf_sum)
+        try:
+            vectorizer = TfidfVectorizer()
+            X = vectorizer.fit_transform(doc.paragraphs)
+            tf_sum = X.sum(1).squeeze().tolist()[0]
+            tfs.append(tf_sum)
+        except ValueError:
+            L.warning(f"Found document with no analyzable content: {doc.paragraphs}.")
+            tfs.append([0 for _ in doc.paragraphs])
 
     # calculate the documents to embed and chunks to update
     embed_text = []
@@ -699,7 +703,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
         X = vectorizer.fit_transform(doc.paragraphs)
         tf_sum = X.sum(1).squeeze().tolist()[0]
     except ValueError:
-        L.info(f"Simon: Found document with no analyzable content: {doc.paragraphs}. Skipping...")
+        L.info(f"Found document with no analyzable content: {doc.paragraphs}.")
         context.elastic.indices.refresh(index="simon-paragraphs")
         return
 
