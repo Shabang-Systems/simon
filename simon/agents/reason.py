@@ -40,14 +40,18 @@ When responding, you must provide three sections: the sections are "Thought", "S
 
 Thought: important elements in the knowledge base that SHOULD be included in the results, and important keywords that SHOULDN'T but was in the knowledge base anyways; keep this response under 5 words
 Search Results: identify the results of your search. Include only things you mentioned above as relavent, and not those that you mentioned was not. The user should have a complete understanding of their question after reading these results. To present the results, follow this pattern
-- < five word headline for the resource with no quote marks or quotes; in your headline, be sure to have an answer to if this is what the user is searching for. Don't just paraphrase the resource. Finally, include a single quote from the knowledgebase using a bracket link that supports your headline [1]
-- repeat this; five word headline for what the user is searching for again in a headline without quote marks in it (<=5 words) and a *single* bracket link; do NOT paraphrase the resource. Leave again a single tag to support your headline [5]
+- five word headline for the result here, then a *single* citation tag next [1]
+- repeat. five word headline, then a single citation tag [5]
 - ...
 - ...
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
 Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
+
+When coming up with your headline, ensure the headlines all provide an answer to the user's question. You should not have colons (:) or quotes (") in the headline.
+
+When coming up with your answer, don't just bundle tags [3] in the end of your answer. Spread them after each of your points [4].
 
 Begin!
 """
