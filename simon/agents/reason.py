@@ -204,7 +204,7 @@ class Reason(object):
         chunks = {k:v
                   for indx, i in enumerate(kb)
                   for k,v in [(resource_ids[j], indx)
-                              for j in sent_tokenize(i["text"])]}
+                              for j in sent_tokenize(i["metadata"]["title"]+" "+i["text"])]}
 
         # freeze and reverse the resource id dictionary
         # so this is now a dict of resource_id:text
@@ -215,7 +215,7 @@ class Reason(object):
         # hard limit of 5500
         sentences = "".join([text+f" [{indx}]\n " for indx, text in resource_ids.items()])[:5500]
 
-        L.debug(f"Starting reasoning request with context: -----\n{sentences}\n----- !!!")
+        L.debug(f"Starting reasoning request!!!")
 
         # run llm prediciton
 
@@ -251,6 +251,7 @@ class Reason(object):
                                       kb=sentences.strip())
         res = self.__prompt.output_parser.parse(output)
 
+        L.debug(f"All done now with reasoning")
         # perform postprocessing and return
         return self.__postprocess_res(res, kb, resource_ids, chunks)
 

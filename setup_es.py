@@ -34,10 +34,9 @@ if __name__ == '__main__':
 
     if args.merge:
         print("Force merging the ES index...")
-        _optimize_index(es, True)
-        print("Done!")
+        _optimize_index(es)
+        print("This will continue to happen in the background after this program exits.")
     else:
         print('Seeding ElasticSearch schema...')
         _seed_schema(es)
-
-    print('Done!')
+        print('Done!')

@@ -22,17 +22,16 @@ Also, fix the user's spelling.
 
 Here are few examples of successful conversions:
 - eigenvalue => eigenvalues
-- people to visit in Bangkok => people in Bangkok
+- people to visit in Bangkok => people in Bangkok, Bangkok
 - Tell me about Zorbabs => Zorbabs, about Zorbabs
 - What is a celender => definition of calendar 
-- sweet foods that aren't vegetables => sweet foods, not vegetables, sweet foods not vegetables
+- sweet foods that aren't vegetables => sweet foods, not vegetables, sweet foods not vegetables, foods
 - I'm traveling to Singapore next week! What should I do? => Singapore, Singapore activities, singapore activities next week
 
-Provide your output, like the example above, in a markdown list of keywords that would appear in the knowledge base. 
+Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. 
 
 ```output
-- query one
-- query two
+query one, query two
 ...
 ```
 
@@ -58,9 +57,9 @@ class QueryPromptFormatter(StringPromptTemplate):
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("`").strip("'").strip('"').strip()
-        res = str.split("\n-")
+        res = str.split(",")
         
-        return [i.strip("-").strip() for i in res]
+        return [i.strip() for i in res]
 
 class QueryBreaker(object):
     def __init__(self, context, verbose=False):

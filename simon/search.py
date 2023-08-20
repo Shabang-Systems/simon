@@ -84,14 +84,11 @@ class Search:
                 "questions": [follow up questions]
             }]
         """
-        breakpoint()
 
         L.info(f"Serving prefetch \"{text}\"...")
         # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        kb = self.__kb(text) # we only search the kb because this is only a spot check
+        kb = self.search(text) # we only search the kb because this is only a spot check
         L.info(f"Search complete for \"{text}\".")
-
-        breakpoint()
 
         observation = self.__rio(text, kb)
         L.debug(f"Prefetch reasoning complete for \"{text}\"")

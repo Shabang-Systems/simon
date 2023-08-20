@@ -363,6 +363,8 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     if not queries:
         queries = [query]
 
+    queries = list(set(queries))
+
     # get results
     squery = {
         "bool": {"must": [
