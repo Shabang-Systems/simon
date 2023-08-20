@@ -628,6 +628,7 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
     # refresh indicies
     context.elastic.indices.refresh(index="simon-fulltext")
     context.elastic.indices.refresh(index="simon-paragraphs")
+    L.debug(f"Done with indexing {len(documents)} documents; {len(filtered_documents)} actually indexed; rest cached.")
 
 
 
