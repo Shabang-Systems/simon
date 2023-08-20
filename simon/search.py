@@ -126,7 +126,25 @@ class Search:
             A list of (title, text).
         """
         
-        return suggest(query, self.__context)
+        return autocomplete(query, self.__context)
 
+    def suggest(self, query:str):
+        """Autocomplete the document with the given title
 
+        Parameters
+        ----------
+        query : str
+            The partial title of the document to start suggesting from.
 
+        Returns
+        -------
+        List[Tuple[str, str]]
+            A list of (title, text).
+        """
+        
+        fixed = self.__fix(query)
+        fixed += [" ".join(fixed)]
+        res = search(self.__context, queries=fixed, search_type=IndexClass.FULLTEXT)
+        titles = [i["metadata"]["title"] for i in res]
+
+        return titles

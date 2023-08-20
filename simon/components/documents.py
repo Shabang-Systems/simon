@@ -291,7 +291,7 @@ def top_tf(hash:str, context:AgentContext, k=3):
                                 size=k)
     return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
 
-def suggest(query:str, context:AgentContext, k=8):
+def autocomplete(query:str, context:AgentContext, k=8):
     """string automcomplete to suggest article titles
 
     Parameters
