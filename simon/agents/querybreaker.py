@@ -22,11 +22,11 @@ Also, fix the user's spelling.
 
 Here are few examples of successful conversions:
 - eigenvalue => eigenvalues
-- people to visit in Bangkok => people in Bangkok, visiting Bangkok
-- Tell me about Zorbabs => Zorbabs
+- people to visit in Bangkok => people in Bangkok
+- Tell me about Zorbabs => Zorbabs, about Zorbabs
 - What is a celender => definition of calendar 
-- sweet foods that aren't vegetables => sweet foods, not vegetables
-- I'm traveling to Singapore next week! What should I do? => Singapore, Singapore activities
+- sweet foods that aren't vegetables => sweet foods, not vegetables, sweet foods not vegetables
+- I'm traveling to Singapore next week! What should I do? => Singapore, Singapore activities, singapore activities next week
 
 Provide your output, like the example above, in a markdown list of keywords that would appear in the knowledge base. 
 
@@ -37,7 +37,7 @@ Provide your output, like the example above, in a markdown list of keywords that
 ```
 
 Begin!
-
+, visiting Bangkok
 Human:
 Here is the question for you to patch:
 {input}

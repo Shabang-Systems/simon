@@ -47,11 +47,15 @@ Search Results: identify the results of your search. Include only things you men
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
-Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
+Answer: If no resources are relavent and you can't answer the question, write the letters N/A here. Otherwise, provide an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
 
 When coming up with your headline, ensure the headlines all provide an answer to the user's question. You should not have colons (:) or quotes (") in the headline.
 
+When coming up with your Search Results, *RANK THEM* based on the order of relavence. The most relavent result should be on top.
+
 When coming up with your answer, don't just bundle tags [3] in the end of your answer. Spread them after each of your points [4].
+
+You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help you answer the question. Fact chec the resources; if something doesn't make sense, don't include it. Instead, provide Answer: N/A.
 
 Begin!
 """

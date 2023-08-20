@@ -381,7 +381,7 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
             kquery.append({"field": "embedding",
                            "query_vector": context.embedding.embed_query(query),
                            "k": k,
-                           "num_candidates": 100,
+                           "num_candidates": 50,
                            "filter": [{"term": {"user": context.uid}},
                                       {"match": {"text": query}}]})
         L.debug("END EMBED")
