@@ -376,12 +376,15 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     kquery = []
 
     if search_type == IndexClass.CHUNK:
+        L.debug("BEGIN EMBED")
         for query in queries:
             kquery.append({"field": "embedding",
                            "query_vector": context.embedding.embed_query(query),
-                           "k": k*2,
-                           "num_candidates": 900,
-                           "filter": [{"term": {"user": context.uid}}]})
+                           "k": k,
+                           "num_candidates": 100,
+                           "filter": [{"term": {"user": context.uid}},
+                                      {"match": {"text": query}}]})
+        L.debug("END EMBED")
 
     # if doc_hash:
     #     squery["bool"]["must"].append({"term": {"hash": doc_hash}})
