@@ -32,27 +32,20 @@ import re
 # Provide a *full* full answer to the user's question. [4] Provide references to useful citation numbers in brackets found in the knowledge section *throughout* your answer after each claim; don't put a bunch all in the end. [2] You must only use information presented in the Knowledge section to provide your answer. [5] Use **markdown** _styles_, if appropriate. 
 
 SYSTEM_TEMPLATE = """
-You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search.
+You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search. Order the results of your search by RELAVENCE; keep the most direct answer to the user's query on top.
 
 When responding, you must provide three sections: the sections are "Headline", "Search Results", "Answer". 
 
 Thought: important elements in the knowledge base that SHOULD be included in the results, and important keywords that SHOULDN'T but was in the knowledge base anyways; keep this response under 5 words
-Search Results: identify the results of your search. This list should only contain things that you mentioned above as should be included, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question; do NOT include quote marks around the headline:
-- headline for the resource (in your headline, be sure to have an answer to if this is what the user is searching for?) (<10 words); don't just paraphrase the resource. Finally, leave a *single* tag to the resource. [1]
-- repeat this; answer again is this what the user is searching for again in a headline (<10 words) and a *single* bracket link; do NOT paraphrase the resource. Leave again a single tag like so: [5]
+Search Results: identify the results of your search. This list should only contain things that you mentioned above as should be included, and NOT contain anything that you mention was irrelevant. These results, together, should directly answer the user's question, in addition to fill in any gaps of knowledge the user has betrayed through their question:
+- five word headline for the resource with no quote marks or quotes; in your headline, be sure to have an answer to if this is what the user is searching for. Don't just paraphrase the resource. Finally, include a single quote from the knowledgebase using a bracket link that supports your headline [1]
+- repeat this; five word headline for what the user is searching for again in a headline without quote marks in it (<10 words) and a *single* bracket link; do NOT paraphrase the resource. Leave again a single tag to support your headline [5]
 - ...
 - ...
 - ...
 - ...
 [This can repeat *at most* 5 times, but the user hates reading so keep it short.]
 Answer: an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
-
-Four important tips:
-1. If a result is not relavent (or opposite to) the user's request, DON'T INCLUDE IT
-2. The knowledge you are provided *is not ordered* and can contain irrelavent content
-3. Very selectively pick what would be useful to answer the users' question
-4. Keep everything concise and precise; make it EASY TO READ.
-5. MOST IMPORTANTLY: *order the results of your search by RELAVENCE; keep the most direct answer to the user's query on top*
 
 Begin!
 """
@@ -90,7 +83,7 @@ class ReasonOutputParser(BaseOutputParser):
 
         if match:
             thought = match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
-            extrapolations = match.group(2).strip("\"").strip('"').strip("`").replace("`", "").strip()
+            extrapolations = match.group(2).strip("\"").replace('"', '').strip("`").replace("`", "").strip()
             if answer_match and answer_match.group(1):
                 answer = answer_match.group(1).strip("\"").strip('"').strip("`").replace("`", "").strip()
             else:
