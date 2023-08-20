@@ -20,14 +20,14 @@ from elasticsearch.helpers import reindex
 reindex(context.elastic, "simon-paragraphs", "simon-paragraphs-staging")
 
 # prevent writes on the staging index to prepare for cloning
-context.elastic.indices.put_settings(settings={"index.blocks.write", "true"}, index="simon-paragraphs-staging")
+context.elastic.indices.put_settings(body={"index.blocks.write": "true"}, index="simon-paragraphs-staging")
 # delete old index
 context.elastic.indices.delete(index="simon-paragraphs")
 # and clone to new index
 context.elastic.indices.clone(index="simon-paragraphs-staging", target="simon-paragraphs")
 # allow writes again
-context.elastic.indices.put_settings(settings={"index.blocks.write", "false"}, index="simon-paragraphs-staging")
-context.elastic.indices.put_settings(settings={"index.blocks.write", "false"}, index="simon-paragraphs")
+context.elastic.indices.put_settings(body={"index.blocks.write": "false"}, index="simon-paragraphs")
+context.elastic.indices.put_settings(body={"index.blocks.write": "false"}, index="simon-paragraphs-staging")
 
 #### DO NOT UNCOMMENT THE FOLLOWING LINE ####
 # Once you are done and have *checked* the new simon-paragraphs index, issue
