@@ -315,13 +315,14 @@ def suggest(query:str, context:AgentContext, k=8):
                                       "completion": {
                                           "field": "metadata.title"
                                       },
-                                  }})
+                                  }},
+                                  query={"bool": {"must": [{"term": {"user":
+                                                                     context.uid}}]}})
 
     options = docs["suggest"]["title-suggest"][0]["options"]
 
     # filter for matching UIDs and get fields
-    matching = [(i["_source"]["metadata"]["title"], i["_source"]["text"],
-                 i["_source"]["hash"])
+    matching = [(i["_source"]["metadata"]["title"], i["_source"]["hash"])
                 for i in options if i["_source"]["user"] == context.uid]
 
     return matching
