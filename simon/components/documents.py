@@ -383,7 +383,8 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
                            "k": k,
                            "num_candidates": 50,
                            "filter": [{"term": {"user": context.uid}},
-                                      {"match": {"text": query}}]})
+                                      ]})
+# {"match": {"text": query}}
         L.debug("END EMBED")
 
     # if doc_hash:
