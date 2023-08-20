@@ -55,7 +55,7 @@ def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
         embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=oai_config["openai_api_key"])
 
     # create elastic instance
-    es = Elasticsearch(**es_config)
+    es = Elasticsearch(**es_config, timeout=1000)
 
     # build a context!
     context = AgentContext(gpt3, gpt4, embedding, es, uid)
