@@ -512,6 +512,8 @@ def delete_document(hash:str, context:AgentContext):
 
 #### SETTERS ####
 def bulk_index(documents:List[ParsedDocument], context:AgentContext):
+    assert len(documents) > 0, "we can't index 0 documents"
+
     L.info(f"Bulk indexing {len(documents)} documents...")
 
     # get the hashes from the documents
