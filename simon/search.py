@@ -144,7 +144,7 @@ class Search:
         
         fixed = self.__fix(query)
         fixed += [" ".join(fixed)]
-        res = search(self.__context, queries=fixed, search_type=IndexClass.FULLTEXT)
+        res = search(self.__context, queries=fixed, search_type=IndexClass.FULLTEXT, k=10)
         titles = [i["metadata"]["title"] for i in res]
 
         return titles

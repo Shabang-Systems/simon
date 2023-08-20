@@ -27,8 +27,8 @@ from uuid import uuid4
 
 # TODO TODO TODO AUTHHH
 # UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
-# UID = "6ab69096-3bb4-422e-afc5-df032818b3c3" # wiki
-UID = "d075096b-130f-4e35-af70-aa98b41bc1fc" # books
+UID = "6ab69096-3bb4-422e-afc5-df032818b3c3" # wiki
+# UID = "d075096b-130f-4e35-af70-aa98b41bc1fc" # books
 # UID = "4e000ccf-55fd-4793-8966-cfc44cf35516" # discord
 # UID = "paper2graph"
 
@@ -204,6 +204,34 @@ def fetch():
         assistant = cache[arguments["session_id"].strip()]["management"]
         return {
             "response": assistant.get(arguments["resource_id"].strip()),
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+# suggest document title
+@simon_api.route('/suggest', methods=['GET'])
+@cross_origin()
+def suggest():
+    """come up with possible documents based on the title
+
+    @params
+    - q : str --- the beginning of your query
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]["search"]
+        results = assistant.suggest(arguments["q"].strip())
+
+        return {
+            "response": results,
             "status": "success"
         }
     except KeyError:
