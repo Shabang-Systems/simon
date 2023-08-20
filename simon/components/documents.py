@@ -511,6 +511,128 @@ def delete_document(hash:str, context:AgentContext):
 
 
 #### SETTERS ####
+def bulk_index(documents:List[ParsedDocument], context:AgentContext):
+    L.info(f"Bulk indexing {len(documents)} documents...")
+
+    # get the hashes from the documents
+    hashes = [i.hash for i in documents]
+
+    # and search through for those hashes
+    prefetch = []
+
+    L.debug(f"Identifying already indexed documents...")
+    # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
+    # requires a new index note
+    for indx, hash in enumerate(hashes):
+        prefetch.append({"index": "simon-fulltext"})
+        prefetch.append({
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {"hash": hash}},
+                        {"term": {"user": context.uid}}
+                    ],
+                }},
+            "size": 1
+        })
+
+    request = ""
+
+    for i in prefetch:
+        request += f"{json.dumps(i)} \n"
+
+    success = False
+
+    while not success:
+        try:
+            prefetch = context.elastic.msearch(searches=request)["responses"]
+            success = True
+        except:
+            pass
+
+    # filter the input documents by those that aren't previously indexed
+    not_found = [not bool(i["hits"]["total"]["value"]) for i in prefetch]
+
+    if sum(not_found) == 0:
+        L.debug(f"All of {len(documents)} documents are all indexed. Returning...")
+        return
+
+    # documents to index
+    _, filtered_documents = zip(*filter(lambda x:x[0], zip(not_found, documents)))
+
+    # remove duplicates
+    filtered_documents = list(set(filtered_documents))
+
+    L.debug(f"Total of {len(filtered_documents)} documents remain to truly index.")
+
+    L.debug(f"TFIDF analyzing {len(filtered_documents)} documents...")
+
+    # calculate tfidf for use later
+    tfs = []
+
+    for doc in filtered_documents:
+        vectorizer = TfidfVectorizer()
+        X = vectorizer.fit_transform(doc.paragraphs)
+        tf_sum = X.sum(1).squeeze().tolist()[0]
+        tfs.append(tf_sum)
+
+    # calculate the documents to embed and chunks to update
+    embed_text = []
+    updates = []
+
+    L.debug(f"calculating chunk for {len(filtered_documents)} documents...")
+    # We now go through each of the paragraphs. Index if needed, update the hash
+    # if we already have the paragraph.
+    for i, doc in enumerate(filtered_documents):
+        tf_vec = tfs[i]
+
+        for indx, (tf, paragraph) in enumerate(zip(tf_vec, doc.paragraphs)):
+            # check if the we already have the element indexed
+            embed_text.append((doc.meta.get("title", "")
+                                if doc.meta.get("title", "") else "")+": "+paragraph.strip())
+
+            updates.append({"user": context.uid,
+                            "metadata": {"title": doc.meta.get("title"),
+                                        "source": doc.meta.get("source"),
+                                        "seq": indx,
+                                        "tf": tf,
+                                        "total": len(doc.paragraphs)},
+                            "hash": doc.hash,
+                            "text": paragraph,
+                            "_op_type": "index",
+                            "_index": "simon-paragraphs"})
+
+    # create embeddings in bulk
+    L.debug(f"embedding {len(embed_text)} chunks...")
+    embeddings = context.embedding.embed_documents(embed_text)
+
+    # slice the embeddings in
+    for i, em in zip(updates, embeddings):
+        i["embedding"] = em
+
+    L.debug(f"calculating full text updates for {len(filtered_documents)} documents...")
+    # create the document-level updates
+    for doc in filtered_documents:
+        updates.append({"user": context.uid,
+                        "metadata": {"title": doc.meta.get("title"),
+                                    "source": doc.meta.get("source")},
+                        "hash": doc.hash,
+                        "text": doc.main_document,
+                        "_op_type": "index",
+                        "_index": "simon-fulltext"})
+
+    L.debug(f"submitting {len(filtered_documents)} documents to the index...")
+    # and bulk!
+    bulk(context.elastic, updates)
+
+    # refresh indicies
+    context.elastic.indices.refresh(index="simon-fulltext")
+    context.elastic.indices.refresh(index="simon-paragraphs")
+
+
+
+
+
 def index_document(doc:ParsedDocument, context:AgentContext):
     """Indexes a document, if needed.
 
@@ -524,7 +646,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     Note
     ----
- at   Why is this code so agressive about search/checking first
+    Why is this code so agressive about search/checking first
     before indexing? Because indexing is SIGNIFICANTLY more
     expensive in Elastic than reading. Because its a search db
     after all.

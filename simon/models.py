@@ -25,6 +25,9 @@ class ParsedDocument:
     def hash(self):
         return hashlib.sha256(self.main_document.encode()).hexdigest()
 
+    def __hash__(self):
+        return hash((self.main_document, self.paragraphs[0], self.paragraphs[-1], self.hash))
+
 class IndexClass(Enum):
     CHUNK = 0
     KEYWORDS = 1
