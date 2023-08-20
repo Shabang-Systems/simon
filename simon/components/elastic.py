@@ -140,6 +140,12 @@ def kv_delete(key:str, es:Elasticsearch, user:str):
         es.delete(index="simon-kv", id=id)
         es.indices.refresh(index="simon-kv")
 
+def _optimize_index(es:Elasticsearch, wait:bool=False):
+    """Performs a force merge and other index optimization operations"""
+
+    es.indices.forcemerge(index="simon-paragraphs", max_num_segments=10,
+                          wait_for_completion=wait)
+
 # _nuke_schema(es)
 # _seed_schema(es)
 
