@@ -1,3 +1,6 @@
+import simon
+context = simon.create_context("") 
+
 # create stanging index
 context.elastic.indices.create(index="simon-paragraphs-staging", mappings={"properties": {"hash": {"type": "keyword"},
                                                                                           "metadata.source": {"type": "text"},
