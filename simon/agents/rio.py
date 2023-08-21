@@ -44,8 +44,6 @@ Each entry in the result must not use more than 7 words, and they must not conta
 
 You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help surface unexpected information. Fact chec the resources; if something doesn't make sense, don't include it. 
 
-You may only use each angle bracket tag *ONCE*. For instance, if one of your output lines contained <1>, you may not use <1> again. 
-
 Question:
 {input}
 
@@ -226,6 +224,7 @@ class RIO(object):
  
 
         output = self.__chain.predict(input=tagged_input, kb=sentences)
+        print(output)
         res, citations, inputs = self.__prompt.output_parser.parse(output)
 
         # parse citations
