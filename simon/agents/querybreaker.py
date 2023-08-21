@@ -50,7 +50,7 @@ definition of calendar
 Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. You may break a query into at most 3 items.
 
 ```output
-At most three broken queries:
+At most five broken queries:
 - query one
 - query two
 - query three
@@ -63,7 +63,7 @@ Input:
 
 AI:
 ```output
-At most three broken queries:
+At most five broken queries:
 - 
 """
 
