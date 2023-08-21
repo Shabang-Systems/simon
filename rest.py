@@ -26,8 +26,8 @@ import simon
 from uuid import uuid4
 
 # TODO TODO TODO AUTHHH
-# UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
-UID = "6ab69096-3bb4-422e-afc5-df032818b3c3" # wiki
+UID = "71e1fed4-9dd8-4525-a3f2-fea4f2ea7bce"
+# UID = "6ab69096-3bb4-422e-afc5-df032818b3c3" # wiki
 # UID = "d075096b-130f-4e35-af70-aa98b41bc1fc" # books
 # UID = "4e000ccf-55fd-4793-8966-cfc44cf35516" # discord
 # UID = "paper2graph"
@@ -125,7 +125,8 @@ def streamquery():
 
     stream_session = str(uuid4())
 
-    cache[stream_session] = {"output": {"search_results": []}}
+    cache[stream_session] = {"output": {"search_results": []},
+                             "done": False}
 
     def callback(x):
         cache[stream_session] = x
@@ -162,7 +163,7 @@ def streamquery():
 @simon_api.route('/brainstorm', methods=['GET'])
 @cross_origin()
 def brainstorm():
-    """come up with possible queries
+    """brainstorm good resources
 
     @params
     - q : str --- string query to provide to the model; for instance, a fragment
@@ -184,6 +185,58 @@ def brainstorm():
     except KeyError:
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
+
+
+# call the llm directly, with stream
+@simon_api.route('/streambrainstorm', methods=['POST', 'GET'])
+@cross_origin()
+def streambrainstorm():
+    """brainstorm good resources, streaming
+
+    @POST params
+    - q : str --- string question/query to provide to the model
+    - session_id : str --- session id that you should have gotten from /start
+
+    @GET params
+    - stream_id : str --- the stream you want to get the results from
+
+    @returns JSON
+    - response: JSON --- JSON paylod returned from the model
+    - status: str --- status, usually success
+    """
+
+    stream_session = str(uuid4())
+
+    cache[stream_session] = {"output": [], "done": False}
+
+    def callback(x):
+        cache[stream_session] = x
+
+    try:
+        arguments = request.args
+        if request.method == "POST":
+            assistant = cache[arguments["session_id"].strip()]["search"]
+
+            # run the call on a different thread
+            thread = threading.Thread(target=assistant.brainstorm,
+                                      args=(arguments["q"].strip(), callback))
+            thread.start()
+
+            return {
+                "stream_id": stream_session,
+                "status": "success"
+            }
+        elif request.method == "GET":
+            res = cache.get(arguments["stream_id"].strip(), {})
+            return {
+                "response": res,
+                "status": "success"
+            }
+            
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
 
 @simon_api.route('/fetch', methods=['GET'])
 @cross_origin()
@@ -227,6 +280,7 @@ def suggest():
 
     try:
         arguments = request.args
+        print(cache)
         assistant = cache[arguments["session_id"].strip()]["search"]
         results = assistant.suggest(arguments["q"].strip())
 

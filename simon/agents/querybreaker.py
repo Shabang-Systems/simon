@@ -21,29 +21,50 @@ You will be provided a partial slice of the human's notes and thoughts; your job
 Also, fix the user's spelling.
 
 Here are few examples of successful conversions:
-- eigenvalue => eigenvalues
-- people to visit in Bangkok => people in Bangkok, Bangkok
-- Tell me about Zorbabs => Zorbabs, about Zorbabs
-- What is a celender => definition of calendar 
-- sweet foods that aren't vegetables => sweet foods, not vegetables, sweet foods not vegetables, foods
-- I'm traveling to Singapore next week! What should I do? => Singapore, Singapore activities, singapore activities next week
+Input:
+eigenvalue
+```output
+- eigenvalues
+```
+---
+Input:
+people to visit in Bangkok
+```output
+- people in Bangkok
+- Bangkok
+```
+---
+Input:
+Zorbabs is an immense species of animals which causes many distructions.
+```output
+- Zorbabs
+- about Zorbabs
+```
+---
+Input:
+What is a celender
+```output
+definition of calendar 
+```
 
-Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. 
+Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. You may break a query into at most 3 items.
 
 ```output
-query one, query two
-...
+At most three broken queries:
+- query one
+- query two
+- query three
 ```
 
 Begin!
-, visiting Bangkok
 Human:
-Here is the question for you to patch:
+Input:
 {input}
 
 AI:
 ```output
-""
+At most three broken queries:
+- 
 """
 
 class QueryPromptFormatter(StringPromptTemplate):
@@ -57,9 +78,9 @@ class QueryPromptFormatter(StringPromptTemplate):
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("`").strip("'").strip('"').strip()
-        res = str.split(",")
+        res = str.split("\n-")
         
-        return [i.strip() for i in res]
+        return [i.replace("-", '').strip() for i in res]
 
 class QueryBreaker(object):
     def __init__(self, context, verbose=False):
