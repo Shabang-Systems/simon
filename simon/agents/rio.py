@@ -157,7 +157,7 @@ class RIO(object):
     def __call__(self, input, kb=[], streaming=None):
         # Tokenize the sentence
         sent_ids = defaultdict(lambda : len(sent_ids))
-        [sent_ids[i] for i in sent_tokenize(input)]
+        [sent_ids[k] for i in [sent_tokenize(j) for j in input.split(",")] for k in i]
         sent_ids = dict(sent_ids)
 
         # freeze and reverse the resource id dictionary
@@ -167,6 +167,8 @@ class RIO(object):
         # create the tagged input 
         tagged_input = "".join(text+f" <{indx}> " for indx, text in sent_ids.items())
             
+        if not kb:
+            return
 
         # initialize the dictionary for text-to-number labeling
         # this dictionary increments a number for every new key
