@@ -56,7 +56,7 @@ class KnowledgeBase():
         L.info(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
-        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=16)
+        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=24)
         results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 
