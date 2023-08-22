@@ -52,8 +52,7 @@ class KnowledgeBase():
     def __call__(self, *inputs):
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
-        queries = [j for i in inputs for j in self.__qb(i)]
-        queries += [" ".join(queries)]
+        queries = [self.__qb(j) for j in inputs]
         L.info(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits

@@ -16,7 +16,7 @@ TEMPLATE = """
 System:
 The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel sheet for last year's tax return" is not. Pay attention to logical keywords.
 
-You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a list of key terms. These terms terms should together clarify and point to the exact thing the human is trying to look for.
+You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to key terms. These terms terms should together clarify and point to the exact thing the human is trying to look for.
 
 Also, fix the user's spelling.
 
@@ -24,21 +24,19 @@ Here are few examples of successful conversions:
 Input:
 eigenvalue
 ```output
-- eigenvalues
+eigenvalues
 ```
 ---
 Input:
 people to visit in Bangkok
 ```output
-- people in Bangkok
-- Bangkok
+people in Bangkok, Bangkok
 ```
 ---
 Input:
 Zorbabs is an immense species of animals which causes many distructions.
 ```output
-- Zorbabs
-- about Zorbabs
+Zorbabs, about Zorbabs
 ```
 ---
 Input:
@@ -47,13 +45,10 @@ What is a celender
 definition of calendar 
 ```
 
-Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. You may break a query into at most 3 items.
+Provide your output, like the example above, in a comma seperated list of keywords that would appear in the knowledge base. You may break a query into at most 2 items.
 
 ```output
-At most five broken queries:
-- query one
-- query two
-- query three
+some broken queries
 ```
 
 Begin!
@@ -63,8 +58,7 @@ Input:
 
 AI:
 ```output
-At most five broken queries:
-- 
+I am now going to break your big query into at most two broken queries:
 """
 
 class QueryPromptFormatter(StringPromptTemplate):
@@ -78,9 +72,8 @@ class QueryPromptFormatter(StringPromptTemplate):
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("`").strip("'").strip('"').strip()
-        res = str.split("\n-")
         
-        return [i.replace("-", '').strip() for i in res]
+        return str.strip("-").strip()
 
 class QueryBreaker(object):
     def __init__(self, context, verbose=False):
@@ -102,5 +95,6 @@ class QueryBreaker(object):
         out =  self.__chain.predict(input=question,
                                     entities=entities)
         res =  self.__prompt.output_parser.parse(out)
+        # breakpoint()
 
         return res

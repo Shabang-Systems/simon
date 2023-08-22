@@ -76,8 +76,12 @@ class RIOOutputParser(BaseOutputParser):
         str = str.strip("\"").strip('"').strip("`").strip()
 
         questions = [i.strip("-").strip()
-                     for i in str.strip().replace("\n -", "\n-").split("\n-")
-                     if i.strip() != '']
+                    for i in str.strip().replace("\n -", "\n-").split("\n-")
+                    if i.strip() != '']
+
+        # filter for those that match the regex
+        match_regex = r".* ?<(\d+)> ?\[(\d+)\]"
+        questions = list(filter(lambda x:re.match(match_regex, x), questions))
 
         resource_regex = r"\[(\d+)\]"
 
@@ -125,17 +129,14 @@ class RIOSingleUseCallbackHandler(BaseCallbackHandler):
         self.__cache = None
 
     def on_llm_new_token(self, **kwargs):
-        try:
-            self.__scratchpad += kwargs["token"]
+        self.__scratchpad += kwargs["token"]
 
-            out = self.__formatter(self.__scratchpad)
-            if out and out != self.__cache:
-                self.__cache = out
+        out = self.__formatter(self.__scratchpad)
+        if out and out != self.__cache:
+            self.__cache = out
 
-                self.__callback({"output": self.__cache,
-                                "done": False})
-        except Exception as e:
-            pass
+            self.__callback({"output": self.__cache,
+                             "done": False})
 
     def on_llm_end(self, res, **kwargs):
         self.__callback({"output": self.__cache,
@@ -156,7 +157,7 @@ class RIO(object):
         """
         
         self.__prompt = RIOPromptFormatter(input_variables=["input", "kb"],
-                                    output_parser=RIOOutputParser())
+                                           output_parser=RIOOutputParser())
         self.__chain = LLMChain(llm=context.reason_llm, prompt=self.__prompt, verbose=verbose)
 
 
@@ -172,7 +173,7 @@ class RIO(object):
 
         # create the tagged input 
         tagged_input = "".join(text+f" <{indx}> " for indx, text in sent_ids.items())
-            
+        
         if not kb:
             return
 
@@ -205,10 +206,11 @@ class RIO(object):
             def format_callback(output):
                 res, citations, inputs = self.__prompt.output_parser.parse(output)
                 return [{"headline": headline,
-                         "relavent_input": sent_ids[inp],
-                         "resource": {"quote": resource_ids[i],
-                                      "chunk": kb[chunks[i]]}} for i, headline, inp in zip(citations, res, inputs)]
+                        "relavent_input": sent_ids[inp],
+                        "resource": {"quote": resource_ids[i],
+                                    "chunk": kb[chunks[i]]}} for i, headline, inp in zip(citations, res, inputs)]
 
+            
             def remove_callback():
                 self.__chain.llm.callbacks = [i for i in self.__chain.llm.callbacks if type(i) != RIOSingleUseCallbackHandler]
                 
@@ -229,7 +231,7 @@ class RIO(object):
 
             # return nothing
             return
- 
+        
 
         output = self.__chain.predict(input=tagged_input, kb=sentences)
         print(output)
