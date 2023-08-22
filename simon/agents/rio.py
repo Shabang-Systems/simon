@@ -26,7 +26,7 @@ You will be given the human's partial thoughts and some knowledge. Your job is t
 
 Keep everything extremely brief. You will provide a list of outputs, which contains salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. 
 
-In each list element, provide a headline describing the resource you are referring the human to read, then two special tags. One tag referring to the resource, and one tag referring to the statement that the human said which prompted you to provide the resource.
+In each list element, provide a headline answering why the resource you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the resource you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
 
 For instance:
 Question:
@@ -49,6 +49,8 @@ Each entry should be of the EXACT SHAPE:
 - short headline <a> [b]
 
 With those tags in that order.
+
+You should choose the most relavent resources to surface the information the human wouldn't otherwise know about, and match it to the most relavent and helpful line of the human's input where it would be most helpful to the human.
 
 Question:
 {input}
