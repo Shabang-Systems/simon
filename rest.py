@@ -264,7 +264,7 @@ def autocomplete():
         results = search.autocomplete(arguments["q"].strip())
 
         return {
-            "response": results,
+            "response": list(set(results)),
             "status": "success"
         }
     except KeyError:
