@@ -346,7 +346,7 @@ def autocomplete(query:str, context:AgentContext, k=8):
 
     cur = context.cnx.cursor()
 
-    cur.execute("SELECT title FROM simon_paragraphs WHERE uid = %s AND title LIKE %s LIMIT %s;", (context.uid, query+"%", k))
+    cur.execute("SELECT title FROM simon_paragraphs WHERE uid = %s AND LOWER( title ) LIKE %s LIMIT %s;", (context.uid, query.lower()+"%", k))
     res = cur.fetchall()
 
     result = [i[0] for i in res]
