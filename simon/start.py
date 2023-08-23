@@ -23,7 +23,7 @@ def create_context(uid:str, openai_api_key:str=None,
     Parameters
     ----------
     uid : str
-        User ID to use for Elastic.
+        User ID to use.
     openai_api_key : optional, str
         OpenAI API key to use, or read from enviroment variable.
     db_config : optional, dict
@@ -56,7 +56,7 @@ def create_context(uid:str, openai_api_key:str=None,
         gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, openai_api_key=oai_config["openai_api_key"])
         embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=oai_config["openai_api_key"])
 
-    # create elastic instance
+    # create db instance
     cnx = connect(**db_config)
 
     # build a context!

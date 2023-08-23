@@ -36,7 +36,7 @@ def dedup(k):
     return new_k
 
 class KnowledgeBase():
-    """General Elastic Knowledgebase Provider
+    """General database Knowledgebase Provider
 
     Parameters
     ----------

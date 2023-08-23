@@ -113,7 +113,7 @@ class TextFileIngester:
         for i, path in enumerate(files):
             file_name = os.path.basename(path)
             logging.info(
-                f'Ingesting file {file_name} into ElasticSearch ({i} of {len(files)})...')
+                f'Ingesting file {file_name} ... ({i} of {len(files)})...')
             file_hashes.append(self.ingest_file(path))
         ingest_all_et = time.time()
         logging.info('Ingestion done!')

@@ -49,7 +49,7 @@ class JSONIngester:
 
     ## Ingest Remote Function ###
     def ingest(self, url, mappings:Mapping, delim="\n", local=False):
-        """Read and index a remote resource into Elastic with a field mapping
+        """Read and index a remote resource into the database with a field mapping
 
         Note
         ----
@@ -113,10 +113,8 @@ class JSONIngester:
                 if oldhash:
                     delete_document(oldhash, context)
                 # index new one
-                context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
-                                                                    "user": context.uid})
+                cache(source, i.hash, context)
         # refresh
-        context.elastic.indices.refresh(index="simon-cache")
         L.info(f"Done creating JSON index on {url}")
 
         # return hashes

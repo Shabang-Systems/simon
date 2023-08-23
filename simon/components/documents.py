@@ -518,6 +518,8 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     L.debug(f"Done with indexing {len(documents)} documents; {len(filtered_documents)} actually indexed; rest cached.")
 
+    cur.close()
+
 def index_document(doc:ParsedDocument, context:AgentContext):
     """Indexes a document, if needed.
 
@@ -528,19 +530,34 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     context : AgentContext
         Information about data stores, etc. which determines
         the context.
-
-    Note
-    ----
-    Why is this code so agressive about search/checking first
-    before indexing? Because indexing is SIGNIFICANTLY more
-    expensive in Elastic than reading. Because its a search db
-    after all.
     """
 
     L.info(f"Indexing {doc.hash}...")
     bulk_index([doc], context)
 
     # lol
+
+def cache(uri:str, hash:str, context:AgentContext):
+    """cache a document to prevent future fetches
+
+    Parameters
+    ----------
+    uri : str
+        url to cache from
+    hash : str
+        hash to cache
+    context : AgentContext
+        the agent context to cache with
+    """
+    
+
+    cur = context.cnx.cursor()
+
+    cur.execute("INSERT INTO simon_cache (uri, hash, uid) VALUES (%s, %s, %s);", (uri, hash, context.uid))
+
+    context.cnx.commit()
+    cur.close()
+
 
 #### GLUE ####
 # A function to assemble CHUNK-type search results
