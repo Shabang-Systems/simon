@@ -51,12 +51,12 @@ class KnowledgeBase():
     def __call__(self, *inputs):
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
-        queries = [self.__qb(j) for j in inputs]
+        queries = [i for j in inputs for i in self.__qb(j)]
         L.info(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
         results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=24)
-        results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
+        # results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 
         L.debug(f"Results identified for \"{inputs}\" Got {len(results_semantic)} results.")

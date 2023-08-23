@@ -25,7 +25,10 @@ class ParsedDocument:
         return hashlib.sha256(self.main_document.encode()).hexdigest()
 
     def __hash__(self):
-        return hash((self.main_document, self.paragraphs[0], self.paragraphs[-1], self.hash))
+        try:
+            return hash((self.main_document, self.paragraphs[0], self.paragraphs[-1], self.hash))
+        except IndexError:
+            return hash((self.main_document, "", "$$$NOTFOUND$$$", self.hash))
 
 class IndexClass(Enum):
     CHUNK = 0

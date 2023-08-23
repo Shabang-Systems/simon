@@ -99,9 +99,6 @@ class JSONIngester:
         docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
                            delim=delim)
                 for i in data]
-        # filter for those that are indexed
-        docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
-
         L.debug(f"Going to index {len(docs)} documents for JSON indexing.")
 
         # pop each into the index
