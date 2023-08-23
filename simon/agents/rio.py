@@ -48,9 +48,7 @@ Each entry should be of the EXACT SHAPE:
 
 - short headline <a> [b]
 
-With those tags in that order.
-
-You should choose the most relavent resources to surface the information the human wouldn't otherwise know about, and match it to the most relavent and helpful line of the human's input where it would be most helpful to the human.
+With those tags in that order. The headline should summarize the resource and explain why its relavent to the user's query, and should also be less that 7 words. Like a seacrh engine, *RANK YOUR RESULTS*: the most relavent result should be first in your output.
 
 Question:
 {input}
