@@ -2,6 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector";
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 
+
 CREATE TABLE simon_cache (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     uri TEXT NOT NULL,
@@ -31,3 +32,4 @@ CREATE TABLE simon_paragraphs (
     total INTEGER DEFAULT 0
 );
 
+CREATE INDEX simon_pargraphs_embedding_cosine_idx ON simon_paragraphs USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000); 
