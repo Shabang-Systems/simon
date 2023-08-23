@@ -351,7 +351,7 @@ def store():
                         "message": "malformed request, or invalid session_id"}), 400
 
 # store some text
-@simon_api.route('/store', methods=['PUT'])
+@simon_api.route('/store_text', methods=['PUT'])
 @cross_origin()
 def store_text():
     """make the assistant store some text
