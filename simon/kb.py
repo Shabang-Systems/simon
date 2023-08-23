@@ -75,12 +75,12 @@ class KnowledgeBase():
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
         # create chunks: list of tuples of (score, title, text with context)
-        chunks = assemble_chunks(results, self.context)
-        L.debug(f"Assembled chunks for \"{inputs}\".")
+        # chunks = assemble_chunks(results, self.context)
+        # L.debug(f"Assembled chunks for \"{inputs}\".")
 
-        responses = [SimonProviderResponse(title, body, {"source": source,
-                                                         "hash": hash})
-                     for _, title, body, source, hash in chunks]
+        responses = [SimonProviderResponse(r["metadata"]["title"], r["text"], {"source": r["metadata"]["source"],
+                                                                               "hash": r["hash"]})
+                     for r in results]
 
         # remove duplicates from list of lists
         # https://stackoverflow.com/questions/2213923/removing-duplicates-from-a-list-of-lists

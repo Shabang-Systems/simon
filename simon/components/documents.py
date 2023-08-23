@@ -13,6 +13,7 @@ from typing import List
 from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
+from collections import defaultdict
 from psycopg2.extras import execute_values
 
 import logging
@@ -562,74 +563,3 @@ def cache(uri:str, hash:str, context:AgentContext):
     context.cnx.commit()
     cur.close()
 
-
-#### GLUE ####
-# A function to assemble CHUNK-type search results
-
-def assemble_chunks(results, context, padding=1):
-    """Assemble CHUNK type results into a string
-
-    Parameters
-    ----------
-    results : str
-        Output of search().
-    context : AgentContext
-        Context to use.
-    padding : optional,int
-        The context padding to provide the model.
-        
-    Return
-    ------
-    List[Tuple[float, str, str]]
-        A list of score, title, range.
-    """
-
-
-    # otherwise it'd be empty!
-    if len(results) == 0:
-        return ""
-
-    # group by source, parsing each one at a time
-    groups = groupby(sorted(results, key=lambda x:x.get("hash")),
-                     lambda x:x.get("hash"))
-    stitched_ranges = []
-
-    for _, group in groups:
-        # get the context groups
-        group = sorted(group, key=lambda x:x.get("metadata", {}).get("seq", 10000))
-        total = group[0].get("metadata", {}).get("total", 10000)
-        title = group[0].get("metadata", {}).get("title", "")
-        source = group[0].get("metadata", {}).get("source", "")
-        hash = group[0].get("hash", "")
-        mean_score = sum([i.get("score", 0) for i in group])/len(group)
-
-        # generate the chunk regions
-        chunks = [(max(0, i.get("metadata", {}).get("seq", 0)-padding),
-                min(total, i.get("metadata", {}).get("seq", 10000)+padding))
-                for i in group]
-        # smooth out overlapping chunks (if two chunks overlap, we create a bigger one
-        # encompassing both)
-        smooth_chunks = []
-        # if the current ending is after the next starting, we take
-        # the next ending chunk instead
-        start, end = chunks.pop(0)
-        while len(chunks) != 0:
-            new_start, new_end = chunks.pop(0)
-
-            if end <= new_start:
-                smooth_chunks.append((start, end))
-                start = new_start
-                end = new_end
-            else:
-                end = max(end, new_end)
-        smooth_chunks.append((start, end))
-        # now, get these actual chunks + stich them together with "..."
-        range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
-                                for i,j in smooth_chunks])
-        # metadat
-        stitched_ranges.append((mean_score, title, range_text, source, hash))
-
-    stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
-
-    # and now, assemble everything with slashes between and return
-    return stitched_ranges
