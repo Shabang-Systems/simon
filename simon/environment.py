@@ -3,21 +3,34 @@ import os
 from dotenv import dotenv_values
 
 
+def fetch_or_raise(dict, key, raise_on_missing=False):
+    if raise_on_missing:
+        try:
+            return dict[key]
+        except KeyError:
+            raise RuntimeError(f'Missing required environment variables: {key}')
+    else: 
+        res = dict.get(key)
+        if not res:
+            print(f'Missing required environment variables: {key}')
+        return res
+    
+
 def get_db_config(raise_on_missing=False):
     env_config = {
         **dotenv_values('.env'),
         **os.environ,  # Override values loaded from file with those set in shell (if any)
     }
 
-    db_config = {}
+    db_config = {
+        "host": fetch_or_raise(env_config, "DB_URL", raise_on_missing),
+        "port": fetch_or_raise(env_config, "DB_PORT", raise_on_missing),
+        "user": fetch_or_raise(env_config, "DB_USER", raise_on_missing),
+        "password": fetch_or_raise(env_config, "DB_PASSWORD", raise_on_missing),
+        "database": fetch_or_raise(env_config, "DB_NAME", raise_on_missing),
+    }
 
-    db_url = env_config.get('DB_URL', None)
-    db_name = env_config.get('DB_NAME', None)
-
-
-    if elastic_cloud_id and elastic_url:   
-    return es_config
-
+    return db_config
 
 def get_env_vars(raise_on_missing=False):
     # Entries in this list are required.
@@ -50,7 +63,7 @@ def get_env_vars(raise_on_missing=False):
         )
 
     # Handle ES config separately because it's a bit more complicated
-    env_data['ES_CONFIG'] = get_es_config(raise_on_missing=raise_on_missing)
+    env_data['DB_CONFIG'] = get_db_config(raise_on_missing)
 
     # Collect OpenAI config into one place
     env_data["OAI_CONFIG"] = {

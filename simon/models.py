@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from langchain.embeddings.base import Embeddings
 from langchain.llms.base import LLM
-from elasticsearch import Elasticsearch
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from enum import Enum
 from abc import ABC, abstractmethod
 import hashlib
@@ -12,7 +11,7 @@ class AgentContext:
     llm: LLM
     reason_llm: LLM
     embedding: Embeddings
-    elastic: Elasticsearch
+    cnx: Any # psql connection 
     uid: str
 
 @dataclass
@@ -30,8 +29,7 @@ class ParsedDocument:
 
 class IndexClass(Enum):
     CHUNK = 0
-    KEYWORDS = 1
-    FULLTEXT = 2
+    FULLTEXT = 1
 
 class DataType(Enum):
     JSON = 0

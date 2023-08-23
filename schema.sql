@@ -15,8 +15,10 @@ CREATE TABLE simon_fulltext (
     hash TEXT NOT NULL,
     uid TEXT NOT NULL,
     text TEXT DEFAULT '',
+    text_fuzzy tsvector GENERATED ALWAYS AS (to_tsvector('english', text)) STORED,
     src TEXT DEFAULT '',
-    title TEXT DEFAULT ''
+    title TEXT DEFAULT '',
+    title_fuzzy tsvector GENERATED ALWAYS AS (to_tsvector('english', title)) STORED
 );
 
 CREATE TABLE simon_paragraphs (
@@ -24,12 +26,23 @@ CREATE TABLE simon_paragraphs (
     hash TEXT NOT NULL,
     uid TEXT NOT NULL,
     text TEXT DEFAULT '',
+    text_fuzzy tsvector GENERATED ALWAYS AS (to_tsvector('english', text)) STORED,
     embedding vector(1536) NOT NULL,
     src TEXT DEFAULT '',
     title TEXT DEFAULT '',
+    title_fuzzy tsvector GENERATED ALWAYS AS (to_tsvector('english', title)) STORED,
     tf FLOAT DEFAULT 0.0,
     seq INTEGER DEFAULT 0,
     total INTEGER DEFAULT 0
 );
 
-CREATE INDEX simon_pargraphs_embedding_cosine_idx ON simon_paragraphs USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000); 
+CREATE INDEX simon_paragraphs_embedding_cosine_idx ON simon_paragraphs USING ivfflat (embedding vector_cosine_ops) WITH (lists = 1000); 
+CREATE INDEX simon_paragraphs_text_index ON simon_paragraphs USING GIN (text_fuzzy);
+CREATE INDEX simon_paragraphs_title_index ON simon_paragraphs USING GIN (title_fuzzy);
+CREATE INDEX simon_fulltext_text_index ON simon_fulltext USING GIN (text_fuzzy);
+CREATE INDEX simon_fulltext_title_index ON simon_fulltext USING GIN (title_fuzzy);
+
+
+
+
+

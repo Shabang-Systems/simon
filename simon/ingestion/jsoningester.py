@@ -17,8 +17,6 @@ import requests
 
 # langchain stuff
 from langchain.embeddings.base import Embeddings
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 # nltk
 from nltk import sent_tokenize
@@ -36,7 +34,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from ..components.elastic import *
 from ..components.documents import *
 from ..models import *
 

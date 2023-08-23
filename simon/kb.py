@@ -1,5 +1,4 @@
 from .models import *
-from .components.elastic import *
 from .components.documents import *
 
 from abc import ABC, abstractproperty, abstractmethod
