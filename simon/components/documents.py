@@ -265,6 +265,38 @@ def get_range_chunk(hash, start, end, context):
 
     return result
 
+def get_range_chunks(queries, context):
+    """Read a group of documents possibly stored in the cache by chunk.
+
+    Parameters
+    ----------
+    queries: List[Tuple[str, int, int]]
+        [(hash, start, end), ...]
+    context : AgentContext
+        The context pointer to use to perform parsing.
+
+    Return
+    ------
+    Optional[List[str]]
+        list of results, or None.
+    """
+
+    cur = context.cnx.cursor()
+
+    cur = context.cnx.cursor()
+    sqls = [cur.mogrify("(SELECT text,hash FROM simon_paragraphs WHERE hash = %s AND uid = %s AND seq >= %s AND seq <= %s ORDER BY seq)", (hash, context.uid, start, end))
+            for (hash, start, end) in queries]
+
+    cur.execute(b" UNION ".join(sqls)+b";")
+    res = cur.fetchall()
+
+    data = defaultdict(list)
+    for (text, hash) in res:
+        data[hash].append(text)
+    cur.close()
+
+    return dict(data)
+
 def top_tf(hash:str, context:AgentContext, k=3):
     """Retrieve the top n paragraphs of `hash` based on TFIDF 
 
@@ -563,3 +595,85 @@ def cache(uri:str, hash:str, context:AgentContext):
     context.cnx.commit()
     cur.close()
 
+
+#### GLUE ####
+# A function to assemble CHUNK-type search results
+
+def assemble_chunks(results, context, padding=1):
+    """Assemble CHUNK type results into a string
+
+    Parameters
+    ----------
+    results : str
+        Output of search().
+    context : AgentContext
+        Context to use.
+    padding : optional,int
+        The context padding to provide the model.
+        
+    Return
+    ------
+    List[Tuple[float, str, str]]
+        A list of score, title, range.
+    """
+
+
+    # otherwise it'd be empty!
+    if len(results) == 0:
+        return ""
+
+    # group by source, parsing each one at a time
+    groups = groupby(sorted(results, key=lambda x:x.get("hash")),
+                     lambda x:x.get("hash"))
+    stitched_ranges = []
+    to_fetch = []
+
+    for _, group in groups:
+        # get the context groups
+        group = sorted(group, key=lambda x:x.get("metadata", {}).get("seq", 10000))
+        total = group[0].get("metadata", {}).get("total", 10000)
+        title = group[0].get("metadata", {}).get("title", "")
+        source = group[0].get("metadata", {}).get("source", "")
+        hash = group[0].get("hash", "")
+
+        # generate the chunk regions
+        chunks = [(max(0, i.get("metadata", {}).get("seq", 0)-padding),
+                min(total, i.get("metadata", {}).get("seq", 10000)+padding))
+                for i in group]
+        # smooth out overlapping chunks (if two chunks overlap, we create a bigger one
+        # encompassing both)
+        smooth_chunks = []
+        # if the current ending is after the next starting, we take
+        # the next ending chunk instead
+        start, end = chunks.pop(0)
+        while len(chunks) != 0:
+            new_start, new_end = chunks.pop(0)
+
+            if end <= new_start:
+                to_fetch.append((hash, start, end))
+                start = new_start
+                end = new_end
+            else:
+                end = max(end, new_end)
+        to_fetch.append((hash, start, end))
+        # now, get these actual chunks + stich them together with "..."
+        # metadat
+        stitched_ranges.append([title, None, source, hash])
+
+
+    # fetch the text
+    chunks = get_range_chunks(to_fetch, context)
+
+    # iterate through the data
+    for res in stitched_ranges:
+        hash = res[-1]
+        chunk_data = chunks[hash]
+        res[1] = "\n".join(chunk_data)
+
+    # range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
+    #                         for i,j in smooth_chunks])
+
+    # stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
+
+    # and now, assemble everything with slashes between and return
+    return stitched_ranges

@@ -55,7 +55,7 @@ class KnowledgeBase():
         L.info(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
-        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=24)
+        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=5)
         # results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 
@@ -75,12 +75,12 @@ class KnowledgeBase():
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
         # create chunks: list of tuples of (score, title, text with context)
-        # chunks = assemble_chunks(results, self.context)
-        # L.debug(f"Assembled chunks for \"{inputs}\".")
+        L.debug(f"Assembling chunks for \"{inputs}\"...")
+        chunks = assemble_chunks(results, self.context)
 
-        responses = [SimonProviderResponse(r["metadata"]["title"], r["text"], {"source": r["metadata"]["source"],
-                                                                               "hash": r["hash"]})
-                     for r in results]
+        responses = [SimonProviderResponse(title, body, {"source": source,
+                                                         "hash": hash})
+                     for title, body, source, hash in chunks]
 
         # remove duplicates from list of lists
         # https://stackoverflow.com/questions/2213923/removing-duplicates-from-a-list-of-lists
@@ -89,6 +89,7 @@ class KnowledgeBase():
         if responses=="\n---\n":
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
+        L.debug(f"All done now. Returning.")
         return responses
         
     # def __call__(self, input):
