@@ -263,10 +263,8 @@ def autocomplete():
         arguments = request.args
         results = search.autocomplete(arguments["q"].strip())
 
-        results_serialized = [{"title": i, "text": j, "resource_id": k} for i,j,k in results]
-
         return {
-            "response": results_serialized,
+            "response": results,
             "status": "success"
         }
     except KeyError:
