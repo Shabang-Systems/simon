@@ -431,20 +431,24 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     L.debug(f"Identifying already indexed documents...")
     cur = context.cnx.cursor()
-    for hash in hashes:
-        cur.execute("SELECT hash FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
-        res = cur.fetchone()
-        prefetch.append(res)
+    res = execute_values(cur,
+                         "SELECT hash FROM simon_fulltext WHERE %s LIMIT 1;",
+                         [(hash, context.uid) for hash in hashes],
+                         template="hash = %s AND uid = %s", fetch = True)
+    res = [i[0] for i in res]
 
-    # filter the input documents by those that aren't previously indexed
-    not_found = [i == None for i in prefetch]
-
-    if sum(not_found) == 0:
-        L.debug(f"All of {len(documents)} documents are all indexed. Returning...")
-        return
+    # for hash in hashes:
+                             
+    #     cur.execute("SELECT hash FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
+    #     res = cur.fetchone()
+    #     prefetch.append(res)
 
     # documents to index
-    _, filtered_documents = zip(*filter(lambda x:x[0], zip(not_found, documents)))
+    filtered_documents = list(filter(lambda x:x.hash not in res, documents))
+
+    if len(filtered_documents) == 0:
+        L.debug(f"All of {len(res)} documents are all indexed. Returning...")
+        return
 
     # remove duplicates
     filtered_documents = list(set(filtered_documents))
