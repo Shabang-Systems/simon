@@ -26,7 +26,7 @@ You will be given the human's partial thoughts and some knowledge. Your job is t
 
 Keep everything extremely brief. You will provide a list of outputs, which contains salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. 
 
-In each list element, provide a headline answering why the resource you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the resource you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
+In each list element, provide a headline answering why the knowledge you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the knowledge you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
 
 For instance:
 Question:
@@ -42,13 +42,13 @@ John works in Syscorp. [0] Syscorp is an Canadian company with headquarters in S
 
 Each entry in the result must not use more than 7 words, and they must not contain : or ".
 
-*You maybe provided resources that are entirely irrelavent*. If so, *don't include them!* Use your best judgement to select resources and answers that will help surface unexpected information. Fact chec the resources; if something doesn't make sense, don't include it. 
+*You maybe provided knowledge that are entirely irrelavent*. If so, *don't include them!* Use your best judgement to select knowledge and responses that will help surface unexpected information. Fact check the knowledge; if something doesn't make sense, don't include it. 
 
 Each entry should be of the EXACT SHAPE:
 
 - short headline <a> [b]
 
-With those tags in that order. The headline should summarize the resource and explain why its relavent to the user's query, and should also be less that 7 words. Like a seacrh engine, *RANK YOUR RESULTS*: the most relavent result should be first in your output.
+With those tags in that order. The headline should summarize the *knowledge* you are providing (not the user input) and should also be less that 7 words. Like a seacrh engine, *RANK YOUR RESULTS*: the most relavent result should be first in your output.
 
 Question:
 {input}

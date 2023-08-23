@@ -52,7 +52,7 @@ class KnowledgeBase():
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
         queries = [i for j in inputs for i in self.__qb(j)]
-        L.info(f"Final search queries \"{queries}\"...")
+        L.debug(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
         results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=15)
