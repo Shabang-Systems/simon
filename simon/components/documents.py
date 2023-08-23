@@ -431,10 +431,10 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     L.debug(f"Identifying already indexed documents...")
     cur = context.cnx.cursor()
-    res = execute_values(cur,
-                         "SELECT hash FROM simon_fulltext WHERE %s LIMIT 1;",
-                         [(hash, context.uid) for hash in hashes],
-                         template="hash = %s AND uid = %s", fetch = True)
+    sqls = [cur.mogrify("SELECT hash FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
+            for hash in hashes]
+    cur.execute(b";".join(sqls))
+    res = cur.fetchall()
     res = [i[0] for i in res]
 
     # for hash in hashes:
