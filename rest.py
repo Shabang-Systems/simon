@@ -75,7 +75,7 @@ def start():
         return jsonify({"status": "error",
                         "message": "you are probably missing a required body element"}), 400
 
-    
+
     return jsonify({"session_id": id,
                     "status": "success"})
 
@@ -151,7 +151,7 @@ def streamquery():
                 "response": res,
                 "status": "success"
             }
-            
+
     except KeyError:
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
@@ -232,7 +232,7 @@ def streambrainstorm():
                 "response": res,
                 "status": "success"
             }
-            
+
     except KeyError:
         return jsonify({"status": "error",
                         "message": "malformed request, or invalid session_id"}), 400
@@ -344,6 +344,37 @@ def store():
         return {
             "resource_id": assistant.store(arguments["resource"].strip(),
                                            title=arguments["title"].strip()),
+            "status": "success"
+        }
+    except KeyError:
+        return jsonify({"status": "error",
+                        "message": "malformed request, or invalid session_id"}), 400
+
+# store some text
+@simon_api.route('/store', methods=['PUT'])
+@cross_origin()
+def store_text():
+    """make the assistant store some text
+    this is a "lower level" api, consider using /store to automatically OCR documents
+
+    @params
+    - text : str --- the body content of the document to store
+    - title : str --- title of the document
+    - source : str --- reference to the source of this document for backtracing
+    - session_id : str --- session id that you should have gotten from /start
+
+    @returns JSON
+    - resource_id: str --- string hash representing the ID of the document, useful for /forget
+    - status: str --- status, usually success
+    """
+
+    try:
+        arguments = request.args
+        assistant = cache[arguments["session_id"].strip()]["management"]
+        return {
+            "resource_id": assistant.store_text(arguments["text"].strip(),
+                                           title=arguments["title"].strip(),
+                                           source=arguments["source"].strip()),
             "status": "success"
         }
     except KeyError:
