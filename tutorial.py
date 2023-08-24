@@ -35,7 +35,7 @@ LOG_FORMAT = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
 L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 L.getLogger('simon').setLevel(L.DEBUG)
 
-# You should have your .env file and elastic instance set up accordingly.
+# You should have your .env file and database instance set up accordingly.
 # if you have not done so, follow instructions in README.md to get started.
 
 # we now import the package
@@ -44,7 +44,7 @@ import simon
 ### 1: Simon Setup
 # Your credentials are stored in an object named `AgentContext`, which most
 # of every Simon utility requires in its constructor. This identifies you
-# as a user, connects to the Elastic datastore, and configures the appropriate
+# as a user, connects to the datastore, and configures the appropriate
 # language (and otherwise) models for use by Simon's processes.
 #
 # So, to use Simon, you must create such an `AgentContext`. If you 
@@ -61,18 +61,18 @@ context = simon.create_context("test-uid")  # the UID here is an arbiturary stri
 # 
 # Here are the advanced options:
 #
-# >>> context = create_context(uid, openai_key, es_config)
+# >>> context = create_context(uid, openai_key, db_config)
 # 
-# where, `openai_key` is an OpenAI API key, and `es_config` is an ElasticSearch connection dict (the
-# arguments to ElasticSearch).
-# If you would like *EVEN* more control over your context (how Elastic is connected to exactly,
+# where, `openai_key` is an OpenAI API key, and `db_config` is an database connection dict (the
+# arguments to psycog2).
+# If you would like *EVEN* more control over your context (how the database is connected to exactly,
 # what language models to use, what temperatures, etc.), you can feel free to construct your own
 # AgentContext object
 #
-# >>> context = simon.AgentContext(llm, reasoning_llm, embedding_model, elasticsearch_instance, uid)
+# >>> context = simon.AgentContext(llm, reasoning_llm, embedding_model, psycog2_connection, uid)
 #
 # where, the llms are `langchain.llm.LLM` objects, the embedding model `langchain.embeddings.BaseEmbedding`
-# elastic search an `ElasticSearch` object, and uid the same idea as before.
+# database search an `connection` object, and uid the same idea as before.
 
 ### 2: Datastore
 # Simon manages its data with an object named Datastore:
@@ -98,27 +98,22 @@ doc_hash = ds.store_text("words words words", "title of the words", "source text
 
 ds.delete(doc_hash)
 
-# There are a lot more cool things you can do with a Datastore, but you can read
-# all about it in the documentation.
-
 ### 3: Ingesters
 # Simon makes available a suite of ingesters to read all sorts of resources.
+# You can use these IN LIEU or IN CONJUNCTION with the datastore ingestion
+# example above. They are most helpful with bulk ingestion.
 # To replicate the example store operation above using the ingester API:
 
 from simon.ingestion import OCRIngester
 ingester = OCRIngester(context)
 ingester.ingest_remote("https://example.com", "Example Website")
 
-# You can look through the rest of the ingestion documentation for other
-# fun ingestors to use. OCRIngester can use .ingest_file to OCR and ingest a local
-# file as well!
-# A sneak peak of others:
-# - `TextFileIngester`, which reads a text file either from your local machine or
-#    AWS S3
-# - `OCRIngester`, which secretly Parses/Reads/OCRs (last ditch) your local or remote
-#   (on HTTP) document
+# OCRIngester can use .ingest_file to OCR and ingest a local file as well!
+#
+# A `TextFileIngester` is also available to read a text file either from your
+# local machine or AWS S3
 
-### 4: Search
+### 5: Search
 # Ok, but all that talk of ingestion is nothing if not for the main event. Search!
 # That's, well, the whole point of Simon. To get started with Search, we need
 # to first create a Search object:
@@ -147,6 +142,9 @@ result = search.query("visiting Minnisoda")
 # background, allowing the end user to be fed a constant stream of possibly
 # salient queries.
 
+# You can and are encouranged to pass a *paragraph* into brainstorm. it will
+# return to you the most salient components of the document for your to use
+
 questions = search.brainstorm("visiting Minnisoda")
 
 # Again. No need to pass a complete chunk of text.
@@ -164,13 +162,39 @@ results = search.search("visiting Minnisoda")
 
 results = search.autocomplete("linear ma")
 
-### 5: Prologue and Scripts
+### 5. Manual Ingestion
+# One last API is available to help you with ingestion.
+# You can actually manually parse and index documents: to create custom bulk
+# jobs or to tweak how Simon chunks a document. For example, say you have a
+# giant blob of text to parse. You can:
+
+doc = simon.parse_text(GIANT_BLOB, title, source)
+
+# to use Simon's chunking algorithm to create a rough version of the document
+# then, tweak
+
+doc.paragraphs, doc.main_document
+
+# to your heart's content before finally submitting it to Simon for indexing:
+
+simon.index_document(doc, context)
+
+# `simon.parse_web` and `simon.parse_tika` works the same way, except they
+# take a requests HTML blob and URL to local file respectively for input.
+# The latter of which uses Apache Tika to parse/OCR the document.
+
+# Finally, if you have a bunch of documents, you can use
+
+simon.bulk_index([bunch_of_documents], context)
+
+# to ingest them in bulk. We heavily optimized the throughput of this system
+# so it is recommended to use the `bulk_index` API when performing large
+# ingest jobs.
+
+### 6: Prologue and Scripts
 # Some scripts are available at the top level of https://github.com/Shabang-Systems/simon/
 # They are meant to be helpful utilities with their own CLI interface to maange
 # a Simon instance. Consult them to get started with setting up your instance.
-#
-# `rest.py` also includes a reference implementation of a minimal REST api for
-# the service. You can use this as a starting point for your own web-based applications.
 #
 # Good luck! 
 
