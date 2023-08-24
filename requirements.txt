@@ -1,7 +1,7 @@
 beautifulsoup4==4.12.2
 boto3==1.28.15
 Flask==2.3.2
-psycopg2==2.9.6
+psycopg2-binary==2.9.6
 flask_cors==4.0.0
 langchain==0.0.235
 nltk==3.8.1
