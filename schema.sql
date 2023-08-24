@@ -42,5 +42,3 @@ CREATE INDEX simon_paragraphs_chunk_index ON simon_paragraphs USING BTREE (seq);
 CREATE INDEX simon_paragraphs_title_index ON simon_paragraphs USING GIN (title_fuzzy);
 CREATE INDEX simon_fulltext_text_index ON simon_fulltext USING GIN (text_fuzzy);
 CREATE INDEX simon_fulltext_title_index ON simon_fulltext USING GIN (title_fuzzy);
-
-
