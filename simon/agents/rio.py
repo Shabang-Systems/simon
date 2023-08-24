@@ -12,6 +12,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 from collections import defaultdict
 
 from nltk import sent_tokenize
+import threading
 
 import logging
 L = logging.getLogger("simon")
@@ -67,7 +68,7 @@ class RIOPromptFormatter(StringPromptTemplate):
         return TEMPLATE.format(input=kwargs["input"], kb=kwargs["kb"])
 
 class RIOOutputParser(BaseOutputParser):
-    def parse(self, str) -> RIOObservation:
+    def parse(self, str):
         str = str.strip("```output").strip("`").strip()
         # regex = r"\s*(.*)\n\n?Comments\s*:\s*(.*)"
         # match = re.search(regex, str, re.DOTALL)
@@ -121,26 +122,35 @@ class RIOOutputParser(BaseOutputParser):
 # TODO the streaming API is currently really poorly designed
 # so TODO make it better lol - hjl
 class RIOSingleUseCallbackHandler(BaseCallbackHandler):
-    def __init__(self, callback, formatter, destructor):
+    def __init__(self, formatter, destructor):
         self.__scratchpad = ""
-        self.__callback = callback
         self.__formatter = formatter
         self.__destructor = destructor
         self.__cache = None
+        self.__last_output = None
+        self.done = False
+
+    def blocking_next(self):
+        while not self.__last_output:
+            if self.done:
+                break
+
+        lo = self.__last_output
+        self.__last_output = None
+        return lo
 
     def on_llm_new_token(self, **kwargs):
         self.__scratchpad += kwargs["token"]
 
         out = self.__formatter(self.__scratchpad)
+
         if out and out != self.__cache:
             self.__cache = out
-
-            self.__callback({"output": self.__cache,
-                             "done": False})
+            self.__last_output = {"output": self.__cache, "done": False}
 
     def on_llm_end(self, res, **kwargs):
-        self.__callback({"output": self.__cache,
-                         "done": True})
+        self.__last_output = {"output": self.__cache, "done": True}
+        self.done = True
         self.__destructor()
 
 
@@ -161,7 +171,7 @@ class RIO(object):
         self.__chain = LLMChain(llm=context.reason_llm, prompt=self.__prompt, verbose=verbose)
 
 
-    def __call__(self, input, kb=[], streaming=None):
+    def __call__(self, input, kb=[], streaming=False):
         # Tokenize the sentence
         sent_ids = defaultdict(lambda : len(sent_ids))
         [sent_ids[k] for i in [sent_tokenize(j) for j in input.split(",")] for k in i]
@@ -202,7 +212,7 @@ class RIO(object):
         # if we are streaming, inject the streaming tools into the llm
         # and parse accordingly
         if streaming:
-            L.debug(f"Streanming !!!")
+            L.debug(f"Streaming !!!")
             def format_callback(output):
                 res, citations, inputs = self.__prompt.output_parser.parse(output)
                 return [{"headline": headline,
@@ -215,7 +225,11 @@ class RIO(object):
                 self.__chain.llm.callbacks = [i for i in self.__chain.llm.callbacks if type(i) != RIOSingleUseCallbackHandler]
                 
             # create the callback handler 
-            callback = RIOSingleUseCallbackHandler(streaming, format_callback, remove_callback)
+            callback = RIOSingleUseCallbackHandler(format_callback, remove_callback)
+
+            def streaming_generator():
+                while not callback.done:
+                    yield callback.blocking_next()
 
             # and bind it to the llm
             self.__chain.llm.streaming = True
@@ -226,15 +240,17 @@ class RIO(object):
 
             self.__chain.llm.temperature = 0
 
-            # kick that puppy into motion 
-            self.__chain.predict(input=tagged_input, kb=sentences)
 
+            # kick that puppy into motion 
+            thread = threading.Thread(target=self.__chain.predict,
+                                      kwargs={"input": tagged_input,
+                                              "kb": sentences})
+            thread.start()
             # return nothing
-            return
+            return streaming_generator()
         
 
         output = self.__chain.predict(input=tagged_input, kb=sentences)
-        print(output)
         res, citations, inputs = self.__prompt.output_parser.parse(output)
 
         # parse citations
