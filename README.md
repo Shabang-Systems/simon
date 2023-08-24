@@ -10,12 +10,12 @@ We are working on demos of salient use cases soon, as well as a hosted instance 
   
 ## Quickstart to run the code
 
-### Elastic
-You need an ElasticSearch instance running somewhere to support Simon. One easy way to get it setup on your local machine is by [getting yourself a copy of Elastic here](https://www.elastic.co/downloads/elasticsearch) and following instructions there to get it running. There are also hosted options available online.
+### Postgresql
+You need an psql instance running somewhere with the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and installed on most major cloud providers) to support Simon. 
 
 You will also need OpenAI credentials. This will be available be either with the OpenAI public API, or Azure OpenAI Services.
 
-Get the Elastic connection credentials and OpenAI credentials, and keep it for the steps below. 
+Get the postgres connection credentials and OpenAI credentials, and keep it for use in the steps below. 
 
 ### Requirements Setup
 Begin by using the Python package management tool of your choice to install the requirements:
@@ -33,33 +33,19 @@ An example of all the environment variables needed is in the `.env.example` file
 
 Values set in your shell will override those in the `.env` file.
 
-### Provision your Elastic
+### Provision your Database
 
-You need to manually seed the ElasticSearch schema when you're first setting up. To do this, create an ElasticSearch api instance, and use the following helper script once per **new elastic instance**:
-
-```
-python setup_es.py
-```
-
-If you find that you want to delete the existing ElasticSearch schema and start fresh, you can use the `--nuke` option:
+You need to manually seed the database schema when you're first setting up. To do this, fill out the environment variables found in `.env.example` into the `.env` file in your local directory, then run:
 
 ```
-python setup_es.py --nuke
+python setup_database.py
 ```
+
+To setup your database. If the program exits without error, you are good to go.
 
 ### Run the code!
 
 You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` to get a full overview of the Python API.
-
-We also included an example for how a possible REST api can be structured in `rest.py`. This is not meant to be production ready (yet), but can be a good starting point for your own APIs. We hope to eventually support the REST use case in the future.
-
-To serve a copy of the API, you can run:
-
-```python
-gunicorn -w 5 rest:simon_api -b [binding ip]:[binding port] --timeout 10000000 --preload
-```
-
-**don't use the above unless you are sure you can't use the Python API and roll your own REST solution**: the above is _not supported_ and just a demo use case.
 
 ## Misc notes
 
