@@ -1,10 +1,10 @@
+from ..components import documents, aws
+from ..models import *
+import time
+import os
 import logging
 logging = logging.getLogger("simon")
-import os
-import time
 
-from ..models import *
-from ..components import documents, aws
 
 class TextFileIngester:
     """Ingestor used for Local and S3 Text Files
@@ -14,10 +14,9 @@ class TextFileIngester:
     context : AgentContext
         The context to ingest into
     source_prefix : str
-        @RPC FIXME TODO
     """
 
-    def __init__(self, context:AgentContext, source_prefix=None):
+    def __init__(self, context: AgentContext, source_prefix=None):
         self.agent_context = context
         self.source_prefix = source_prefix
 
@@ -60,7 +59,7 @@ class TextFileIngester:
         str
             Hash of the ingested file, used for deletion later.
         """
-        
+
         title = os.path.basename(file_path)
         source = self._make_source_str(file_path)
 
@@ -94,6 +93,29 @@ class TextFileIngester:
 
         return document.hash
 
+    def _parse_files_segment(self, files):
+        parsed_docs = []
+        for file_path in files:
+            title = os.path.basename(file_path)
+            source = self._make_source_str(file_path)
+
+            load_st = time.time()
+            contents = self._load_file(file_path)
+            load_et = time.time()
+            if not contents:
+                logging.error(f'Error loading {file_path}. Skipping...')
+                return
+            logging.info(
+                f'Loaded {file_path} in {(load_et - load_st):.2f} seconds.')
+
+            parse_st = time.time()
+            parsed = documents.parse_text(contents, title=title, source=source)
+            parse_et = time.time()
+            logging.info(
+                f'Parsed {title} in {(parse_et - parse_st):.2f} seconds.')
+            parsed_docs.append(parsed)
+        return parsed_docs
+
     def ingest_all(self, files):
         """Ingest a group of files based on their URIs.
 
@@ -110,11 +132,29 @@ class TextFileIngester:
 
         ingest_all_st = time.time()
         file_hashes = []
-        for i, path in enumerate(files):
-            file_name = os.path.basename(path)
+        segment_size = 50
+        segments = [files[i:i+segment_size]
+                    for i in range(0, len(files), segment_size)]
+        logging.info(
+            f'Split files list into {len(segments)} segments for ingestion.')
+        for i, segment in enumerate(segments):
             logging.info(
-                f'Ingesting file {file_name} ... ({i} of {len(files)})...')
-            file_hashes.append(self.ingest_file(path))
+                f'Ingesting sgment {i} of {len(segments)}...')
+            seg_ingest_st = time.time()
+            seg_parse_st = time.time()
+            parsed = self._parse_files_segment(segment)
+            seg_parse_et = time.time()
+            logging.info(
+                f'Parsed {len(segment)} files in {(seg_parse_et - seg_parse_st):.2f} seconds.')
+            seg_index_st = time.time()
+            documents.bulk_index(parsed, self.agent_context)
+            seg_index_et = time.time()
+            logging.info(
+                f'Indexed {len(segment)} files in {(seg_index_et - seg_index_st):.2f} seconds.')
+            seg_ingest_et = time.time()
+            logging.info(
+                f'Ingested {len(segment)} files in {(seg_ingest_et - seg_ingest_st):.2f} seconds.')
+
         ingest_all_et = time.time()
         logging.info('Ingestion done!')
         logging.info(
