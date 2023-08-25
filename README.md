@@ -1,5 +1,5 @@
 # #!/Simon
-Hello! Welcome to Simon. Simon is an open-source pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs. 
+Hello! Welcome to Simon. Simon is an open-source pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs and a Postgres Database.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Shabang-Systems/simon/main/static/promo.png" />
@@ -9,7 +9,7 @@ Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
 This document serves as a very-minimal quickstart as we work to build this tool. Needless to say, this tool is alpha, at best. Proceed for your own risk and fun!
   
-## Quickstart
+## Getting Started
 
 ### Database and Credentials
 You need an psql instance running somewhere with the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and installed on most major cloud providers) to support Simon. 
