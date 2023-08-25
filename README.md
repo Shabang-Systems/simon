@@ -9,9 +9,9 @@ Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
 This document serves as a very-minimal quickstart as we work to build this tool. Needless to say, this tool is alpha, at best. Proceed for your own risk and fun!
   
-## Quickstart to run the code
+## Quickstart
 
-### Postgresql
+### Database and Credentials
 You need an psql instance running somewhere with the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and installed on most major cloud providers) to support Simon. 
 
 You will also need OpenAI credentials. This will be available be either with the OpenAI public API, or Azure OpenAI Services.
