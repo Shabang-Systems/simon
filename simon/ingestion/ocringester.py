@@ -28,8 +28,6 @@ import requests
 
 # langchain stuff
 from langchain.embeddings.base import Embeddings
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 # nltk
 from nltk import sent_tokenize
@@ -47,7 +45,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from ..components.elastic import *
 from ..components.documents import *
 from ..models import *
 
@@ -146,9 +143,7 @@ class OCRIngester:
             hash = self.__ingest_remote_document(r, uri, title, source)
 
         # and pop it into the cache and index
-        self.__context.elastic.index(index="simon-cache", document={"uri": uri, "hash": hash,
-                                                                    "user": self.__context.uid})
-        self.__context.elastic.indices.refresh(index="simon-cache")
+        cache(uri, hash, self.__context)
 
         # return hashes
         return hash

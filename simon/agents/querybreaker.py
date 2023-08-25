@@ -58,7 +58,7 @@ class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("`").strip("'").strip('"').strip()
         
-        return str.strip()
+        return [i.strip() for i in str.split(",")]
 
 class QueryBreaker(object):
     def __init__(self, context, verbose=False):

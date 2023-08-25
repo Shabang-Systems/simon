@@ -13,6 +13,8 @@ import logging
 L = logging.getLogger("simon")
 
 
+import threading
+
 from collections import defaultdict
 
 from nltk import sent_tokenize
@@ -136,12 +138,22 @@ class ReasonOutputParser(BaseOutputParser):
 # TODO the streaming API is currently really poorly designed
 # so TODO make it better lol - hjl
 class ReasonSingleUseCallbackHandler(BaseCallbackHandler):
-    def __init__(self, callback, formatter, destructor):
+    def __init__(self, formatter, destructor):
         self.__scratchpad = ""
-        self.__callback = callback
         self.__formatter = formatter
         self.__destructor = destructor
         self.__cache = None
+        self.__last_output = None
+        self.done = False
+
+    def blocking_next(self):
+        while not self.__last_output:
+            if self.done:
+                break
+
+        lo = self.__last_output
+        self.__last_output = None
+        return lo
 
     def on_llm_new_token(self, **kwargs):
         self.__scratchpad += kwargs["token"]
@@ -149,13 +161,11 @@ class ReasonSingleUseCallbackHandler(BaseCallbackHandler):
         out = self.__formatter(self.__scratchpad)
         if out and out != self.__cache:
             self.__cache = out
-
-            self.__callback({"output": self.__cache,
-                             "done": False})
+            self.__last_output = {"output": self.__cache, "done": False}
 
     def on_llm_end(self, res, **kwargs):
-        self.__callback({"output": self.__cache,
-                         "done": True})
+        self.__last_output = {"output": self.__cache, "done": True}
+        self.done = True
         self.__destructor()
 
 class Reason(object):
@@ -230,7 +240,11 @@ class Reason(object):
                 self.__chain.llm.callbacks = [i for i in self.__chain.llm.callbacks if type(i) != ReasonSingleUseCallbackHandler]
                 
             # create the callback handler 
-            callback = ReasonSingleUseCallbackHandler(streaming, format_callback, remove_callback)
+            callback = ReasonSingleUseCallbackHandler(format_callback, remove_callback)
+
+            def streaming_generator():
+                while not callback.done:
+                    yield callback.blocking_next()
 
             # and bind it to the llm
             self.__chain.llm.streaming = True
@@ -242,10 +256,13 @@ class Reason(object):
             self.__chain.llm.temperature = 0
 
             # kick that puppy into motion 
-            self.__chain.predict(input=input, kb=sentences.strip())
-
+            thread = threading.Thread(target=self.__chain.predict,
+                                      kwargs={"input": input,
+                                              "kb": sentences.strip()})
+            thread.start()
             # return nothing
-            return
+            return streaming_generator()
+
         
         output = self.__chain.predict(input=input,
                                       kb=sentences.strip())

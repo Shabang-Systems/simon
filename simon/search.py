@@ -9,6 +9,22 @@ from .components.documents import *
 # RIO, Followup, and Reason
 from .agents import *
 
+# threading!
+import threading
+from functools import wraps
+from concurrent.futures import ThreadPoolExecutor
+
+# threadnig helper
+# https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread
+_DEFAULT_POOL = ThreadPoolExecutor()
+
+def threadpool(f, executor=None):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
+
+    return wrap
+
 class Search:
     def __init__(self, context: AgentContext, verbose=False):
         #  knowledge base
@@ -22,7 +38,7 @@ class Search:
         #### Context ####
         self.__context = context
 
-    def query(self, text, streaming=None):
+    def query(self, text, streaming=False):
         """invokes the inference cycle
 
         uses all of the Assistant's tools to create an inference
@@ -31,8 +47,8 @@ class Search:
         ----------
         text : str
             the string input query
-        streaming : callable
-            pass stream-style outputs through this function
+        streaming : optional, bool
+            Return a generator for streaming instead
 
         Returns
         -------
@@ -41,28 +57,41 @@ class Search:
             otherwise its passed to streaming
         """
 
-        # fix the query and brainstorm possible
-        # tangentia questions. use both to search the resource
-        # we first query for relavent resources, then performing
-        # search with them. if no results are return, don't worry
-        # we just filter them out
-        resources = self.search(text) # to filter out errors and flatten
-        L.debug(f"Search on \"{text}\" complete")
+        @threadpool
+        def process():
+            # fix the query and brainstorm possible
+            # tangentia questions. use both to search the resource
+            # we first query for relavent resources, then performing
+            # search with them. if no results are return, don't worry
+            # we just filter them out
+            L.info(f"Serving query \"{text}\"...")
+            resources = self.search(text) # to filter out errors and flatten
+            L.debug(f"Search on \"{text}\" complete")
 
-        if not resources:
-            # if there's no valid resources found,
-            # return nothing
-            return None
+            if not resources:
+                # if there's no valid resources found,
+                # return nothing
+                return None
 
-        # L.debug("REASONING")
-        if streaming:
-            L.debug(f"Streaming handler recieved for \"{text}\", output will NOT be returned and will instead be streamed.")
-        output = self.__reason(text, resources, streaming)
-        L.debug(f"Reasoning on \"{text}\" complete")
+            # L.debug("REASONING")
+            output = self.__reason(text, resources, streaming)
+            return output
 
-        return output
+        results_promise = process()
+        if not streaming:
+            res = results_promise.result()
+            L.debug(f"Query complete for \"{text}\"")
+            return res
 
-    def brainstorm(self, text, streaming=None):
+        # if we are streaming, start doing that
+        def stream_generator():
+            results_generator = results_promise.result()
+            for i in results_generator:
+                yield i
+
+        return stream_generator()
+
+    def brainstorm(self, text, streaming=False):
         """Use the RIO to brainstorm followup questions
 
         Uses the RIO to come up with follow-up questions given a
@@ -75,8 +104,8 @@ class Search:
             The text to come up with follow up questions
         fix : optional, bool
             Whether to call queryfixer
-        streaming : callable
-            pass stream-style outputs through this function
+        streaming : optional, bool
+            Return a generator for streaming instead
 
         Returns
         -------
@@ -87,14 +116,31 @@ class Search:
             }]
         """
 
-        L.info(f"Serving prefetch \"{text}\"...")
-        # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
-        kb = self.search(text) # we only search the kb because this is only a spot check
-        L.info(f"Search complete for \"{text}\".")
+        @threadpool
+        def process():
+            L.info(f"Serving prefetch \"{text}\"...")
+            # entities = self.__entity_memory.load_memory_variables({"input": text})["entities"]
+            kb = self.search(text) # we only search the kb because this is only a spot check
+            L.info(f"Search complete for \"{text}\".")
 
-        observation = self.__rio(text, kb, streaming)
-        L.debug(f"Prefetch reasoning complete for \"{text}\"")
-        return observation
+            observation = self.__rio(text, kb, streaming)
+            return observation
+
+        results_promise = process()
+
+        if not streaming:
+            res = results_promise.result()
+            L.debug(f"Prefetch reasoning complete for \"{text}\"")
+            return res
+
+        # if we are streaming, start doing that
+        def stream_generator():
+            results_generator = results_promise.result()
+            for i in results_generator:
+                yield i
+
+        return stream_generator()
+        
 
     def search(self, text):
         # query the kb first
@@ -162,7 +208,7 @@ class Search:
         
         fixed = self.__fix(query)
         fixed += [" ".join(fixed)]
-        res = search(self.__context, queries=fixed, search_type=IndexClass.FULLTEXT, k=10)
-        titles = [i["metadata"]["title"] for i in res]
+        res = search(self.__context, queries=fixed, k=10)
+        titles = list(set([i["metadata"]["title"] for i in res]))
 
         return titles

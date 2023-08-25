@@ -40,44 +40,9 @@ simon_api = Flask("simon")
 simon_api.config['JSON_SORT_KEYS'] = False
 flask.json.provider.DefaultJSONProvider.sort_keys = False
 
-# generate new llm
-@simon_api.route('/start', methods=['POST'])
-@cross_origin()
-def start():
-    """start a chat instance
-
-    @params
-    - providers: str --- optional, provider names to include
-
-    @body
-
-    @returns JSON
-    - session_id: UUID --- the UUID to pass to other routes to call this LLM
-    - status: str --- status, usually success
-    """
-
-    if request.data:
-        body = request.json
-    else:
-        body = {}
-    arguments = request.args
-    id = str(uuid4())
-
-    try:
-        context = simon.create_context(UID)
-        cache[id] = {
-            "context": context,
-            "search": simon.Search(context),
-            "management": simon.Datastore(context),
-        }
-
-    except KeyError:
-        return jsonify({"status": "error",
-                        "message": "you are probably missing a required body element"}), 400
-
-    
-    return jsonify({"session_id": id,
-                    "status": "success"})
+context = simon.create_context(UID)
+search = simon.Search(context)
+management = simon.Datastore(context)
 
 # call the llm directly
 @simon_api.route('/query', methods=['GET'])
@@ -87,7 +52,6 @@ def query():
 
     @params
     - q : str --- string question/query to provide to the model
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
     - response: JSON --- JSON paylod returned from the model
@@ -96,9 +60,8 @@ def query():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["search"]
         return {
-            "response": assistant.query(arguments["q"].strip()),
+            "response": search.query(arguments["q"].strip()),
             "status": "success"
         }
     except KeyError:
@@ -113,7 +76,6 @@ def streamquery():
 
     @POST params
     - q : str --- string question/query to provide to the model
-    - session_id : str --- session id that you should have gotten from /start
 
     @GET params
     - stream_id : str --- the stream you want to get the results from
@@ -134,10 +96,9 @@ def streamquery():
     try:
         arguments = request.args
         if request.method == "POST":
-            assistant = cache[arguments["session_id"].strip()]["search"]
 
             # run the call on a different thread
-            thread = threading.Thread(target=assistant.query,
+            thread = threading.Thread(target=search.query,
                                       args=(arguments["q"].strip(), callback))
             thread.start()
 
@@ -168,7 +129,6 @@ def brainstorm():
     @params
     - q : str --- string query to provide to the model; for instance, a fragment
                   of your notes
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
     - response: JSON --- JSON paylod returned from the model
@@ -177,9 +137,8 @@ def brainstorm():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["search"]
         return {
-            "response": assistant.brainstorm(arguments["q"].strip()),
+            "response": search.brainstorm(arguments["q"].strip()),
             "status": "success"
         }
     except KeyError:
@@ -195,7 +154,6 @@ def streambrainstorm():
 
     @POST params
     - q : str --- string question/query to provide to the model
-    - session_id : str --- session id that you should have gotten from /start
 
     @GET params
     - stream_id : str --- the stream you want to get the results from
@@ -215,10 +173,9 @@ def streambrainstorm():
     try:
         arguments = request.args
         if request.method == "POST":
-            assistant = cache[arguments["session_id"].strip()]["search"]
 
             # run the call on a different thread
-            thread = threading.Thread(target=assistant.brainstorm,
+            thread = threading.Thread(target=search.brainstorm,
                                       args=(arguments["q"].strip(), callback))
             thread.start()
 
@@ -254,9 +211,8 @@ def fetch():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["management"]
         return {
-            "response": assistant.get(arguments["resource_id"].strip()),
+            "response": management.get(arguments["resource_id"].strip()),
             "status": "success"
         }
     except KeyError:
@@ -271,7 +227,6 @@ def suggest():
 
     @params
     - q : str --- the beginning of your query
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
     - response: JSON --- JSON paylod returned from the model
@@ -280,9 +235,7 @@ def suggest():
 
     try:
         arguments = request.args
-        print(cache)
-        assistant = cache[arguments["session_id"].strip()]["search"]
-        results = assistant.suggest(arguments["q"].strip())
+        results = search.suggest(arguments["q"].strip())
 
         return {
             "response": results,
@@ -300,7 +253,6 @@ def autocomplete():
 
     @params
     - q : str --- the beginning of your query
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
     - response: JSON --- JSON paylod returned from the model
@@ -309,13 +261,10 @@ def autocomplete():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["search"]
-        results = assistant.autocomplete(arguments["q"].strip())
-
-        results_serialized = [{"title": i, "text": j, "resource_id": k} for i,j,k in results]
+        results = search.autocomplete(arguments["q"].strip())
 
         return {
-            "response": results_serialized,
+            "response": list(set(results)),
             "status": "success"
         }
     except KeyError:
@@ -331,7 +280,6 @@ def store():
     @params
     - resource : str --- URL of PDF/text to be read by the assistant
     - title : str --- title of the assistant
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON
     - resource_id: str --- string hash representing the ID of the document, useful for /forget
@@ -340,9 +288,8 @@ def store():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["management"]
         return {
-            "resource_id": assistant.store(arguments["resource"].strip(),
+            "resource_id": management.store(arguments["resource"].strip(),
                                            title=arguments["title"].strip()),
             "status": "success"
         }
@@ -358,7 +305,6 @@ def forget():
 
     @params
     - resource_id : str --- the resource ID, given by /read
-    - session_id : str --- session id that you should have gotten from /start
 
     @returns JSON:
     - resource_id: str --- string hash representing the ID of the document, useful for /forget
@@ -367,8 +313,7 @@ def forget():
 
     try:
         arguments = request.args
-        assistant = cache[arguments["session_id"].strip()]["management"]
-        assistant.delete(arguments["resource_id"].strip())
+        management.delete(arguments["resource_id"].strip())
 
         return {
             "status": "success"

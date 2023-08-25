@@ -17,8 +17,6 @@ import requests
 
 # langchain stuff
 from langchain.embeddings.base import Embeddings
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 # nltk
 from nltk import sent_tokenize
@@ -36,7 +34,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from ..components.elastic import *
 from ..components.documents import *
 from ..models import *
 
@@ -51,8 +48,8 @@ class JSONIngester:
         self.__context = context
 
     ## Ingest Remote Function ###
-    def ingest(self, url, mappings:Mapping, delim="\n", local=False):
-        """Read and index a remote resource into Elastic with a field mapping
+    def ingest(self, url, mappings:Mapping, delim="\n", local=False, load=100):
+        """Read and index a remote resource into the database with a field mapping
 
         Note
         ----
@@ -71,6 +68,8 @@ class JSONIngester:
             for now we are just splitting by a character.
         local : optional, bool
             Is this JSON a local file?
+        load : optional, int
+            The load to give to the ingester
 
         Return
         ------
@@ -94,32 +93,20 @@ class JSONIngester:
 
             data = r.json()
 
-        L.debug(f"Succesfuly fetched {url}.")
+        L.debug(f"Succesfuly fetched {url}. Parsing...")
 
         # create documents
         docs = [parse_text(**{map.dest.value:i[map.src] for map in mappings.mappings},
                            delim=delim)
                 for i in data]
-        # filter for those that are indexed
-        docs = list(filter(lambda x:(get_fulltext(x.hash, context)==None), docs))
-
         L.debug(f"Going to index {len(docs)} documents for JSON indexing.")
 
         # pop each into the index
         # and pop each into the cache and index
-        for i in docs:
-            index_document(i, context)
-            source = i.meta.get("source")
-            if source and source.strip() != "":
-                # remove docs surrounding old hash 
-                oldhash = get_hash(source, context)
-                if oldhash:
-                    delete_document(oldhash, context)
-                # index new one
-                context.elastic.index(index="simon-cache", document={"uri": source, "hash": i.hash,
-                                                                    "user": context.uid})
+        for i in range(0, len(docs), load):
+            L.debug(f"Ingesting batch {i//load}/{len(docs)//load}")
+            bulk_index(docs[i:i+load], context)
         # refresh
-        context.elastic.indices.refresh(index="simon-cache")
         L.info(f"Done creating JSON index on {url}")
 
         # return hashes

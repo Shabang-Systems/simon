@@ -3,51 +3,34 @@ import os
 from dotenv import dotenv_values
 
 
-def get_es_config(raise_on_missing=False):
+def fetch_or_raise(dict, key, raise_on_missing=False):
+    if raise_on_missing:
+        try:
+            return dict[key]
+        except KeyError:
+            raise RuntimeError(f'Missing required environment variables: {key}')
+    else: 
+        res = dict.get(key)
+        if not res:
+            print(f'Missing required environment variables: {key}')
+        return res
+    
+
+def get_db_config(raise_on_missing=False):
     env_config = {
         **dotenv_values('.env'),
         **os.environ,  # Override values loaded from file with those set in shell (if any)
     }
 
-    es_config = {}
+    db_config = {
+        "host": fetch_or_raise(env_config, "DB_URL", raise_on_missing),
+        "port": fetch_or_raise(env_config, "DB_PORT", raise_on_missing),
+        "user": fetch_or_raise(env_config, "DB_USER", raise_on_missing),
+        "password": fetch_or_raise(env_config, "DB_PASSWORD", raise_on_missing),
+        "database": fetch_or_raise(env_config, "DB_NAME", raise_on_missing),
+    }
 
-    elastic_cloud_id = env_config.get('ELASTIC_CLOUD_ID', None)
-    elastic_url = env_config.get('ELASTIC_URL', None)
-
-    if elastic_cloud_id and elastic_url:
-        print(
-            '**Warning!!!**\n'
-            'Both ELASTIC_CLOUD_ID and ELASTIC_URL are set. Using the value from ELASTIC_CLOUD_ID.'
-        )
-        es_config['cloud_id'] = elastic_cloud_id
-    elif elastic_cloud_id:
-        es_config['cloud_id'] = elastic_cloud_id
-    elif elastic_url:
-        es_config['hosts'] = [elastic_url]
-    elif raise_on_missing:
-        raise RuntimeError('At least one of ELASTIC_URL or ELASTIC_CLOUD_ID must be set in environment variables.')
-    else:
-        print(
-            '**Warning!!!**\n'
-            'Neither ELASTIC_URL nor ELASTIC_CLOUD_ID is set. Will use the default value of "http://localhost:9200".'
-        )
-        es_config['hosts'] = ['http://localhost:9200']
-    
-    if 'ELASTIC_USER' not in env_config:
-        print(
-            '**Warning!!!**\n'
-            'ELASTIC_USER is not set. Will use the default value of "elastic".'
-        )
-    if 'ELASTIC_PASSWORD' not in env_config:
-        print(
-            '**Warning!!!**\n'
-            'ELASTIC_PASSWORD is not set. Will pass `None` to ElasticSearch client (which will probably fail).'
-        )
-
-    es_config['basic_auth'] = (env_config.get('ELASTIC_USER', 'elastic'), env_config.get('ELASTIC_PASSWORD', None))
-    
-    return es_config
-
+    return db_config
 
 def get_env_vars(raise_on_missing=False):
     # Entries in this list are required.
@@ -80,7 +63,7 @@ def get_env_vars(raise_on_missing=False):
         )
 
     # Handle ES config separately because it's a bit more complicated
-    env_data['ES_CONFIG'] = get_es_config(raise_on_missing=raise_on_missing)
+    env_data['DB_CONFIG'] = get_db_config(raise_on_missing)
 
     # Collect OpenAI config into one place
     env_data["OAI_CONFIG"] = {

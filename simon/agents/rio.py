@@ -12,6 +12,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 from collections import defaultdict
 
 from nltk import sent_tokenize
+import threading
 
 import logging
 L = logging.getLogger("simon")
@@ -26,7 +27,7 @@ You will be given the human's partial thoughts and some knowledge. Your job is t
 
 Keep everything extremely brief. You will provide a list of outputs, which contains salient questions or comments the human would ask but which the human couldn't have possibly thought of without the knowledge base. These questions should be in the tone of the human, and be directly useful to search the knowledge base. This list can only ask about the information in the knowledge base, or direct extensions from it. 
 
-In each list element, provide a headline answering why the resource you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the resource you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
+In each list element, provide a headline answering why the knowledge you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the knowledge you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
 
 For instance:
 Question:
@@ -42,15 +43,13 @@ John works in Syscorp. [0] Syscorp is an Canadian company with headquarters in S
 
 Each entry in the result must not use more than 7 words, and they must not contain : or ".
 
-You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help surface unexpected information. Fact chec the resources; if something doesn't make sense, don't include it. 
+*You maybe provided knowledge that are entirely irrelavent*. If so, *don't include them!* Use your best judgement to select knowledge and responses that will help surface unexpected information. Fact check the knowledge; if something doesn't make sense, don't include it. 
 
 Each entry should be of the EXACT SHAPE:
 
 - short headline <a> [b]
 
-With those tags in that order.
-
-You should choose the most relavent resources to surface the information the human wouldn't otherwise know about, and match it to the most relavent and helpful line of the human's input where it would be most helpful to the human.
+With those tags in that order. The headline should summarize the *knowledge* you are providing (not the user input) and should also be less that 7 words. Like a seacrh engine, *RANK YOUR RESULTS*: the most relavent result should be first in your output.
 
 Question:
 {input}
@@ -69,7 +68,7 @@ class RIOPromptFormatter(StringPromptTemplate):
         return TEMPLATE.format(input=kwargs["input"], kb=kwargs["kb"])
 
 class RIOOutputParser(BaseOutputParser):
-    def parse(self, str) -> RIOObservation:
+    def parse(self, str):
         str = str.strip("```output").strip("`").strip()
         # regex = r"\s*(.*)\n\n?Comments\s*:\s*(.*)"
         # match = re.search(regex, str, re.DOTALL)
@@ -123,26 +122,35 @@ class RIOOutputParser(BaseOutputParser):
 # TODO the streaming API is currently really poorly designed
 # so TODO make it better lol - hjl
 class RIOSingleUseCallbackHandler(BaseCallbackHandler):
-    def __init__(self, callback, formatter, destructor):
+    def __init__(self, formatter, destructor):
         self.__scratchpad = ""
-        self.__callback = callback
         self.__formatter = formatter
         self.__destructor = destructor
         self.__cache = None
+        self.__last_output = None
+        self.done = False
+
+    def blocking_next(self):
+        while not self.__last_output:
+            if self.done:
+                break
+
+        lo = self.__last_output
+        self.__last_output = None
+        return lo
 
     def on_llm_new_token(self, **kwargs):
         self.__scratchpad += kwargs["token"]
 
         out = self.__formatter(self.__scratchpad)
+
         if out and out != self.__cache:
             self.__cache = out
-
-            self.__callback({"output": self.__cache,
-                             "done": False})
+            self.__last_output = {"output": self.__cache, "done": False}
 
     def on_llm_end(self, res, **kwargs):
-        self.__callback({"output": self.__cache,
-                         "done": True})
+        self.__last_output = {"output": self.__cache, "done": True}
+        self.done = True
         self.__destructor()
 
 
@@ -163,7 +171,7 @@ class RIO(object):
         self.__chain = LLMChain(llm=context.reason_llm, prompt=self.__prompt, verbose=verbose)
 
 
-    def __call__(self, input, kb=[], streaming=None):
+    def __call__(self, input, kb=[], streaming=False):
         # Tokenize the sentence
         sent_ids = defaultdict(lambda : len(sent_ids))
         [sent_ids[k] for i in [sent_tokenize(j) for j in input.split(",")] for k in i]
@@ -188,7 +196,7 @@ class RIO(object):
         chunks = {k:v
                   for indx, i in enumerate(kb)
                   for k,v in [(resource_ids[j], indx)
-                              for j in sent_tokenize(i["text"])]}
+                              for j in sent_tokenize(i["metadata"]["title"]+" "+i["text"])]}
 
         # freeze and reverse the resource id dictionary
         # so this is now a dict of resource_id:text
@@ -204,7 +212,7 @@ class RIO(object):
         # if we are streaming, inject the streaming tools into the llm
         # and parse accordingly
         if streaming:
-            L.debug(f"Streanming !!!")
+            L.debug(f"Streaming !!!")
             def format_callback(output):
                 res, citations, inputs = self.__prompt.output_parser.parse(output)
                 return [{"headline": headline,
@@ -217,7 +225,11 @@ class RIO(object):
                 self.__chain.llm.callbacks = [i for i in self.__chain.llm.callbacks if type(i) != RIOSingleUseCallbackHandler]
                 
             # create the callback handler 
-            callback = RIOSingleUseCallbackHandler(streaming, format_callback, remove_callback)
+            callback = RIOSingleUseCallbackHandler(format_callback, remove_callback)
+
+            def streaming_generator():
+                while not callback.done:
+                    yield callback.blocking_next()
 
             # and bind it to the llm
             self.__chain.llm.streaming = True
@@ -228,15 +240,17 @@ class RIO(object):
 
             self.__chain.llm.temperature = 0
 
-            # kick that puppy into motion 
-            self.__chain.predict(input=tagged_input, kb=sentences)
 
+            # kick that puppy into motion 
+            thread = threading.Thread(target=self.__chain.predict,
+                                      kwargs={"input": tagged_input,
+                                              "kb": sentences})
+            thread.start()
             # return nothing
-            return
+            return streaming_generator()
         
 
         output = self.__chain.predict(input=tagged_input, kb=sentences)
-        print(output)
         res, citations, inputs = self.__prompt.output_parser.parse(output)
 
         # parse citations

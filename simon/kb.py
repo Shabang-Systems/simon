@@ -1,5 +1,4 @@
 from .models import *
-from .components.elastic import *
 from .components.documents import *
 
 from abc import ABC, abstractproperty, abstractmethod
@@ -37,7 +36,7 @@ def dedup(k):
     return new_k
 
 class KnowledgeBase():
-    """General Elastic Knowledgebase Provider
+    """General database Knowledgebase Provider
 
     Parameters
     ----------
@@ -52,12 +51,12 @@ class KnowledgeBase():
     def __call__(self, *inputs):
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
-        queries = [self.__qb(j) for j in inputs]
-        L.info(f"Final search queries \"{queries}\"...")
+        queries = [i for j in inputs for i in self.__qb(j)]
+        L.debug(f"Final search queries \"{queries}\"...")
 
         # use both types of search to create all possible hits
-        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=24)
-        results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
+        results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=15)
+        # results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 
         L.debug(f"Results identified for \"{inputs}\" Got {len(results_semantic)} results.")
@@ -76,12 +75,12 @@ class KnowledgeBase():
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
         # create chunks: list of tuples of (score, title, text with context)
+        L.debug(f"Assembling chunks for \"{inputs}\"...")
         chunks = assemble_chunks(results, self.context)
-        L.debug(f"Assembled chunks for \"{inputs}\".")
 
         responses = [SimonProviderResponse(title, body, {"source": source,
                                                          "hash": hash})
-                     for _, title, body, source, hash in chunks]
+                     for title, body, source, hash in chunks]
 
         # remove duplicates from list of lists
         # https://stackoverflow.com/questions/2213923/removing-duplicates-from-a-list-of-lists
@@ -90,6 +89,7 @@ class KnowledgeBase():
         if responses=="\n---\n":
             return SimonProviderError("We found nothing. Please rephrase your question.")
 
+        L.debug(f"All done now. Returning.")
         return responses
         
     # def __call__(self, input):

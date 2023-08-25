@@ -5,10 +5,8 @@ import os
 import signal
 import threading
 
-import simon
 from simon.components import aws
 from simon.ingestion import TextFileIngester
-
 
 def _setup_log_file(log_file):
     # Make intermediate directories if necessary
@@ -20,10 +18,13 @@ def _setup_log_file(log_file):
 
 def _configure_logger(debug=False, log_file=None):
     log_format = '[%(asctime)s] [%(name)s] [%(processName)s] [%(levelname)s] %(message)s'
-    logging.basicConfig(format=log_format, level=logging.INFO)
+    if debug:
+        logging.basicConfig(format=log_format, level=logging.DEBUG)
+    else:
+        logging.basicConfig(format=log_format, level=logging.INFO)
 
-    log_level = logging.DEBUG if debug else logging.INFO
-    logging.getLogger('simon').setLevel(log_level)
+    # Suppress chatty request logging from elasticsearch library
+    logging.getLogger('elastic_transport.transport').setLevel(logging.WARNING)
 
     if log_file:
         _setup_log_file(log_file)
@@ -82,10 +83,12 @@ def _configure_worker_logger(logger_queue=None, debug=False):
     from logging.handlers import QueueHandler
     log_handler = QueueHandler(logger_queue)
     logging.getLogger().addHandler(log_handler)
-    logging.getLogger().setLevel(logging.INFO)
 
     log_level = logging.DEBUG if debug else logging.INFO
-    logging.getLogger('simon').setLevel(log_level)
+    logging.getLogger().setLevel(log_level)
+
+    # Suppress chatty request logging from elasticsearch library
+    logging.getLogger('elastic_transport.transport').setLevel(logging.WARNING)
 
     logging.info('Worker logger initialized.')
 
@@ -118,13 +121,12 @@ signal.signal(signal.SIGINT, _handle_keyboard_interrupt)
 
 def main(args):
     _configure_logger(args.debug, args.log_file)
+
     logger_queue = multiprocessing.Queue()
     logger_thread = _make_logger_thread(logger_queue)
     logger_thread.start()
 
     to_ingest = _find_files_to_ingest(args.files)
-
-    context = simon.create_context(args.uid)
 
     worker_processes = []
     files_per_worker = len(to_ingest) // args.num_workers
@@ -134,7 +136,7 @@ def main(args):
         worker = _make_ingestion_worker(
             files=segment,
             ingester_args={
-                'context': context,
+                'uid': args.uid,
                 'source_prefix': args.source_prefix
             },
             logger_args={
@@ -157,12 +159,12 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Ingest files for use with Simon.')
+        description='Ingest files into ElasticSearch for use with Simon.')
 
     parser.add_argument(
         '--files',
         nargs='+',
-        help='One or more paths to files or folders to be ingested. Can be local paths or S3 URIs.'
+        help='One or more paths to files or folders to be ingested into ElasticSearch. Can be local paths or S3 URIs.'
     )
     parser.add_argument(
         '--uid',

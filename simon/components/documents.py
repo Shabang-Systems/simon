@@ -13,6 +13,8 @@ from typing import List
 from itertools import groupby, islice
 from tempfile import TemporaryDirectory
 
+from collections import defaultdict
+from psycopg2.extras import execute_values
 
 import logging
 L = logging.getLogger("simon")
@@ -22,8 +24,6 @@ import requests
 
 # langchain stuff
 from langchain.embeddings.base import Embeddings
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 
 # nltk
 from nltk import sent_tokenize
@@ -41,7 +41,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # utilities
 import json
 
-from .elastic import *
 from ..models import *
 
 #### SANITIZERS ####
@@ -161,14 +160,18 @@ def get_hash(uri:str, context:AgentContext):
         str hash, or None.
     """
 
-    hash = None
-    results = context.elastic.search(index="simon-cache",
-                                     query={"bool": {"must": [{"term": {"uri": uri}},
-                                                              {"term": {"user":
-                                                                        context.uid}}]}})["hits"]
-    if results["total"]["value"] > 0:
-        hash = results["hits"][0]["_source"]["hash"]
-    return hash
+    cur = context.cnx.cursor()
+
+    cur.execute("SELECT hash FROM simon_cache WHERE uri = %s AND uid = %s LIMIT 1;", (uri, context.uid))
+    res = cur.fetchone()
+
+    if not res:
+        return
+
+    result = res[0]
+    cur.close()
+
+    return result
 
 def get_fulltext(hash:str, context:AgentContext):
     """Read a document possibly stored in the cache.
@@ -185,14 +188,19 @@ def get_fulltext(hash:str, context:AgentContext):
     Optional[str]
         str full text, or None.
     """
-    doc = context.elastic.search(index="simon-fulltext",
-                                 query={"bool": {"must": [{"term": {"hash": hash}},
-                                                          {"term": {"user":
-                                                                    context.uid}}]}},
-                                 fields=["text"], size=1)
-    hits = [i["fields"]["text"][0] for i in doc["hits"]["hits"]]
 
-    if len(hits) > 0: return hits[0]
+    cur = context.cnx.cursor()
+
+    cur.execute("SELECT text FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
+    res = cur.fetchone()
+
+    if not res:
+        return
+
+    result = res[0]
+    cur.close()
+
+    return result
 
 def get_nth_chunk(hash, n, context):
     """Read a document possibly stored in the cache by chunk.
@@ -211,20 +219,19 @@ def get_nth_chunk(hash, n, context):
     Optional[str]
         str full text, or None.
     """
-    res = context.elastic.search(index="simon-paragraphs",
-                                query={"bool":
-                                        {"must": [
-                                            {"term": {"user": context.uid}},
-                                            {"term": {"hash": hash}},
-                                            {"term": {"metadata.seq": n}},
-                                        ]}},
-                                fields=["text"],
-                                size=1)
 
-    if res["hits"]["total"]["value"] == 0: return None
-    res = [i["fields"]["text"][0] for i in res["hits"]["hits"]][0]
+    cur = context.cnx.cursor()
 
-    return res
+    cur.execute("SELECT text FROM simon_paragraphs WHERE hash = %s AND uid = %s AND seq = %s LIMIT 1;", (hash, context.uid, n))
+    res = cur.fetchone()
+
+    if not res:
+        return
+
+    result = res[0]
+    cur.close()
+
+    return result
 
 def get_range_chunk(hash, start, end, context):
     """Read a document possibly stored in the cache by chunk.
@@ -245,23 +252,50 @@ def get_range_chunk(hash, start, end, context):
     Optional[List[str]]
         list of results, or None.
     """
-    res = context.elastic.search(index="simon-paragraphs",
-                                 query={"bool":
-                                        {"must": [
-                                            {"term": {"user": context.uid}},
-                                            {"term": {"hash": hash}},
-                                            {"range": {"metadata.seq": {"gte": start,
-                                                                        "lte": end}}},
-                                        ]}},
-                                 fields=["text", "metadata.seq"])
 
-    if res["hits"]["total"]["value"] == 0: return None
+    cur = context.cnx.cursor()
 
-    # we get the sequence and re-sort it in case sequences are indexed in an unexpected order
-    res = sorted([(i["fields"]["metadata.seq"][0],
-                   i["fields"]["text"][0]) for i in res["hits"]["hits"]], key=(lambda x:x[0]))
+    cur.execute("SELECT text FROM simon_paragraphs WHERE hash = %s AND uid = %s AND seq >= %s AND seq <= %s ORDER BY seq;",
+                (hash, context.uid, start, end))
 
-    return [i[1] for i in res]
+    res = cur.fetchall()
+
+    result = [i[0] for i in res]
+    cur.close()
+
+    return result
+
+def get_range_chunks(queries, context):
+    """Read a group of documents possibly stored in the cache by chunk.
+
+    Parameters
+    ----------
+    queries: List[Tuple[str, int, int]]
+        [(hash, start, end), ...]
+    context : AgentContext
+        The context pointer to use to perform parsing.
+
+    Return
+    ------
+    Optional[List[str]]
+        list of results, or None.
+    """
+
+    cur = context.cnx.cursor()
+
+    cur = context.cnx.cursor()
+    sqls = [cur.mogrify("(SELECT text,hash FROM simon_paragraphs WHERE hash = %s AND uid = %s AND seq >= %s AND seq <= %s ORDER BY seq)", (hash, context.uid, start, end))
+            for (hash, start, end) in queries]
+
+    cur.execute(b" UNION ".join(sqls)+b";")
+    res = cur.fetchall()
+
+    data = defaultdict(list)
+    for (text, hash) in res:
+        data[hash].append(text)
+    cur.close()
+
+    return dict(data)
 
 def top_tf(hash:str, context:AgentContext, k=3):
     """Retrieve the top n paragraphs of `hash` based on TFIDF 
@@ -281,15 +315,16 @@ def top_tf(hash:str, context:AgentContext, k=3):
         Results of the search.
     """
 
-    # res = context.elastic.search()
-    res = context.elastic.search(index="simon-paragraphs",
-                                query={"bool": {"must": [{"term": {"hash": hash}},
-                                                        {"term": {"user":
-                                                                    context.uid}}]}},
-                                fields=["text"],
-                                sort=[{"metadata.tf": {"order": "desc"}}],
-                                size=k)
-    return [i["fields"]["text"][0] for i in res["hits"]["hits"]]
+
+    cur = context.cnx.cursor()
+
+    cur.execute("SELECT text FROM simon_paragraphs WHERE hash = %s AND uid = %s ORDER BY tf DESC LIMIT %s;", (hash, context.uid, k))
+    res = cur.fetchall()
+
+    result = [i[0] for i in res]
+    cur.close()
+
+    return result
 
 def autocomplete(query:str, context:AgentContext, k=8):
     """string automcomplete to suggest article titles
@@ -309,27 +344,18 @@ def autocomplete(query:str, context:AgentContext, k=8):
         Title, text, hash
     """
 
-    docs = context.elastic.search(index="simon-fulltext",
-                                  suggest={"title-suggest": {
-                                      "prefix": query,
-                                      "completion": {
-                                          "field": "metadata.title"
-                                      },
-                                  }},
-                                  query={"bool": {"must": [{"term": {"user":
-                                                                     context.uid}}]}})
+    cur = context.cnx.cursor()
 
-    options = docs["suggest"]["title-suggest"][0]["options"]
+    cur.execute("SELECT title FROM simon_paragraphs WHERE uid = %s AND LOWER( title ) LIKE %s LIMIT %s;", (context.uid, query.lower()+"%", k))
+    res = cur.fetchall()
 
-    # filter for matching UIDs and get fields
-    matching = [(i["_source"]["metadata"]["title"], i["_source"]["hash"])
-                for i in options if i["_source"]["user"] == context.uid]
+    result = [i[0] for i in res]
+    cur.close()
 
-    return matching
+    return result
 
-def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK,
-           k=5, threshold=None, tf_threshold=0.3):
-    """ElasticSearch the database based on a keyword query!
+def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK, k=5):
+    """search the database based on a query!
 
     Parameters
     ----------
@@ -344,142 +370,63 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
         IndexClass.CHUNK or IndexClass.FULLTEXT.
     k : optional, int
         Number of values to return.
-    threshold : optional, float
-        Threshold of score before a value is returned.
-    tf_threshold : optional, float
-        Threshold of TFIDF before a value is returned,
-        if seaching on index CHUNK or KEYWORD.
 
     Return
     ------
     List[str]
         Results of the search.
     """
-    if not threshold and search_type == IndexClass.CHUNK:
-        threshold = 0.9
-    elif not threshold:
-        threshold = 5
 
     if not queries:
         queries = [query]
 
-    queries = list(set(queries))
+    # calculate result to return per query
+    # becasue we do each search seperately
+    k = (k//len(queries))+1
 
-    # get results
-    squery = {
-        "bool": {"must": [
-            {"term": {"user": context.uid}},
-        ]}
-    }
+    L.debug(f"fufilling search request for {queries}...")
 
-    for query in queries:
-        squery["bool"]["must"].append({"match": {"text": query}})
+    requests = []
+    embeddings = []
 
-    kquery = []
+    query_base = "SELECT text, hash, src, title, tf, seq, total FROM simon_paragraphs "
 
-    if search_type == IndexClass.CHUNK:
-        L.debug("BEGIN EMBED")
-        for query in queries:
-            kquery.append({"field": "embedding",
-                           "query_vector": context.embedding.embed_query(query),
-                           "k": k,
-                           "num_candidates": 50,
-                           "filter": [{"term": {"user": context.uid}}]})
-        L.debug("END EMBED")
+    L.debug(f"building queries for {queries}...")
+    if search_type==IndexClass.FULLTEXT:
+        for _ in range(len(queries)):
+            requests.append(query_base+"WHERE uid = %s AND text_fuzzy @@ plainto_tsquery('english', %s) LIMIT %s;")
+    elif search_type==IndexClass.CHUNK:
+        for _ in range(len(queries)):
+            requests.append(query_base+"WHERE uid = %s ORDER BY embedding <=> %s LIMIT %s;")
 
-    # if doc_hash:
-    #     squery["bool"]["must"].append({"term": {"hash": doc_hash}})
+        L.debug(f"building embeddings for {queries}...")
+        embeddings = [context.embedding.embed_query(q) for q in queries]
 
-    #     if kquery:
-    #         kquery["filter"].append({"term": {"hash": doc_hash}})
+    results = []
 
-    if tf_threshold!=None and search_type != IndexClass.FULLTEXT:
-        squery["bool"]["must"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
+    L.debug(f"executing {queries}...")
+    cur = context.cnx.cursor()
 
-        if len(kquery) > 0:
-            for i in kquery:
-                i["filter"].append({"range": {"metadata.tf": {"gte": tf_threshold}}})
+    for indx, querystring in enumerate(requests):
+        cur.execute(querystring, (context.uid, queries[indx] if search_type==IndexClass.FULLTEXT else str(embeddings[indx]), k))
+        results += cur.fetchall()
 
-    L.debug("BEGIN SEARCH")
-    if search_type == IndexClass.CHUNK:
-        results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k))
-    elif search_type == IndexClass.FULLTEXT:
-        results = context.elastic.search(index="simon-fulltext", query=squery, size=str(k))
-    elif search_type == IndexClass.KEYWORDS:
-        results = context.elastic.search(index="simon-paragraphs", query=squery, size=str(k))
-    L.debug("END SEARCH")
+    L.debug(f"assembling results for {queries}...")
+    results = [{
+        "text": text,
+        "hash": hash,
+        "metadata": {
+            "title": title,
+            "source": src,
+            "tf": tf,
+            "seq": seq,
+            "total": total,
+        }
+    } for (text, hash, src, title, tf, seq, total) in results]
 
-    results = [{"id": i["_id"],
-                "text": i["_source"]["text"],
-                "metadata": i["_source"]["metadata"],
-                "hash": i["_source"]["hash"],
-                "score": i["_score"]}
-               for i in results["hits"]["hits"] if i["_score"] > threshold]
-
+    L.debug(f"done with {queries}...")
+    cur.close()
     return results
-
-def similar(id:str, context:AgentContext, k=5, threshold=0.9) -> List[str]:
-    """search for entries with similar meaning around a entry ID
-
-    find the nearest entries across the database to an entry.
-
-    Parameters
-    ----------
-    id : str
-        the ID of the entry to search nearby; NOTE! this is *NOT*
-        the hash of the element. It is the ID of the CHUNK. search()
-        returns both id (unique to each chunk) and hash (unique to each
-        document). Pass this element the ID.
-    context : AgentContext
-        the context of the agent
-    k : int
-        number of results to return
-    threshold : float
-        the float similarity threshold.
-
-    Returns
-    -------
-    List[str]
-        the returned entries
-    """
-   
-    # get results
-    squery = {
-        "bool": {"must": [
-            {"term": {"user": context.uid}},
-            {"term": {"_id": id}}
-        ]}
-    }
-
-    # search for the element with the correct ID
-    results = context.elastic.search(index="simon-paragraphs", query=squery, size=1)
-
-    # and raise an exception if we found nothing because the ID is dud
-    if len(results["hits"]["hits"]) == 0:
-        raise Exception(f"simon: the ID of the chunk provided '{id}' is not found; ensure you are providing an ID from CHUNK or KEYWORD index classes, and that its NOT the *hash* of the chunk. See the docstring of this field for more info.")
-    
-    embedding = results["hits"]["hits"][0]["_source"]["embedding"]
-
-
-    # and create the query
-    kquery = {"field": "embedding",
-              "query_vector": embedding,
-              "k": k,
-              "num_candidates": 800,
-              "filter": [{"term": {"user": context.uid}}]}
-
-    # search again, with the embedding
-    # we search k+1 because the top result is just the original element
-    results = context.elastic.search(index="simon-paragraphs", knn=kquery, size=str(k+1))
-
-    results = [{"text": i["_source"]["text"],
-                "metadata": i["_source"]["metadata"],
-                "hash": i["_source"]["hash"],
-                "score": i["_score"]}
-               for i in results["hits"]["hits"] if i["_score"] > threshold]
-
-    # we drop the top result, because that's the element itself
-    return results[1:]
 
 #### DELETERS ####
 def delete_document(hash:str, context:AgentContext):
@@ -494,26 +441,14 @@ def delete_document(hash:str, context:AgentContext):
         the context.
     """
 
-    context.elastic.delete_by_query(index="simon-fulltext",
-                                    query={"bool": {"must": [{"term": {"hash": hash}},
-                                                         {"term": {"user":
-                                                                   context.uid}}]}})
+    cur = context.cnx.cursor()
 
-    context.elastic.delete_by_query(index="simon-paragraphs",
-                                    query={"bool": {"must": [{"term": {"hash": hash}},
-                                                         {"term": {"user":
-                                                                   context.uid}}]}})
+    cur.execute("DELETE FROM simon_paragraphs WHERE uid = %s AND hash = %s;", (context.uid, hash))
+    cur.execute("DELETE FROM simon_fulltext WHERE uid = %s AND hash = %s;", (context.uid, hash))
+    cur.execute("DELETE FROM simon_cache WHERE uid = %s AND hash = %s;", (context.uid, hash))
 
-    context.elastic.delete_by_query(index="simon-cache",
-                                    query={"bool": {"must": [{"term": {"hash": hash}},
-                                                         {"term": {"user":
-                                                                   context.uid}}]}})
-
-
-    context.elastic.indices.refresh(index="simon-fulltext")
-    context.elastic.indices.refresh(index="simon-paragraphs")
-    context.elastic.indices.refresh(index="simon-cache")
-
+    context.cnx.commit()
+    cur.close()
 
 #### SETTERS ####
 def bulk_index(documents:List[ParsedDocument], context:AgentContext):
@@ -528,44 +463,25 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
     prefetch = []
 
     L.debug(f"Identifying already indexed documents...")
-    # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
-    # requires a new index note
-    for indx, hash in enumerate(hashes):
-        prefetch.append({"index": "simon-fulltext"})
-        prefetch.append({
-            "query": {
-                "bool": {
-                    "must": [
-                        {"term": {"hash": hash}},
-                        {"term": {"user": context.uid}}
-                    ],
-                }},
-            "size": 1
-        })
+    cur = context.cnx.cursor()
+    sqls = [cur.mogrify("SELECT hash FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
+            for hash in hashes]
+    cur.execute(b";".join(sqls))
+    res = cur.fetchall()
+    res = [i[0] for i in res]
 
-    request = ""
-
-    for i in prefetch:
-        request += f"{json.dumps(i)} \n"
-
-    success = False
-
-    while not success:
-        try:
-            prefetch = context.elastic.msearch(searches=request)["responses"]
-            success = True
-        except:
-            pass
-
-    # filter the input documents by those that aren't previously indexed
-    not_found = [not bool(i["hits"]["total"]["value"]) for i in prefetch]
-
-    if sum(not_found) == 0:
-        L.debug(f"All of {len(documents)} documents are all indexed. Returning...")
-        return
+    # for hash in hashes:
+                             
+    #     cur.execute("SELECT hash FROM simon_fulltext WHERE hash = %s AND uid = %s LIMIT 1;", (hash, context.uid))
+    #     res = cur.fetchone()
+    #     prefetch.append(res)
 
     # documents to index
-    _, filtered_documents = zip(*filter(lambda x:x[0], zip(not_found, documents)))
+    filtered_documents = list(filter(lambda x:x.hash not in res, documents))
+
+    if len(filtered_documents) == 0:
+        L.debug(f"All of {len(res)} documents are all indexed. Returning...")
+        return
 
     # remove duplicates
     filtered_documents = list(set(filtered_documents))
@@ -591,7 +507,7 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
     embed_text = []
     updates = []
 
-    L.debug(f"calculating chunk for {len(filtered_documents)} documents...")
+    L.debug(f"calculating chunk-level updates for {len(filtered_documents)} documents...")
     # We now go through each of the paragraphs. Index if needed, update the hash
     # if we already have the paragraph.
     for i, doc in enumerate(filtered_documents):
@@ -602,16 +518,8 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
             embed_text.append((doc.meta.get("title", "")
                                 if doc.meta.get("title", "") else "")+": "+paragraph.strip())
 
-            updates.append({"user": context.uid,
-                            "metadata": {"title": doc.meta.get("title"),
-                                        "source": doc.meta.get("source"),
-                                        "seq": indx,
-                                        "tf": tf,
-                                        "total": len(doc.paragraphs)},
-                            "hash": doc.hash,
-                            "text": paragraph,
-                            "_op_type": "index",
-                            "_index": "simon-paragraphs"})
+            updates.append([doc.hash, context.uid, paragraph, None, doc.meta.get("source", ""),
+                            doc.meta.get("title", ""), tf, indx, len(doc.paragraphs)])
 
     # create embeddings in bulk
     L.debug(f"embedding {len(embed_text)} chunks...")
@@ -619,31 +527,35 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     # slice the embeddings in
     for i, em in zip(updates, embeddings):
-        i["embedding"] = em
+        i[3] = em
 
-    L.debug(f"calculating full text updates for {len(filtered_documents)} documents...")
+    # perform the updates
+    L.debug(f"submitting {len(filtered_documents)} documents to the chunk-level index...")
+    execute_values (
+        cur, "INSERT INTO simon_paragraphs (hash, uid, text, embedding, src, title, tf, seq, total) VALUES %s;",
+        updates
+    )
+
+    updates = []
+    L.debug(f"calculating fulltext-level updates for {len(filtered_documents)} documents...")
     # create the document-level updates
     for doc in filtered_documents:
-        updates.append({"user": context.uid,
-                        "metadata": {"title": doc.meta.get("title"),
-                                    "source": doc.meta.get("source")},
-                        "hash": doc.hash,
-                        "text": doc.main_document,
-                        "_op_type": "index",
-                        "_index": "simon-fulltext"})
+        updates.append((doc.hash, context.uid, doc.main_document, doc.meta.get("source", ""),
+                        doc.meta.get("title", "")))
 
-    L.debug(f"submitting {len(filtered_documents)} documents to the index...")
-    # and bulk!
-    bulk(context.elastic, updates)
+    L.debug(f"submitting {len(filtered_documents)} documents to the document-level index...")
+    execute_values (
+        cur, "INSERT INTO simon_fulltext (hash, uid, text, src, title) VALUES %s;",
+        updates
+    )
 
     # refresh indicies
-    context.elastic.indices.refresh(index="simon-fulltext")
-    context.elastic.indices.refresh(index="simon-paragraphs")
+    L.debug(f"committing changes for {len(filtered_documents)}...")
+    context.cnx.commit()
+
     L.debug(f"Done with indexing {len(documents)} documents; {len(filtered_documents)} actually indexed; rest cached.")
 
-
-
-
+    cur.close()
 
 def index_document(doc:ParsedDocument, context:AgentContext):
     """Indexes a document, if needed.
@@ -655,150 +567,34 @@ def index_document(doc:ParsedDocument, context:AgentContext):
     context : AgentContext
         Information about data stores, etc. which determines
         the context.
-
-    Note
-    ----
-    Why is this code so agressive about search/checking first
-    before indexing? Because indexing is SIGNIFICANTLY more
-    expensive in Elastic than reading. Because its a search db
-    after all.
     """
 
     L.info(f"Indexing {doc.hash}...")
-    # try to cache the old cache
-    old_hash = None
+    bulk_index([doc], context)
 
-    # And check if we have already indexed the doc
-    indicies = context.elastic.search(index="simon-fulltext",
-                                      query={"bool": {"must": [{"term": {"hash": doc.hash}},
-                                                               {"term": {"user":
-                                                                         context.uid}}]}})["hits"]
-    # If not, do so!
-    if indicies["total"]["value"] == 0:
-        # change detected, remove elements of the same title
-        L.debug(f"Detecting historical versions {doc.hash}...")
-        title = doc.meta.get("title", "")
-        if title and title != "":
-            titles = context.elastic.search(index="simon-fulltext",
-                                            query={"bool": {"must": [{"term": {"metadata.title": title.lower()}},
-                                                                     {"term": {"user":
-                                                                               context.uid}}]}})
+    # lol
 
-            # remove the previous versions that we found
-            for result in titles["hits"]["hits"]:
-                old_hash = result["_source"]["hash"]
-                context.elastic.delete(index="simon-fulltext", id=result["_id"])
+def cache(uri:str, hash:str, context:AgentContext):
+    """cache a document to prevent future fetches
 
-            # [delete_document(doc["_source"]["hash"], context) for doc in titles["hits"]["hits"]]
+    Parameters
+    ----------
+    uri : str
+        url to cache from
+    hash : str
+        hash to cache
+    context : AgentContext
+        the agent context to cache with
+    """
+    
 
-        L.debug(f"Fulltext indexing {doc.hash}...")
-        context.elastic.index(index="simon-fulltext",
-                              document={"user": context.uid,
-                                        "metadata": {"title": doc.meta.get("title"),
-                                                     "source": doc.meta.get("source")},
-                                        "hash": doc.hash,
-                                        "text": doc.main_document})
-    else:
-        L.debug(f"{doc.hash} is already indexed, skipping...")
-        return # if we have already indexed this, just leave
+    cur = context.cnx.cursor()
 
-    L.debug(f"TFIDF analyzing {doc.hash}...")
+    cur.execute("INSERT INTO simon_cache (uri, hash, uid) VALUES (%s, %s, %s);", (uri, hash, context.uid))
 
-    # calculate tfidf for use later
-    vectorizer = TfidfVectorizer()
-    try:
-        X = vectorizer.fit_transform(doc.paragraphs)
-        tf_sum = X.sum(1).squeeze().tolist()[0]
-    except ValueError:
-        L.info(f"Found document with no analyzable content: {doc.paragraphs}.")
-        context.elastic.indices.refresh(index="simon-paragraphs")
-        return
+    context.cnx.commit()
+    cur.close()
 
-    documents = []
-    updates = []
-    prefetch = []
-
-
-    L.debug(f"Chuck analyzing {doc.hash}...")
-    # we do prefetch.append({"index": "simon-paragraphs"}) because every paragraph
-    # requires a new index note
-    for indx, paragraph in enumerate(doc.paragraphs):
-        prefetch.append({"index": "simon-paragraphs"})
-        prefetch.append({
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match": {"text": paragraph}},
-                        {"term": {"user": context.uid}}
-                    ],
-                }},
-            "size": 1
-        })
-
-    request = ""
-
-    for i in prefetch:
-        request += f"{json.dumps(i)} \n"
-
-    success = False
-
-    while not success:
-        try:
-            prefetch = context.elastic.msearch(body=request)["responses"]
-            success = True
-        except:
-            pass
-
-    L.debug(f"Chunk patching {doc.hash}...")
-    # We now go through each of the paragraphs. Index if needed, update the hash
-    # if we already have the paragraph.
-    for indx, (paragraph, indicies) in enumerate(zip(doc.paragraphs, prefetch)):
-        # check if the we already have the element indexed
-
-        indicies = indicies["hits"]
-        tf = tf_sum[indx]
-
-        # if so, just update their hashes
-        if len(indicies["hits"]) > 0 and indicies["hits"][0]["_source"]["text"] == paragraph:
-            context.elastic.update(index="simon-paragraphs", id=indicies["hits"][0]["_id"],
-                                   body={"doc": {"hash": doc.hash,
-                                                 "metadata.tf": tf}})
-        # if not, write it down for bulk operations
-        else:
-            documents.append((doc.meta.get("title", "")
-                              if doc.meta.get("title", "") else "")+": "+paragraph.strip())
-
-            updates.append({"user": context.uid,
-                            "metadata": {"title": doc.meta.get("title"),
-                                         "source": doc.meta.get("source"),
-                                         "seq": indx,
-                                         "tf": tf,
-                                         "total": len(doc.paragraphs)},
-                            "hash": doc.hash,
-                            "text": paragraph,
-                            "_op_type": "index",
-                            "_index": "simon-paragraphs"})
-
-    # create embeddings in bulk
-    L.debug(f"embedding {len(documents)} documents...")
-    embeddings = context.embedding.embed_documents(documents)
-
-    # slice the embeddings in
-    for i, em in zip(updates, embeddings):
-        i["embedding"] = em
-
-    L.debug(f"submittig {doc.hash}...")
-    # and bulk!
-    bulk(context.elastic, updates)
-
-    # refresh indicies
-    context.elastic.indices.refresh(index="simon-fulltext")
-    context.elastic.indices.refresh(index="simon-paragraphs")
-
-    # if an old hash was detected, we delete any traces of the old document
-    if old_hash:
-        delete_document(old_hash, context)
-    L.debug(f"Done analyzing {doc.hash}...")
 
 #### GLUE ####
 # A function to assemble CHUNK-type search results
@@ -830,6 +626,7 @@ def assemble_chunks(results, context, padding=1):
     groups = groupby(sorted(results, key=lambda x:x.get("hash")),
                      lambda x:x.get("hash"))
     stitched_ranges = []
+    to_fetch = []
 
     for _, group in groups:
         # get the context groups
@@ -838,7 +635,6 @@ def assemble_chunks(results, context, padding=1):
         title = group[0].get("metadata", {}).get("title", "")
         source = group[0].get("metadata", {}).get("source", "")
         hash = group[0].get("hash", "")
-        mean_score = sum([i.get("score", 0) for i in group])/len(group)
 
         # generate the chunk regions
         chunks = [(max(0, i.get("metadata", {}).get("seq", 0)-padding),
@@ -854,19 +650,30 @@ def assemble_chunks(results, context, padding=1):
             new_start, new_end = chunks.pop(0)
 
             if end <= new_start:
-                smooth_chunks.append((start, end))
+                to_fetch.append((hash, start, end))
                 start = new_start
                 end = new_end
             else:
                 end = max(end, new_end)
-        smooth_chunks.append((start, end))
+        to_fetch.append((hash, start, end))
         # now, get these actual chunks + stich them together with "..."
-        range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
-                                for i,j in smooth_chunks])
         # metadat
-        stitched_ranges.append((mean_score, title, range_text, source, hash))
+        stitched_ranges.append([title, None, source, hash])
 
-    stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
+
+    # fetch the text
+    chunks = get_range_chunks(to_fetch, context)
+
+    # iterate through the data
+    for res in stitched_ranges:
+        hash = res[-1]
+        chunk_data = chunks[hash]
+        res[1] = "\n".join(chunk_data)
+
+    # range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
+    #                         for i,j in smooth_chunks])
+
+    # stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 
     # and now, assemble everything with slashes between and return
     return stitched_ranges

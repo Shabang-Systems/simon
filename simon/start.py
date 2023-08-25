@@ -6,27 +6,22 @@ Utilities that act as helper functions
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 
-from elasticsearch import Elasticsearch
+
+from psycopg2 import connect
 
 import logging
 L = logging.getLogger("simon")
 
 from .models import *
-from .environment import get_env_vars
+from .environment import get_env_vars, get_db_config
 
-def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
-                   openai_api_base:str=None):
-    """Quickstart function to build a Simon context with OpenAI
+def make_open_ai(openai_api_key:str=None):
+    """Create OpenAI configuration
 
     Parameters
     ----------
-    uid : str
-        User ID to use for Elastic.
     openai_api_key : optional, str
         OpenAI API key to use, or read from enviroment variable.
-    es_config : optional, dict
-        Elastic configuration to use (keys used to seed ElasticSearch), or
-        read from enviroment variables.
 
     Returns
     -------
@@ -34,9 +29,8 @@ def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
         The context that used for all other Simon operations.
     """
 
-    if (not openai_api_key) or (not es_config):
+    if (not openai_api_key):
         env_vars = get_env_vars()
-        es_config = env_vars.get('ES_CONFIG')
         oai_config = env_vars.get('OAI_CONFIG')
 
     # create openai stuff
@@ -54,11 +48,39 @@ def create_context(uid:str, openai_api_key:str=None, es_config:dict=None,
         gpt4 = ChatOpenAI(model_name="gpt-4", temperature=0, openai_api_key=oai_config["openai_api_key"])
         embedding = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=oai_config["openai_api_key"])
 
-    # create elastic instance
-    es = Elasticsearch(**es_config, timeout=1000)
+    return (gpt3, gpt4, embedding)
+
+
+def create_context(uid:str, openai_api_key:str=None,
+                   db_config:dict=None):
+    """Quickstart function to build a Simon context with OpenAI
+
+    Parameters
+    ----------
+    uid : str
+        User ID to use.
+    openai_api_key : optional, str
+        OpenAI API key to use, or read from enviroment variable.
+    db_config : optional, dict
+        Posgres configuration to use (keys used to seed Posgres), or
+        read from enviroment variables.
+
+    Returns
+    -------
+    AgentContext
+        The context that used for all other Simon operations.
+    """
+
+    if (not db_config):
+        db_config = get_db_config()
+
+    (gpt3, gpt4, embedding) = make_open_ai(openai_api_key)
+
+    # create db instance
+    cnx = connect(**db_config)
 
     # build a context!
-    context = AgentContext(gpt3, gpt4, embedding, es, uid)
+    context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
 
     return context
 
