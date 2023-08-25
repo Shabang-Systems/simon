@@ -19,3 +19,5 @@ media
 
 scratchpad.py
 /.eggs/
+/simon.egg-info/
+/build/
