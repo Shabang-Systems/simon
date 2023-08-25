@@ -24,6 +24,9 @@ setup(
     description = "A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs.",
     packages=find_packages(),
     long_description=read('README.md'),
+    entry_points = {
+        'console_scripts': ['simon-setup=simon.setup:execute'],
+    },
     long_description_content_type='text/markdown',
     install_requires=requirements,
     classifiers=[

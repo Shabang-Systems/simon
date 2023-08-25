@@ -28,7 +28,7 @@ pip install simon-search
 all versions are figured with `Python 3.11`; all versions `>3.9` should be supported.
 
 ### Set Environment Variables
-There are a few secret credentials (database, OpenAI) that we mentioned above, and it is more convenient when these credentials are stored in an `.env.` file.
+There are a few secret credentials (database, OpenAI) that we mentioned above, and it is more convenient when these credentials are stored in an `.env` file.
 
 Collect your credentials from the steps before, and create an `.env` file (copy the `.env.example` [available at this link](https://github.com/Shabang-Systems/simon/blob/main/.env.example) and set values after the = sign) or through simple `export` directive in your bash shell.
 
@@ -38,17 +38,17 @@ Values set in your shell will override those in the `.env` file.
 
 ### Provision your Database
 
-You need to manually seed the database schema when you're first setting up. To do this, fill out the environment variables found in `.env.example` into the `.env` file in your local directory, then run:
+You need to manually seed the database schema when you're first setting up. To do this, fill out the environment variables found in `.env.example` [available at this link](https://github.com/Shabang-Systems/simon/blob/main/.env.example) into the `.env` file in your local directory, then run:
 
 ```
-python setup_database.py
+simon-setup
 ```
 
 To setup your database. If the program exits without error, you are good to go.
 
 ### Run the code!
 
-You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` get a full overview of the Python API.
+You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` [available here](https://github.com/Shabang-Systems/simon/blob/main/tutorial.py) get a full overview of the Python API.
 
 ### REST API 
 
