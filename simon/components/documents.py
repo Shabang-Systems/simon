@@ -397,7 +397,7 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
             requests.append(query_base+"WHERE uid = %s AND text_fuzzy @@ plainto_tsquery('english', %s) LIMIT %s;")
     elif search_type==IndexClass.CHUNK:
         for _ in range(len(queries)):
-            requests.append(query_base+"WHERE uid = %s ORDER BY embedding <=> %s LIMIT %s;")
+            requests.append(query_base+"WHERE uid = %s ORDER BY embedding <#> %s LIMIT %s;")
 
         L.debug(f"building embeddings for {queries}...")
         embeddings = [context.embedding.embed_query(q) for q in queries]

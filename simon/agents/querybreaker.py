@@ -16,21 +16,28 @@ TEMPLATE = """
 System:
 The knowledge base contains information about specific terms and general information. For instance, "my coworker Bob", "Bob's preferences for socks", "eigenvalues", and "last year's tax return" are all valid information in the knowledge base. "last year's tax return" is a valid entry in the knowledgebase while "an excel sheet for last year's tax return" is not.
 
-You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to do, and convert that to a more genreal question or statement that uses only keywords that could be found in the knowledge base.
+You will be provided a partial slice of the human's notes and thoughts; your job is to identify what the human is actually trying to look for, and convert that to a more genreal question or statement that uses only keywords that could be found in the knowledge base.
 
 Also, fix the user's spelling.
 
 Here are few examples of successful conversions:
-- "What's an eigenvalue?" => "Eigenvalues, Eigenvalues definition"
+- "What's an eigenvalue?" => "Eigenvalues"
 - "Tell me about Zorbabs" => "Zorbabs"
 - "What is a celender" => "calendar"
-- "I'm traveling to Singapore next week! What should I do?" => "Singapore, singapore activities"
-- "Who should I visit in Bangkok?" => "people I know in Bangkok, Bangkok visit"
+- "I'm traveling to Singapore next week! What should I do?" => "activites in Singapore"
+- "Who should I visit in Bangkok?" => "people I know in Bangkok"
+
+Here are some examples of things that shouldn't come up:
+- "What's an eigenvalue?" should NOT be converted to "eigenvalues definition", instead it should be "eigenvalues"
+- "What is the purpose of Acme" should NOT be converted to "acme purpose", instead it should be "acme"
+- "what are a few examples of vegetables that are healthy" should NOT be converted to "examples of vegetables that are healthy", instead it should be "healthy vegetables"
+
+Your goal is to come up with the OBJECTS that will be helpful, not the 
 
 Provide your output in this format:
 
 ```output
-New, shortened statement for the database that is not a question but instead a comma-seperated list of statements:
+New, shortened statement for the database that is not a question:
 ""your full, new question/statement here.""
 ```
 
@@ -42,7 +49,7 @@ Here is the question for you to patch:
 
 AI:
 ```output
-New, shortened statement for the database that is not a question but instead a comma-seperated list of statements:
+New, shortened statement for the database that is not a question:
 ""
 """
 

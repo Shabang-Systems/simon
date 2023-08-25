@@ -257,7 +257,8 @@ class RIO(object):
         resources = [{"headline": headline,
                       "relavent_input": sent_ids[inp],
                       "resource": {"quote": resource_ids[i],
-                                   "chunk": kb[chunks[i]]}} for i, headline, inp in zip(citations, res, inputs)]
+                                   "chunk": kb[chunks[i]]}}
+                     for i, headline, inp in zip(citations, res, inputs)]
 
         L.debug(f"All done now with brainstorm")
 
