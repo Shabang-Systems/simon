@@ -36,7 +36,7 @@ CREATE TABLE simon_paragraphs (
     total INTEGER DEFAULT 0
 );
 
-CREATE INDEX simon_paragraphs_embedding_ip_idx ON simon_paragraphs USING ivfflat (embedding vector_ip_ops) WITH (lists = 1000);
+CREATE INDEX simon_paragraphs_embedding_ip_idx ON simon_paragraphs USING ivfflat (embedding vector_ip_ops) WITH (lists = 600);
 CREATE INDEX simon_paragraphs_text_index ON simon_paragraphs USING GIN (text_fuzzy);
 CREATE INDEX simon_paragraphs_chunk_index ON simon_paragraphs USING BTREE (seq);
 CREATE INDEX simon_paragraphs_chunk_hash ON simon_paragraphs USING HASH (hash);
