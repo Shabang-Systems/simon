@@ -35,8 +35,8 @@ from functools import wraps
 # uuid generator
 from uuid import uuid4
 
-simon_api = Flask("simon")
-simon_api.config['JSON_SORT_KEYS'] = False
+rest = Flask("simon")
+rest.config['JSON_SORT_KEYS'] = False
 flask.json.provider.DefaultJSONProvider.sort_keys = False
 
 # we first get the database environment
@@ -91,7 +91,7 @@ def json_stream(stream):
         yield json.dumps(i)
 
 # call the llm directly
-@simon_api.route('/query', methods=['GET'])
+@rest.route('/query', methods=['GET'])
 @cross_origin()
 @contextify
 def query(context):
@@ -130,7 +130,7 @@ def query(context):
             "status": "success"
         }
 
-@simon_api.route('/brainstorm', methods=['GET'])
+@rest.route('/brainstorm', methods=['GET'])
 @cross_origin()
 @contextify
 def brainstorm(context):
@@ -170,7 +170,7 @@ def brainstorm(context):
         }
 
 # regular search
-@simon_api.route('/search', methods=['GET'])
+@rest.route('/search', methods=['GET'])
 @cross_origin()
 @contextify
 def search(context):
@@ -206,7 +206,7 @@ def search(context):
 
 
 # automcomplete document title
-@simon_api.route('/autocomplete', methods=['GET'])
+@rest.route('/autocomplete', methods=['GET'])
 @cross_origin()
 @contextify
 def autocomplete(context):
@@ -243,7 +243,7 @@ def autocomplete(context):
 
 
 # automcomplete document title
-@simon_api.route('/store_text', methods=['PUT'])
+@rest.route('/store_text', methods=['PUT'])
 @cross_origin()
 @contextify
 def store_text(context):
@@ -286,7 +286,7 @@ def store_text(context):
         "status": "success"
     }
 
-@simon_api.route('/store_media', methods=['PUT'])
+@rest.route('/store_media', methods=['PUT'])
 @cross_origin()
 @contextify
 def store_media(context):
@@ -328,7 +328,7 @@ def store_media(context):
     }
 
 # forget a document
-@simon_api.route('/forget', methods=['POST'])
+@rest.route('/forget', methods=['POST'])
 @cross_origin()
 @contextify
 def forget(context):
@@ -366,5 +366,5 @@ atexit.register(lambda:cnx.close())
 
 # debug 
 if __name__ == "__main__":
-    simon_api.run(debug=True, port=8086)
+    rest.run(debug=True, port=8086)
 

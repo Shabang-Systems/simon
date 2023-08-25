@@ -18,19 +18,21 @@ You will also need OpenAI credentials. This will be available be either with the
 
 Get the postgres connection credentials and OpenAI credentials, and keep it for use in the steps below. 
 
-### Requirements Setup
-Begin by using the Python package management tool of your choice to install the requirements:
+### Install Simon!
+You can install Simon from pypi.
 
 ```
-pip install -r requirements.txt
+pip install simon-search
 ```
 
 all versions are figured with `Python 3.11`; all versions `>3.9` should be supported.
 
 ### Set Environment Variables
-Collect your credentials from the steps before, and create an `.env` file (copy `.env.example` and set values after the = sign) or through simple `export` directive in your bash shell.
+There are a few secret credentials (database, OpenAI) that we mentioned above, and it is more convenient when these credentials are stored in an `.env.` file.
 
-An example of all the environment variables needed is in the `.env.example` file.
+Collect your credentials from the steps before, and create an `.env` file (copy the `.env.example` [available at this link](https://github.com/Shabang-Systems/simon/blob/main/.env.example) and set values after the = sign) or through simple `export` directive in your bash shell.
+
+An example of all the environment variables needed is in the `.env.example` file [available at this link](https://github.com/Shabang-Systems/simon/blob/main/.env.example).
 
 Values set in your shell will override those in the `.env` file.
 
@@ -46,14 +48,14 @@ To setup your database. If the program exits without error, you are good to go.
 
 ### Run the code!
 
-You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` to get a full overview of the Python API.
+You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` get a full overview of the Python API.
 
 ### REST API 
 
 We also offer a fairly minimal API through `api.py`, which you can run through:
 
 ```
-gunicorn api:simon_api
+gunicorn simon:api:rest -w [num_workers]
 ```
 
 No documentation quite yet, but we hope to get that up shortly.

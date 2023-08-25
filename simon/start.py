@@ -32,9 +32,12 @@ def make_open_ai(openai_api_key:str=None):
     if (not openai_api_key):
         env_vars = get_env_vars()
         oai_config = env_vars.get('OAI_CONFIG')
+    else:
+        oai_config = {}
+        oai_config["openai_api_key"] = openai_api_key
 
     # create openai stuff
-    if oai_config.get("openai_api_type", "") == "azure":
+    if oai_config and oai_config.get("openai_api_type", "") == "azure":
         L.warn("Simon's Azure API is *UNSTABLE* PRE_ALPHA as of now. Expect things to break.")
         L.warn("We recommend you use the public OpenAI Services, if possible.")
         gpt3 = AzureChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config,
