@@ -17,13 +17,14 @@ with pathlib.Path(os.path.join(os.path.dirname(__file__),
                     parse_requirements(requirements_txt)]
 
 setup(
-    name = "simon",
+    name = "simon-search",
     version = "0.0.1",
     author = "Shabang Systems, LLC",
     author_email = "hello@shabang.io",
-    description = ("A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs."),
+    description = "A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs.",
     packages=find_packages(),
     long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",

@@ -21,3 +21,5 @@ scratchpad.py
 /.eggs/
 /simon.egg-info/
 /build/
+/dist/
+/simon_search.egg-info/
