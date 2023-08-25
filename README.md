@@ -48,6 +48,12 @@ To setup your database. If the program exits without error, you are good to go.
 
 You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` to get a full overview of the Python API.
 
+We also offer a fairly minimal API through `api.py`, which you can run through:
+
+```
+gunicorn api:simon_api
+```
+
 ## Misc notes
 
 You'll need java installed/available to run `Tika` which is used for fetching/manipulating external data.
