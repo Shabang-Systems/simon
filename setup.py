@@ -18,7 +18,7 @@ with pathlib.Path(os.path.join(os.path.dirname(__file__),
 
 setup(
     name = "simon-search",
-    version = "0.0.1.post0",
+    version = "0.0.1.post1",
     author = "Shabang Systems, LLC",
     author_email = "hello@shabang.io",
     description = "A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs.",
@@ -28,6 +28,10 @@ setup(
         'console_scripts': ['simon-setup=simon.setup:execute'],
     },
     long_description_content_type='text/markdown',
+    extras_require={
+        "web": ["Flask==2.3.2", "gunicorn==21.2.0",
+                "flask_cors==4.0.0", "Requests==2.31.0"],
+    },
     install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",

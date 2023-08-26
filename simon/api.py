@@ -18,11 +18,14 @@ L.basicConfig(format=LOG_FORMAT, level=L.WARNING)
 L.getLogger('simon').setLevel(L.DEBUG)
 
 # flask!
-import flask
-from flask import Flask, request
-from flask_cors import cross_origin
+try: 
+    import flask
+    from flask import Flask, request
+    from flask_cors import cross_origin
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("We can't find the API dependencies. Ensure you have installed the \'web\' variant of Simon with 'pip install simon-search[web]'.")
 
-# json handling
+# api handling
 import json
 
 # importing everything
@@ -86,6 +89,7 @@ def contextify(f):
         return f(context=c, *args, **kwds)
     return wrapper
 
+import time
 def json_stream(stream):
     for i in stream:
         yield json.dumps(i)
@@ -152,6 +156,7 @@ def brainstorm(context):
     q = arguments.get("q", "").strip()
     response = arguments.get("response", "").strip()
     streaming = (response == "streaming")
+    L.warning(f"this doesn't make sense {context.uid}");
 
     if q == "":
         return {
@@ -159,13 +164,13 @@ def brainstorm(context):
             "message": "no query was provided"
         }, 400
 
-    search = simon.Search(context)
+    s = simon.Search(context)
 
     if streaming:
-        return json_stream(search.brainstorm(q, True)), {"Content-Type": "application/json"}
+        return json_stream(s.brainstorm(q, True)), {"Content-Type": "application/json"}
     else:
         return {
-            "response": search.brainstorm(q),
+            "response": s.brainstorm(q),
             "status": "success"
         }
 
