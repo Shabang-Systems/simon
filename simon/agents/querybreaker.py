@@ -37,7 +37,6 @@ Your goal is to come up with the OBJECTS that will be helpful, not the
 Provide your output in this format:
 
 ```output
-New, shortened statement for the database that is not a question:
 ""your full, new question/statement here.""
 ```
 
@@ -49,7 +48,6 @@ Here is the question for you to patch:
 
 AI:
 ```output
-New, shortened statement for the database that is not a question:
 ""
 """
 

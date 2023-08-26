@@ -389,7 +389,7 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     requests = []
     embeddings = []
 
-    query_base = "SELECT text, hash, src, title, tf, seq, total FROM simon_paragraphs "
+    query_base = "SET LOCAL ivfflat.probes = 20; SELECT text, hash, src, title, tf, seq, total FROM simon_paragraphs "
 
     L.debug(f"building queries for {queries}...")
     if search_type==IndexClass.FULLTEXT:
