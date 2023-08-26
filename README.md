@@ -55,7 +55,7 @@ You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` 
 We also offer a fairly minimal API through `api.py`, which you can run through:
 
 ```
-gunicorn simon.api:rest -w [num_workers]
+gunicorn simon.api:rest -w [num_workers] --timeout 1000
 ```
 
 No documentation quite yet, but we hope to get that up shortly.
