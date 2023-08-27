@@ -55,7 +55,7 @@ You are now ready to ~~rock~~ Simon! Follow the usage examples in `tutorial.py` 
 We also offer a fairly minimal API through `api.py`. To be able to do this, you need to first install the API server requirements:
 
 ```
-pip install simon-search[web]
+pip install 'simon-search[web]'
 ```
 
 then, run:
