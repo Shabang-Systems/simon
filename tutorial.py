@@ -51,9 +51,18 @@ import simon
 # followed the quick-start guide in the README of this repo,  Simon can read
 # the .env file you have setup already to get your context easily.
 
+# IF YOU HAVE A LOCAL .env set up following the example here https://github.com/Shabang-Systems/simon/blob/main/.env.example:
 context = simon.create_context("test-uid")  # the UID here is an arbiturary string, think about it like database tables.
                                             # Data stored in `AgentContext`s belonging to one UID are not accessible by
                                             # Simon operations initialized with a context belonging to another UID.
+
+# Otherwise:
+context = simon.create_context("test-uid", "sk-your_open_ai_key", # see above for what the UID is
+                               {"host": "your db host",
+                                "port": 5432,
+                                "user": "posgres",
+                                "password": "super secure",
+                                "database": "dbname"})
 
 # Note that this quickstart function takes a lot more options to directly,
 # if you don't want to set up a .env file. If you have an .env file, the example above
