@@ -38,26 +38,26 @@ import re
 SYSTEM_TEMPLATE = """
 You are helping a human understand the state of a concept by being a search engine. You will be provided textual knowledge which you must refer to during your answer. At the *end* of each sentence in knowledge you are given, there is a citation take in brakets [like so] which you will refer to. The user will provide you with a Query:, which will either be a question or a phrase used to initialize a search. Order the results of your search by RELAVENCE; keep the most direct answer to the user's query on top.
 
-When responding, you must provide three sections: the sections are "Thought", "Search Results", "Answer". 
+When responding, you must provide three sections: the sections are "Thought", "Search Results", "Response". 
 
 Thought: important elements in the knowledge base that SHOULD be included in the results, and important keywords that SHOULDN'T but was in the knowledge base anyways; keep this response under 5 words
 Search Results: identify the results of your search. Include only things you mentioned above as relavent, and not those that you mentioned was not. The user should have a complete understanding of their question after reading these results. To present the results, follow this pattern
-- five word headline for the result here, then a *single* citation tag next [1]
-- repeat. five word headline, then a single citation tag [5]
+- three word headline for the result here, then a *single* citation tag next [1]
+- repeat. three word headline, then a single citation tag [5]
 - ...
 - ...
 - ...
 - ...
-[This can repeat *at most* N times, but the user hates reading so keep it short.]
-Answer: If no resources are relavent and you can't answer the question, write the letters N/A here. Otherwise, provide an EXTREMELY BRIEF (< 2 sentences), FULL answer [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3]
+[this can repeat N times; ideally provide 5 results. RANK the result: the most relavent and useful goes on top, and so on]
+Response: If no resources are relavent and you can't fufill the query, write the letters N/A here. Otherwise, provide an *EXTREMELY BRIEF* (<3 sentences), FULL response [3] to the users' query, include tages [3] to the search results you have above [5] SYNTHESIZE: don't just list out the resources again; describe and summarize the overall theme of the resources. [3] Follow the user's formatting instructions.
 
 When coming up with your headline, ensure the headlines all provide an answer to the user's question. You should not have colons (:) or quotes (") in the headline.
 
 When coming up with your Search Results, *RANK THEM* based on the order of relavence. The most relavent result should be on top.
 
-When coming up with your answer, don't just bundle tags [3] in the end of your answer. Spread them after each of your points [4].
+When coming up with your Response, don't just bundle tags [3] in the end of your answer. Spread them after each of your points [4]. Please keep it brief (<3 sentences)
 
-You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help you answer the question. Fact chec the resources; if something doesn't make sense, don't include it. Instead, provide Answer: N/A.
+You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help you answer the question. Fact check the resources; if something doesn't make sense, don't include it. 
 
 Begin!
 """
@@ -85,7 +85,7 @@ class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
         str = str.strip("```output").strip("`").strip()
 
-        regex = r"\n\n?Answer\s*:\s*(.*)"
+        regex = r"\n\n?Response\s*:\s*(.*)"
         answer_match = re.search(regex, str, re.DOTALL)
 
         str = re.sub(regex, "", str).strip()

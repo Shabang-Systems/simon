@@ -30,13 +30,15 @@ Here are few examples of successful conversions:
 Here are some examples of things that shouldn't come up:
 - "What's an eigenvalue?" should NOT be converted to "eigenvalues definition", instead it should be "eigenvalues"
 - "What is the purpose of Acme" should NOT be converted to "acme purpose", instead it should be "acme"
+- "Write song lyrics about the meaning of Acme" should NOT be converted to "Acme song lyrics", instead it should be "acme"
 - "what are a few examples of vegetables that are healthy" should NOT be converted to "examples of vegetables that are healthy", instead it should be "healthy vegetables"
 
-Your goal is to come up with the OBJECTS that will be helpful, not the 
+Your goal is to come up with the OBJECTS that will be helpful. If the human is asking you to do something, filter out the part that involves the request for action.
 
 Provide your output in this format:
 
 ```output
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected:
 ""your full, new question/statement here.""
 ```
 
@@ -48,6 +50,7 @@ Here is the question for you to patch:
 
 AI:
 ```output
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected:
 ""
 """
 

@@ -75,6 +75,10 @@ def context(key=None):
 
     return context
 
+# Wrapper function to provide a endpoint below with an
+# already constructed context, by reading from the request
+# authorization header for the UID, and injecting in the
+# live database connection
 def contextify(f):
     @wraps(f)
     def wrapper(*args, **kwds):
@@ -156,7 +160,6 @@ def brainstorm(context):
     q = arguments.get("q", "").strip()
     response = arguments.get("response", "").strip()
     streaming = (response == "streaming")
-    L.warning(f"this doesn't make sense {context.uid}");
 
     if q == "":
         return {
