@@ -64,16 +64,6 @@ context = simon.create_context(uid="test-uid", openai_api_key="sk-your_open_ai_k
                                           "password": "super secure",
                                           "database": "dbname"})
 
-# Note that this quickstart function takes a lot more options to directly,
-# if you don't want to set up a .env file. If you have an .env file, the example above
-# is enough to get you off and running.
-# 
-# Here are the advanced options:
-#
-# >>> context = create_context(uid, openai_key, db_config)
-# 
-# where, `openai_key` is an OpenAI API key, and `db_config` is an database connection dict (the
-# arguments to psycog2).
 # If you would like *EVEN* more control over your context (how the database is connected to exactly,
 # what language models to use, what temperatures, etc.), you can feel free to construct your own
 # AgentContext object
