@@ -32,7 +32,6 @@ class Search:
 
         # agents
         self.__rio = RIO(context, verbose)
-        self.__fix = QueryBreaker(context, verbose)
         self.__reason = Reason(context, verbose)
 
         #### Context ####
@@ -56,6 +55,10 @@ class Search:
             the output, with resource information, etc. if not streaming;
             otherwise its passed to streaming
         """
+
+        assert type(text) == str, f"Unexpected non-string pased to Search.query: {text}"
+        if text.strip() == "":
+            raise ValueError(f"Empty query found to Search.query! Please supply a query that is non-empty. Current query: {text}")
 
         @threadpool
         def process():
@@ -116,6 +119,10 @@ class Search:
             }]
         """
 
+        assert type(text) == str, f"Unexpected non-string pased to Search.brainstorm: {text}"
+        if text.strip() == "":
+            raise ValueError(f"Empty query found to Search.brainstorm! Please supply a query that is non-empty. Current query: {text}")
+
         @threadpool
         def process():
             L.info(f"Serving prefetch \"{text}\"...")
@@ -143,6 +150,10 @@ class Search:
         
 
     def search(self, text):
+        assert type(text) == str, f"Unexpected non-string pased to Search.search: {text}"
+        if text.strip() == "":
+            raise ValueError(f"Empty query found to Search.search! Please supply a query that is non-empty. Current query: {text}")
+
         # query the kb first
         res = self.__kb(text)
 
@@ -173,8 +184,10 @@ class Search:
         List[Tuple[str, str]]
             A list of (title, text).
         """
+
+        assert type(query) == str, f"Unexpected non-string pased to Search.autocomplete: {query}"
         
-        return autocomplete(query, self.__context)
+        return list(sorted(set(autocomplete(query, self.__context))))
 
     def levenshteinDistance(s1, s2):
         if len(s1) > len(s2):
@@ -190,25 +203,3 @@ class Search:
                     distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
                     distances = distances_
         return distances[-1]
-
-
-    def suggest(self, query:str):
-        """Autocomplete the document with the given title
-
-        Parameters
-        ----------
-        query : str
-            The partial title of the document to start suggesting from.
-
-        Returns
-        -------
-        List[Tuple[str, str]]
-            A list of (title, text).
-        """
-        
-        fixed = self.__fix(query)
-        fixed += [" ".join(fixed)]
-        res = search(self.__context, queries=fixed, k=10)
-        titles = list(set([i["metadata"]["title"] for i in res]))
-
-        return titles

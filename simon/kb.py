@@ -51,11 +51,19 @@ class KnowledgeBase():
     def __call__(self, *inputs):
         L.info(f"Semantic searching for query \"{inputs}\"...")
         # break the query
-        queries = [i for j in inputs for i in self.__qb(j)]
+        queries = []
+        for input in inputs:
+            broken = self.__qb(input)
+            if broken != None:
+                queries += broken
         L.debug(f"Final search queries \"{queries}\"...")
 
+        if len(queries) == 0:
+            return []
+        
         # use both types of search to create all possible hits
         results_semantic = search(queries=queries, context=self.context, search_type=IndexClass.CHUNK, k=15)
+
         # results_semantic = sorted(results_semantic, key=lambda x:x["score"], reverse=True)
         # breakpoint()
 
@@ -71,8 +79,6 @@ class KnowledgeBase():
 
         results = results_semantic
 
-        if len(results) == 0:
-            return SimonProviderError("We found nothing. Please rephrase your question.")
 
         # create chunks: list of tuples of (score, title, text with context)
         L.debug(f"Assembling chunks for \"{inputs}\"...")
