@@ -37,11 +37,45 @@ from bs4 import BeautifulSoup
 # TFIDF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+# decorator business
+from functools import wraps
 
 # utilities
 import json
 
 from ..models import *
+
+from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
+
+# Wrapper function to provide database safety (caching db errors
+# or warning about undefined table)
+def dbsafe(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        try: 
+            return f(*args, **kwds)
+        except (InFailedSqlTransaction, UndefinedTable) as e:
+            # try to get the context from the function
+            context = kwds.get("context")
+            if not context:
+                for i in args:
+                    if type(i) == AgentContext:
+                        context = i
+
+            # try to retry any failed transactions
+            if type(e) == InFailedSqlTransaction:
+                L.debug("The previous SQL command failed, retrying...")
+                if context:
+                    context.cnx.rollback()
+                    return wrapper(*args, **kwds)
+                else:
+                    raise RuntimeError("A previous SQL command failed, and Simon was unable to roll the transaction back.\nHint: set up a new copy of AgentContext with a fresh psql connection by restarting your Python session or by call `simon.create_context` again.")
+            # tell the user to initialize the database
+            elif type(e) == UndefinedTable:
+                raise ValueError("The database we are provided has not been initialized.\nHint: call `simon.setup(context)` to set up the tables needed for Simon. You only have to do this once per new psql database you use.")
+    return wrapper
+
+
 
 #### SANITIZERS ####
 def __chunk(text, delim="\n\n"):
@@ -144,6 +178,7 @@ def parse_web(html, title=None, source=None) -> ParsedDocument:
     return parse_text(text, title, source)
 
 #### GETTERS ####
+@dbsafe
 def get_hash(uri:str, context:AgentContext):
     """Get the hash of a possibly indexed document.
 
@@ -173,6 +208,7 @@ def get_hash(uri:str, context:AgentContext):
 
     return result
 
+@dbsafe
 def get_fulltext(hash:str, context:AgentContext):
     """Read a document possibly stored in the cache.
 
@@ -202,6 +238,7 @@ def get_fulltext(hash:str, context:AgentContext):
 
     return result
 
+@dbsafe
 def get_nth_chunk(hash, n, context):
     """Read a document possibly stored in the cache by chunk.
 
@@ -233,6 +270,7 @@ def get_nth_chunk(hash, n, context):
 
     return result
 
+@dbsafe
 def get_range_chunk(hash, start, end, context):
     """Read a document possibly stored in the cache by chunk.
 
@@ -265,6 +303,7 @@ def get_range_chunk(hash, start, end, context):
 
     return result
 
+@dbsafe
 def get_range_chunks(queries, context):
     """Read a group of documents possibly stored in the cache by chunk.
 
@@ -297,6 +336,7 @@ def get_range_chunks(queries, context):
 
     return dict(data)
 
+@dbsafe
 def top_tf(hash:str, context:AgentContext, k=3):
     """Retrieve the top n paragraphs of `hash` based on TFIDF 
 
@@ -326,6 +366,7 @@ def top_tf(hash:str, context:AgentContext, k=3):
 
     return result
 
+@dbsafe
 def autocomplete(query:str, context:AgentContext, k=8):
     """string automcomplete to suggest article titles
 
@@ -354,6 +395,7 @@ def autocomplete(query:str, context:AgentContext, k=8):
 
     return result
 
+@dbsafe
 def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK, k=5):
     """search the database based on a query!
 
@@ -429,6 +471,7 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     return results
 
 #### DELETERS ####
+@dbsafe
 def delete_document(hash:str, context:AgentContext):
     """Removes an indexed document
 
@@ -451,6 +494,7 @@ def delete_document(hash:str, context:AgentContext):
     cur.close()
 
 #### SETTERS ####
+@dbsafe
 def bulk_index(documents:List[ParsedDocument], context:AgentContext):
     assert len(documents) > 0, "we can't index 0 documents"
 
@@ -557,6 +601,7 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     cur.close()
 
+@dbsafe
 def index_document(doc:ParsedDocument, context:AgentContext):
     """Indexes a document, if needed.
 
@@ -574,6 +619,7 @@ def index_document(doc:ParsedDocument, context:AgentContext):
 
     # lol
 
+@dbsafe
 def cache(uri:str, hash:str, context:AgentContext):
     """cache a document to prevent future fetches
 

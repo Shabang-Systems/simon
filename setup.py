@@ -25,7 +25,7 @@ setup(
     packages=find_packages(),
     long_description=read('README.md'),
     entry_points = {
-        'console_scripts': ['simon-setup=simon.setup:execute'],
+        'console_scripts': ['simon-setup=simon.provision:execute'],
     },
     long_description_content_type='text/markdown',
     extras_require={
