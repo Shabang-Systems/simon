@@ -35,7 +35,7 @@ setup(
     include_package_data=True,
     package_data={
         'simon': [os.path.basename(i) for i in glob("simon/*.sql")],
-    }
+    },
     install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
