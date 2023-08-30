@@ -622,6 +622,11 @@ def assemble_chunks(results, context, padding=1):
     if len(results) == 0:
         return ""
 
+    # keep the original order of hashes
+    # we do this dictionary dedplication instead of list(set()) to preserve order
+    seen = {}
+    hashes = [seen.setdefault(x["hash"], x["hash"]) for x in results if x["hash"] not in seen]
+
     # group by source, parsing each one at a time
     groups = groupby(sorted(results, key=lambda x:x.get("hash")),
                      lambda x:x.get("hash"))
@@ -670,10 +675,16 @@ def assemble_chunks(results, context, padding=1):
         chunk_data = chunks[hash]
         res[1] = "\n".join(chunk_data)
 
+    # reorder the results based on the original ranking
+    ordered_results = []
+    for hash in hashes:
+        ordered_results += [i for i in stitched_ranges if i[3] == hash]
+        
+
     # range_text = "\n\n...\n\n".join(["\n".join(get_range_chunk(hash, i,j, context))
     #                         for i,j in smooth_chunks])
 
     # stitched_ranges = sorted(stitched_ranges, key=lambda x:x[0], reverse=True)
 
     # and now, assemble everything with slashes between and return
-    return stitched_ranges
+    return ordered_results
