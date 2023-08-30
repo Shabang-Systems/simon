@@ -32,6 +32,10 @@ setup(
         "web": ["Flask==2.3.2", "gunicorn==21.2.0",
                 "flask_cors==4.0.0", "Requests==2.31.0"],
     },
+    include_package_data=True,
+    package_data={
+        'simon': [os.path.basename(i) for i in glob("simon/*.sql")],
+    }
     install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
