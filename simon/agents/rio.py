@@ -11,7 +11,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 
 from collections import defaultdict
 
-from nltk import sent_tokenize
+from ..utils.helpers import *
 import threading
 
 import logging
@@ -174,7 +174,7 @@ class RIO(object):
     def __call__(self, input, kb=[], streaming=False):
         # Tokenize the sentence
         sent_ids = defaultdict(lambda : len(sent_ids))
-        [sent_ids[k] for i in [sent_tokenize(j) for j in input.split(",")] for k in i]
+        [sent_ids[k] for i in [sent_tokenize_d(j) for j in input.split(",")] for k in i]
         sent_ids = dict(sent_ids)
 
         # freeze and reverse the resource id dictionary
