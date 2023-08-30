@@ -26,7 +26,7 @@ def get_db_config(raise_on_missing=False):
         "host": fetch_or_raise(env_config, "DB_URL", raise_on_missing),
         "port": fetch_or_raise(env_config, "DB_PORT", raise_on_missing),
         "user": fetch_or_raise(env_config, "DB_USER", raise_on_missing),
-        "password": fetch_or_raise(env_config, "DB_PASSWORD", raise_on_missing),
+        "password": env_config.get("DB_PASSWORD"),
         "database": fetch_or_raise(env_config, "DB_NAME", raise_on_missing),
     }
 
