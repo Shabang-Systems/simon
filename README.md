@@ -1,9 +1,9 @@
 # #!/Simon
-Hello! Welcome to Simon. Simon is a Python library that powers your entire semantic search experience: ingest, retrial, recommendation, and LLM answers.
+Hello! Welcome to Simon. Simon is a Python library that powers your entire semantic search experience: OCR, ingest, semantic search, extractive question answering, textual recommendation, and AI chat.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Shabang-Systems/simon/main/static/promo.png" />
-</p>
+[![PyPI version](https://badge.fury.io/py/simon-search.svg)](https://badge.fury.io/py/simon-search)
+
+<img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%" />
 
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
@@ -66,18 +66,30 @@ We all know why you came here: search!
 
 ```python
 s = simon.Search(context)
+```
 
-semantic_search = s.search("chicken habits")
-text_to_text_recommendations = s.brainstorm("chickens are a species that") 
-llm_answer_and_relavent_sentence_extraction = s.query("what are chickens?")
+**Semantic Search**
+
+```python
+results = s.search("chicken habits")
+```
+
+***Recommendation** ([check out the demo](https://wikisearch.shabang.io/))
+
+```python
+results = s.brainstorm("chickens are a species that") 
+```
+
+**LLM Answer and Extractive Question-Answering ("Quoting")**
+
+```python
+results = s.query("what are chickens?")
 ```
 
 That's it! Simple as that. Want to learn more? Check out the [the recipes folder TODO TODO](./) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun!
 
 ## Friends!
 We are always looking for more friends to build together. If you are interested, please reach out by... CONTRIBUTING! Simply open a PR/Issue/Discussion, and we will be in touch.
-
-<img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%" />
 
 ---
 
