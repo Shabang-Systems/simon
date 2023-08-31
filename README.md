@@ -34,7 +34,7 @@ import simon
 context = simon.create_context("project_name", "sk-your_open_ai_api_key",
                                {"host": "your_db_host.com",
                                 "port": 5432,
-                                "user": "posgres",
+                                "user": "postgres",
                                 "password": "super secure, or None",
                                 "database": "dbname"})
 ```
