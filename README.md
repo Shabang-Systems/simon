@@ -63,7 +63,7 @@ ds.store("https://en.wikipedia.org/wiki/Chicken", title="Chickens")
 ds.store_text("Hello, this is the text I'm storing.", "Title of the Text", "{metadata: can go here}")
 ```
 
-We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder TODO TODO](./) for tutorials on how to store everything from local JSONs to Google Drive files.
+We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder TODO TODO](./) for tutorials on how to store everything from S3 buckets to Google Drive files.
 
 ### Search Those Files
 We all know why you came here: search! 
