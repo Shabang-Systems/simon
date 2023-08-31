@@ -14,7 +14,7 @@ Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 ## Quick Start
 Are you ready to ~~rock~~ Simon? Let's do it.
 
-First, [setup PostgreSQL with the Vector plugin with these instructions](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java).
+First, [setup PostgreSQL 15 with the Vector plugin with these instructions](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java).
 
 After that, we can get started!
 
