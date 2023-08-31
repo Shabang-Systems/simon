@@ -29,9 +29,6 @@ import requests
 # langchain stuff
 from langchain.embeddings.base import Embeddings
 
-# nltk
-from nltk import sent_tokenize
-
 # tika
 from tika import parser
 
