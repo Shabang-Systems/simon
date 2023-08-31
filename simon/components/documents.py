@@ -26,7 +26,7 @@ import requests
 from langchain.embeddings.base import Embeddings
 
 # nltk
-from nltk import sent_tokenize
+from ..utils.helpers import sent_tokenize_d
 
 # tika
 from tika import parser
@@ -46,7 +46,7 @@ from ..models import *
 #### SANITIZERS ####
 def __chunk(text, delim="\n\n"):
 
-    sentences = sent_tokenize(text)
+    sentences = sent_tokenize_d(text)
      
     # makes groups of 5 sentences, joined, as the chunks
     parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+3]).strip().replace("\n", " ")).strip()
