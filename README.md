@@ -5,7 +5,9 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
 <img src="https://badge.fury.io/py/simon-search.svg"/>
 </div>
 
-<br />
+<p align="center">
+  <img src="https://i.imgur.com/lIn55Ck.png" />
+</p>
 
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
@@ -76,7 +78,7 @@ s = simon.Search(context)
 results = s.search("chicken habits")
 ```
 
-***Recommendation** ([check out the demo](https://wikisearch.shabang.io/))
+**Recommendation** ([check out the demo](https://wikisearch.shabang.io/))
 
 ```python
 results = s.brainstorm("chickens are a species that") 
