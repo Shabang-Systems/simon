@@ -90,7 +90,7 @@ results = s.brainstorm("chickens are a species that")
 results = s.query("what are chickens?")
 ```
 
-That's it! Simple as that. Want to learn more? Check out the [the recipes folder TODO TODO](./) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun!
+That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/patch/error-handling/tutorial.py) to learn about the overall organization of the package; check out the [the recipes folder TODO TODO](./) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun!
 
 ## Friends!
 We are always looking for more friends to build together. If you are interested, please reach out by... CONTRIBUTING! Simply open a PR/Issue/Discussion, and we will be in touch.
