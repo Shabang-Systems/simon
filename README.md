@@ -1,9 +1,10 @@
 # #!/Simon
 Hello! Welcome to Simon. Simon is a Python library that powers your entire semantic search experience: OCR, ingest, semantic search, extractive question answering, textual recommendation, and AI chat.
 
+<div style="display: flex; align-items: center; width: 100%">
 [![PyPI version](https://badge.fury.io/py/simon-search.svg)](https://badge.fury.io/py/simon-search)
-
 <img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%" />
+</div>
 
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
