@@ -4,7 +4,7 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
 <div style="display: flex; align-items: center; width: 100%">
 <img src="https://badge.fury.io/py/simon-search.svg"/>
 </div>
-
+<br /> 
 <p align="center">
   <img src="https://i.imgur.com/lIn55Ck.png" />
 </p>
