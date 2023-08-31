@@ -5,6 +5,8 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
 <img src="https://badge.fury.io/py/simon-search.svg"/>
 </div>
 
+<br />
+
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
 ## Quick Start
