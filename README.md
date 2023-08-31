@@ -47,7 +47,7 @@ You optionally can store the OpenAI key and Database info in an `.env` file or a
 **Once per new database**, you have to provision the database; otherwise, no Simon operations will function.
 
 ```python
-simon.setup(context)
+simon.setup(context) # do this once once per new *database*!!
 ```
 
 ### Storing Some Files
