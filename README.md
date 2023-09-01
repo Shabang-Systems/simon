@@ -25,7 +25,7 @@ You can get the package from PyPi.
 pip install simon-search
 ```
 
-### Context
+### Connect to Database
 
 ```python
 import simon
