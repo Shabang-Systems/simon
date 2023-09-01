@@ -68,23 +68,14 @@ We all know why you came here: search!
 
 ```python
 s = simon.Search(context)
-```
 
-**Semantic Search**
-
-```python
+# Semantic Search
 results = s.search("chicken habits")
-```
 
-**Recommendation** ([check out the demo](https://wikisearch.shabang.io/))
-
-```python
+# Recommendation (check out the demo: https://wikisearch.shabang.io/)
 results = s.brainstorm("chickens are a species that") 
-```
 
-**LLM Answer and Extractive Question-Answering ("Quoting")**
-
-```python
+# LLM Answer and Extractive Question-Answering ("Quoting")
 results = s.query("what are chickens?")
 ```
 
