@@ -57,7 +57,10 @@ Simon is rather uninteresting as a search tool if you can't search things! To se
 ds = simon.Datastore(context)
 
 # storing a remote webpage (or, if Java is installed, a PDF/PNG)
-ds.store("https://en.wikipedia.org/wiki/Chicken", title="Chickens")
+ds.store_remote("https://en.wikipedia.org/wiki/Chicken", title="Chickens")
+
+# storing a local file (or, if Java is installed, a PDF/PNG)
+ds.store_file("/Users/test/file.txt", title="Test File")
 
 # storing some text
 ds.store_text("Hello, this is the text I'm storing.", "Title of the Text", "{metadata: can go here}")

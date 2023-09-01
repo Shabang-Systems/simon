@@ -331,7 +331,7 @@ def store_media(context):
     search = simon.Datastore(context)
 
     return {
-        "response": search.store(url, title),
+        "response": search.store_remote_remote(url, title),
         "status": "success"
     }
 
