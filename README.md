@@ -18,7 +18,7 @@ First, [setup PostgreSQL 15 with the Vector plugin with these instructions](http
 
 After that, we can get started!
 
-### Installation
+### Install the Package
 You can get the package from PyPi.
 
 ```bash
