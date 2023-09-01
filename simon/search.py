@@ -89,6 +89,8 @@ class Search:
         # if we are streaming, start doing that
         def stream_generator():
             results_generator = results_promise.result()
+            if not results_generator:
+                results_generator = []
             for i in results_generator:
                 yield i
 
@@ -143,6 +145,9 @@ class Search:
         # if we are streaming, start doing that
         def stream_generator():
             results_generator = results_promise.result()
+            if not results_generator:
+                results_generator = []
+
             for i in results_generator:
                 yield i
 
