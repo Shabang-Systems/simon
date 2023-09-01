@@ -31,27 +31,23 @@ All Simon operations require an object called the `AgentContext` to identify you
 ```python
 import simon
 
+# connect to your database
 context = simon.create_context("project_name", "sk-your_open_ai_api_key",
                                {"host": "your_db_host.com",
                                 "port": 5432,
                                 "user": "postgres",
                                 "password": "super secure, or None",
                                 "database": "dbname"})
+
+# if needed, provision the database
+simon.setup(context) # do this *only once once per new database*!!
 ```
 
 The `project_name` is an arbitrary string you supply as the "folder"/"index" in the database where your data get stored. That is, the data ingested for one project cannot be searched in another.
 
 You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#set-environment-variables) to streamline the setup.
 
-### Provisioning
-**Once per new database**, you have to provision the database; otherwise, no Simon operations will function.
-
-```python
-simon.setup(context) # do this once once per new *database*!!
-```
-
 ### Storing Some Files
-Simon is rather uninteresting as a search tool if you can't search things! To search things, though, you have to store some files into the database to search. The simplest way to ingest files is using:
 
 ```python
 ds = simon.Datastore(context)
