@@ -79,7 +79,7 @@ results = s.brainstorm("chickens are a species that")
 results = s.query("what are chickens?")
 ```
 
-That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/main/examples/overview.ipynb) to learn about the overall organization of the package.
+That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/main/examples/tutorial.py) to learn about the overall organization of the package.
 
 <!-- Check out the [the examples folder](https://github.com/Shabang-Systems/simon/tree/main/examples/) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun! -->
 
