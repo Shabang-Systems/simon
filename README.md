@@ -26,7 +26,6 @@ pip install simon-search
 ```
 
 ### Context
-All Simon operations require an object called the `AgentContext` to identify your database connection and credentials.
 
 ```python
 import simon
