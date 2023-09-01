@@ -61,7 +61,7 @@ ds.store_file("/Users/test/file.txt", title="Test File")
 ds.store_text("Hello, this is the text I'm storing.", "Title of the Text", "{metadata: can go here}")
 ```
 
-We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder TODO TODO](./) for tutorials on how to store everything from S3 buckets to Google Drive files.
+<!-- We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder](https://github.com/Shabang-Systems/simon/tree/main/examples/ingest) for tutorials on how to store everything from S3 buckets to Google Drive files. -->
 
 ### Search Those Files
 We all know why you came here: search! 
@@ -79,7 +79,9 @@ results = s.brainstorm("chickens are a species that")
 results = s.query("what are chickens?")
 ```
 
-That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/patch/error-handling/tutorial.py) to learn about the overall organization of the package; check out the [the recipes folder TODO TODO](./) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun!
+That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/main/examples/overview.ipynb) to learn about the overall organization of the package.
+
+<!-- Check out the [the examples folder](https://github.com/Shabang-Systems/simon/tree/main/examples/) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun! -->
 
 ## Friends!
 We are always looking for more friends to build together. If you are interested, please reach out by... CONTRIBUTING! Simply open a PR/Issue/Discussion, and we will be in touch.
