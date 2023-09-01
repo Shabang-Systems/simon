@@ -23,7 +23,26 @@ class Datastore:
         self.__context = context
         self.__ingester = OCRIngester(context)
 
-    def store(self, uri:str, title:str=None):
+    def store_file(self, path:str, title:str=None):
+        """Ingest a single document from local files (PDF, websites, etc.)
+
+        Parameters
+        ----------
+        path : str
+            The pathto the file.
+        title : optional, str
+            The title of the document you are storing, which is
+            exposed to the LLM.
+
+        Returns
+        -------
+        str
+            The hash of the newly indexed document.
+        """
+        
+        return self.__ingester.ingest_file(path, title)
+
+    def store_remote(self, uri:str, title:str=None):
         """Ingest a single document from the internet (PDF, websites, etc.)
 
         Parameters

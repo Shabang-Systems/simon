@@ -85,7 +85,7 @@ ds = simon.Datastore(context)
 # You pass this function an URL (PDF, png, or website are all fine, we can OCR)
 # and a "title" identifying the document. 
 
-doc_hash = ds.store("https://example.com", "Example Website")
+doc_hash = ds.store_remote("https://example.com", "Example Website")
 doc_hash = ds.store_text("words words words", "title of the words", "source text here")
 
 # This function returns a hash identifying the document, which is used universally

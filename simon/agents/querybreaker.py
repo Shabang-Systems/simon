@@ -38,7 +38,7 @@ Your goal is to come up with the OBJECTS that will be helpful. If the human is a
 Provide your output in this format:
 
 ```output
-Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected:
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected, if you can't do it type N/A here:
 ""your full, new question/statement here.""
 ```
 
@@ -50,7 +50,7 @@ Here is the question for you to patch:
 
 AI:
 ```output
-Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected:
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected, if you can't do it type N/A here:
 ""
 """
 
@@ -64,6 +64,9 @@ class QueryPromptFormatter(StringPromptTemplate):
 
 class QueryOutputParser(BaseOutputParser):
     def parse(self, str):
+        if str.strip().lower() == "n/a":
+            return None
+
         str = str.strip("`").strip("'").strip('"').strip()
         
         return [i.strip() for i in str.split(",")]
@@ -88,5 +91,7 @@ class QueryBreaker(object):
         out =  self.__chain.predict(input=question,
                                     entities=entities)
         res =  self.__prompt.output_parser.parse(out)
+        if not res:
+            return None
 
-        return res
+        return list(set(res))
