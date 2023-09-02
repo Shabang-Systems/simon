@@ -1,10 +1,10 @@
 # Detailed Setup Guide
-We recommend reading the [quick start guide](/start) to get up and running with Simon. This is a document which provides some extra guidance regarding configuring Simon and some more advanced options.
+We recommend reading the [quick start guide](../start.md) to get up and running with Simon. This is a document which provides some extra guidance regarding configuring Simon and some more advanced options.
 
 ## Database and Credentials
 You will need to first setup an instance of Postgresql (**version 15**) on either a remote server or on your local machine. To set it up on your local machine, follow [the instructions available here](https://www.postgresql.org/download/). If setting up remotely, identify and follow the instructions of your cloud provider.
 
-After setting up postgres, install the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and already installed on most major cloud providers---just find instructions on how to enable it) to support Simon. 
+After setting up postgres, install the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and already installed on most major cloud providers—just find instructions on how to enable it) to support Simon. 
 
 You will also need OpenAI credentials. This will be available be either with the OpenAI public API, or Azure OpenAI Services.
 
@@ -44,7 +44,7 @@ Values set in your shell will override those in the `.env` file.
 You need to manually seed the database schema when you're first setting up. There is
 
 ### Provisioning with the library
-You can provision Simon with Simon itself; to do so, follow the [steps available here the quickstart guide](/start/#connect-to-database).
+You can provision Simon with Simon itself; to do so, follow the [steps available here the quickstart guide](../start.md/#connect-to-database).
 
 ### Provisioning with the CLI setup script
 In addition to the programmatic setup above, if you are using the `.env` file to store your credentials, we also built a CLI setup script to set up the tool on your behalf.

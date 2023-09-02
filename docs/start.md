@@ -1,7 +1,7 @@
 # Quick Start
 Let's get semantic searching, as promised, in 10 lines of code!
 
-First, [setup PostgreSQL 15 with the Vector plugin with these instructions](/setup/detailed/#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](/setup/detailed/#java).
+First, [setup PostgreSQL 15 with the Vector plugin with these instructions](./setup/detailed.md/#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](./setup/detailed.md/#java).
 
 After that, we can get started!
 

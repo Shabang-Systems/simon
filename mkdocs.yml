@@ -1,6 +1,7 @@
 site_name: "#!/Simon"
 theme:
   features:
+    - content.code.annotate
     - navigation.tracking
     - navigation.expand
     - toc.follow
@@ -16,8 +17,12 @@ theme:
     text: IBM Plex Sans
     code: IBM Plex Mono
 extra_css:
-- styles/global.css
+  - styles/global.css
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences 
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
