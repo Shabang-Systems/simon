@@ -1,4 +1,4 @@
-site_name: simon
+site_name: "#!/Simon"
 theme:
   features:
     - navigation.tracking

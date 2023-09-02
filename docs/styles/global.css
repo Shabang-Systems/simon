@@ -59,6 +59,47 @@ a:not(.md-nav__link):hover {
     border-bottom: 1px solid var(--green);
 }
 
+.heading {
+    font-family: Open Sans, "monospace";
+    font-weight: 700;
+    font-size: 30px;
+}
+
+.heading > a {
+    border-bottom: 0px !important;
+}
+
 .md-nav__link--active {
     color: var(--darkgreen) !important;
+}
+
+p {
+    margin: 5px 0 !important;
+}
+
+.md-nav__title {
+    display: none;
+}
+
+.md-main__inner {
+    margin: 30px 5px;
+}
+
+.header-container {
+    width: 100%;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    z-index: 10000000000000000000;
+}
+
+.md-sidebar {
+    margin-top: 10px;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
