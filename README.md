@@ -12,9 +12,12 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
 ## Quick Start
-Are you ready to ~~rock~~ Simon? Let's do it.
+Are you ready to ~~rock 🪨~~ Simon? Let's do it.
 
-First, [setup PostgreSQL 15 with the Vector plugin with these instructions](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java).
+- Pre-reqs
+    - PostgreSQL 15 database with the Vector plugin. A service like [supabase.io]() or [neon.tech]() is easiest, but you can also [self host](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#database-and-credentials).
+    - An [OpenAI GPT-4 API key](https://platform.openai.com/account/api-keys)
+    - Optional: [Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java), if you want to use Simon's OCR.
 
 After that, we can get started!
 
@@ -31,12 +34,17 @@ pip install simon-search
 import simon
 
 # connect to your database
-context = simon.create_context("project_name", "sk-your_open_ai_api_key",
-                               {"host": "your_db_host.com",
-                                "port": 5432,
-                                "user": "postgres",
-                                "password": "super secure, or None",
-                                "database": "dbname"})
+context = simon.create_context(
+  "project_name",
+  "sk-YOUR_OPENAI_API_KEY",  # an arbitrary string id for your new data silo.
+                                                                          # data ingested into one project cannot be searched in another.
+
+                               # postgres options. get them from your postgres provider.
+                               { "host": "YOUR_DB_HOST.com",             
+                                 "port": 5432,                           
+                                 "user": "postgres",                     # postgres user name
+                                 "password": "super secure, or None",    # postgres password
+                                 "database": "dbname" })                 # postgres database name
 
 # if needed, provision the database
 simon.setup(context) # do this *only once once per new database*!!
