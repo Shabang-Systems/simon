@@ -15,7 +15,7 @@ Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 Are you ready to ~~rock 🪨~~ Simon? Let's do it.
 
 - Pre-reqs
-    - PostgreSQL 15 database with the Vector plugin. A service like [supabase.io]() or [neon.tech]() is easiest, but you can also [self host](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#database-and-credentials).
+    - PostgreSQL 15 database with the Vector plugin. A service like [supabase.io](https://github.com/Shabang-Systems/simon/wiki/Supabase-Database-Setup) or [neon.tech](https://github.com/Shabang-Systems/simon/wiki/Neon-Database-Setup) is easiest, but you can also [self host](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#self-hosted-database).
     - An [OpenAI GPT-4 API key](https://platform.openai.com/account/api-keys)
     - Optional: [Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java), if you want to use Simon's OCR.
 
@@ -35,11 +35,12 @@ import simon
 
 # connect to your database
 context = simon.create_context(
-  "project_name",               # an arbitrary string id.
-                                # data ingested into one project cannot be searched in another.
+  "PROJECT_NAME",               # an arbitrary string id to silo your data.
+                                # (store and search are per-project.)
   "sk-YOUR_OPENAI_API_KEY",     # must support GPT-4
 
-  { "host": "YOUR_DB_HOST.com",       # postgres options. get these from your postgres provider.
+  # postgres options. get these from your postgres provider.
+  { "host": "YOUR_DB_HOST.com",
     "port": 5432,
     "user": "YOUR_USERNAME",
     "password": "PASSWORD, or None",
