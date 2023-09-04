@@ -38,7 +38,7 @@ Your goal is to come up with the OBJECTS that will be helpful. If the human is a
 Provide your output in this format:
 
 ```output
-Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected, if you can't do it type N/A here:
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected; try your best to do it; if you can't type N/A:
 ""your full, new question/statement here.""
 ```
 
@@ -50,7 +50,7 @@ Here is the question for you to patch:
 
 AI:
 ```output
-Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected, if you can't do it type N/A here:
+Single noun phrase that encopsulates the question, grammar and spelling and capitalization corrected; try your best to do it; if you can't type N/A:
 ""
 """
 
