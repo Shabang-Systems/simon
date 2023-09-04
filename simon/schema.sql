@@ -39,6 +39,7 @@ CREATE TABLE simon_paragraphs (
 CREATE INDEX simon_paragraphs_embedding_ip_idx ON simon_paragraphs USING ivfflat (embedding vector_ip_ops) WITH (lists = 300);
 CREATE INDEX simon_paragraphs_text_index ON simon_paragraphs USING GIN (text_fuzzy);
 CREATE INDEX simon_paragraphs_chunk_index ON simon_paragraphs USING BTREE (seq);
+CREATE INDEX simon_paragraphs_tf_index ON simon_paragraphs USING BTREE (tf);
 CREATE INDEX simon_paragraphs_chunk_hash ON simon_paragraphs USING HASH (hash);
 CREATE INDEX simon_paragraphs_title_index ON simon_paragraphs USING GIN (title_fuzzy);
 CREATE INDEX simon_fulltext_text_index ON simon_fulltext USING GIN (text_fuzzy);

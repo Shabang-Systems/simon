@@ -78,7 +78,7 @@ def dbsafe(f):
 
 
 #### SANITIZERS ####
-def __chunk(text, delim="\n\n"):
+def __chunk(text):
 
     sentences = sent_tokenize_d(text)
      
@@ -94,7 +94,7 @@ def __chunk(text, delim="\n\n"):
     return parsed_chunks, parsed_text, hash
 
 #### PARSERS ####
-def parse_text(text, title=None, source=None, delim="\n\n") -> ParsedDocument:
+def parse_text(text, title=None, source=None) -> ParsedDocument:
     """Base parser. Just chunk the text and be done.
 
     Parameters
@@ -120,7 +120,7 @@ def parse_text(text, title=None, source=None, delim="\n\n") -> ParsedDocument:
     }
 
     # clean the chunks
-    parsed_chunks, parsed_text, hash = __chunk(text, delim)
+    parsed_chunks, parsed_text, hash = __chunk(text)
 
     # return!
     return ParsedDocument(parsed_text, parsed_chunks, meta)
@@ -170,12 +170,24 @@ def parse_web(html, title=None, source=None) -> ParsedDocument:
     """
     # parse data
     soup = BeautifulSoup(html)
-    text = soup.get_text()
 
-    # meta!
+    paragraphs = [i.strip() for i in soup.get_text().split("\n")
+                  if i.strip() != ""]
+
+    # deduplicate
+    # we do this dictionary dedplication instead of list(set()) to preserve order
+    seen = {}
+    paragraphs = [seen.setdefault(i, i) for i in paragraphs if i not in seen]
+
+    # get title
     title = title if title else soup.title.string if soup.title else ""
 
-    return parse_text(text, title, source)
+    # return!
+    return ParsedDocument(" ".join(paragraphs), paragraphs, {
+        "source": source,
+        "title": title
+    })
+
 
 #### GETTERS ####
 @dbsafe
@@ -396,7 +408,7 @@ def autocomplete(query:str, context:AgentContext, k=8):
     return result
 
 @dbsafe
-def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK, k=5):
+def search(context:AgentContext, queries=[], query:str=None, search_type=IndexClass.CHUNK, k=5, tf_threshold=1.5):
     """search the database based on a query!
 
     Parameters
@@ -412,6 +424,8 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
         IndexClass.CHUNK or IndexClass.FULLTEXT.
     k : optional, int
         Number of values to return.
+    tf_threshold : optional, float
+        The TFIDF threshold.
 
     Return
     ------
@@ -436,10 +450,10 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     L.debug(f"building queries for {queries}...")
     if search_type==IndexClass.FULLTEXT:
         for _ in range(len(queries)):
-            requests.append(query_base+"WHERE uid = %s AND text_fuzzy @@ plainto_tsquery('english', %s) LIMIT %s;")
+            requests.append(query_base+"WHERE uid = %s AND TF > %s AND text_fuzzy @@ plainto_tsquery('english', %s) LIMIT %s;")
     elif search_type==IndexClass.CHUNK:
         for _ in range(len(queries)):
-            requests.append(query_base+"WHERE uid = %s ORDER BY embedding <#> %s LIMIT %s;")
+            requests.append(query_base+"WHERE uid = %s AND TF > %s ORDER BY embedding <#> %s LIMIT %s;")
 
         L.debug(f"building embeddings for {queries}...")
         embeddings = [context.embedding.embed_query(q) for q in queries]
@@ -450,7 +464,7 @@ def search(context:AgentContext, queries=[], query:str=None, search_type=IndexCl
     cur = context.cnx.cursor()
 
     for indx, querystring in enumerate(requests):
-        cur.execute(querystring, (context.uid, queries[indx] if search_type==IndexClass.FULLTEXT else str(embeddings[indx]), k))
+        cur.execute(querystring, (context.uid, tf_threshold, queries[indx] if search_type==IndexClass.FULLTEXT else str(embeddings[indx]), k))
         results += cur.fetchall()
 
     L.debug(f"assembling results for {queries}...")
