@@ -214,7 +214,7 @@ class Reason(object):
         chunks = {k:v
                   for indx, i in enumerate(kb)
                   for k,v in [(resource_ids[j], indx)
-                              for j in sent_tokenize_d(i["metadata"]["title"]+" "+i["text"])]}
+                              for j in sent_tokenize_d((i["metadata"]["title"] if i["metadata"]["title"] != None else "")+" "+i["text"])]}
 
         # freeze and reverse the resource id dictionary
         # so this is now a dict of resource_id:text
