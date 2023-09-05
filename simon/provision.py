@@ -1,5 +1,5 @@
 from psycopg2 import connect
-from psycopg2.errors import DuplicateTable, InFailedSqlTransaction
+from psycopg2.errors import DuplicateTable, InFailedSqlTransaction, FeatureNotSupported
 
 from .environment import get_db_config
 
@@ -18,11 +18,14 @@ def __run_setup(cnx):
     try:
         with cnx.cursor() as cursor:
             cursor.execute(open("schema.sql", "r").read())
-    except (DuplicateTable, InFailedSqlTransaction) as e:
+    except (DuplicateTable, InFailedSqlTransaction, FeatureNotSupported) as e:
         cnx.rollback()
 
         if type(e) == DuplicateTable:
             raise ValueError("It looks like you have already created the Simon schema for this database.\nYou only have to call this function once per *database*; no need to call this function every time you use Simon on the same database. You should be able to use the rest of Simon's functions without calling this function again.\n\nAs the recreation of Simon's schema will cause data erasure, if you want to recreate the Simon schema from scratch please manually delete and recreate the database with DROP DATABASE [your database] and CREATE DATABASE [your database] within psql, then invoke this function.")
+        elif type(e) == FeatureNotSupported:
+            print(e)
+            raise ValueError("Hint: is PGVector Setup in the database you used? Follow these instructions: https://github.com/pgvector/pgvector to set up the system if you control the database, or follow instructions by your hosting provider.")
         else:
             return __run_setup(cnx)
     finally:
