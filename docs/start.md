@@ -1,9 +1,15 @@
 # Quick Start
 Let's get semantic searching, as promised, in 10 lines of code!
 
+## Database
 First, [setup PostgreSQL 15 with the Vector plugin with these instructions](./setup/detailed.md/#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](./setup/detailed.md/#java).
 
-After that, we can get started!
+If you don't want to set up Postgres yourself, here are a few free/paid online services that host Postgres for you—all with Vector already set up:
+
+- [neon](https://neon.tech/)
+- [supabase](https://supabase.com/)
+- [digital ocean](https://www.digitalocean.com/products/managed-databases-postgresql)
+- [render](https://render.com/)
 
 ## Install the Package
 You can get the package from PyPi.
@@ -31,7 +37,7 @@ simon.setup(context) # do this *only once once per new database*!!
 
 The `project_name` is an arbitrary string you supply as the "folder"/"index" in the database where your data get stored. That is, the data ingested for one project cannot be searched in another.
 
-You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#set-environment-variables) to streamline the setup.
+You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](./setup/detailed.md/#set-environment-variables).
 
 ## Storing Some Files
 
@@ -66,4 +72,4 @@ results = s.brainstorm("chickens are a species that")
 results = s.query("what are chickens?")
 ```
 
-That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/main/examples/tutorial.py) to learn about the overall organization of the package.
+That's it! Simple as that. Want to learn more? Check out the items in the left side bar to learn about each of the main concepts outlined in this quick start document.

@@ -5,6 +5,7 @@ theme:
     - navigation.tracking
     - navigation.expand
     - toc.follow
+    - navigation.sections
   palette:
     scheme: none
     default: custom
@@ -26,3 +27,5 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+plugins:
+    - awesome-pages

@@ -43,10 +43,10 @@ Values set in your shell will override those in the `.env` file.
 
 You need to manually seed the database schema when you're first setting up. There is
 
-### Provisioning with the library
+### Option 1: Provisioning with the library
 You can provision Simon with Simon itself; to do so, follow the [steps available here the quickstart guide](../start.md/#connect-to-database).
 
-### Provisioning with the CLI setup script
+### Option 2: Provisioning with the CLI setup script
 In addition to the programmatic setup above, if you are using the `.env` file to store your credentials, we also built a CLI setup script to set up the tool on your behalf.
 
 To do this, fill out the environment variables found in `.env.example` [available at this link](https://github.com/Shabang-Systems/simon/blob/main/.env.example) into the `.env` file in any local directory, then run in the *same directory* in which you have your `.env` file:
