@@ -1,0 +1,31 @@
+site_name: "#!/Simon"
+theme:
+  features:
+    - content.code.annotate
+    - navigation.tracking
+    - navigation.expand
+    - toc.follow
+    - navigation.sections
+  palette:
+    scheme: none
+    default: custom
+    primary: custom
+    accent: custom
+  name: material
+  custom_dir: docs/overrides
+  favicon: favicon.png
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+extra_css:
+  - styles/global.css
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+plugins:
+    - awesome-pages
