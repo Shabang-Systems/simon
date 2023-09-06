@@ -3,7 +3,7 @@ Let's get semantic searching, as promised, in 10 lines of code!
 
 ## Prerequisites
 1. PostgresQL 15 with the Vector Plugin
-    - A service like [neon](./setup/Cloud-Databases/neon.md), [supabase](./setup/Cloud-Databases/supabase.md), or [digital ocean](./setup/Cloud-Databases/digital-ocean.md) is probably easiest
+    - A cloud service like [neon](./setup/Cloud-Databases/neon.md), [supabase](./setup/Cloud-Databases/supabase.md), [digital ocean](./setup/Cloud-Databases/digital-ocean.md) is probably easiest; OR
     - You can also [self host the database following these instructions](./setup/detailed.md/#database-self-hosting)
 2. [OpenAI GPT-4 API key](https://platform.openai.com/account/api-keys)
 3. Python 3.9 or above. We recommend Python 3.11.
