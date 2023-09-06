@@ -103,3 +103,7 @@ p {
     align-items: center;
     justify-content: center;
 }
+
+ol > li {
+    list-style-type: roman;
+}

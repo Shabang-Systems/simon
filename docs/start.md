@@ -1,15 +1,13 @@
 # Quick Start
 Let's get semantic searching, as promised, in 10 lines of code!
 
-## Database
-First, [setup PostgreSQL 15 with the Vector plugin with these instructions](./setup/detailed.md/#database-and-credentials). If you want to use Simon's built in OCR tooling, you will also need to [setup Java](./setup/detailed.md/#java).
-
-If you don't want to set up Postgres yourself, here are a few free/paid online services that host Postgres for you—all with Vector already set up:
-
-- [neon](https://neon.tech/)
-- [supabase](https://supabase.com/)
-- [digital ocean](https://www.digitalocean.com/products/managed-databases-postgresql)
-- [render](https://render.com/)
+## Prerequisites
+1. PostgresQL 15 with the Vector Plugin
+    - A service like [neon](./setup/Cloud-Databases/neon.md), [supabase](./setup/Cloud-Databases/supabase.md), or [digital ocean](./setup/Cloud-Databases/digital-ocean.md) is probably easiest
+    - You can also [self host the database following these instructions](./setup/detailed.md/#database-self-hosting)
+2. [OpenAI GPT-4 API key](https://platform.openai.com/account/api-keys)
+3. Python 3.9 or above. We recommend Python 3.11.
+3. Optional: [Java](./setup/detailed.md/#java) if you want to use Simon's built in OCR tooling
 
 ## Install the Package
 You can get the package from PyPi.
@@ -37,7 +35,7 @@ simon.setup(context) # do this *only once once per new database*!!
 
 The `project_name` is an arbitrary string you supply as the "folder"/"index" in the database where your data get stored. That is, the data ingested for one project cannot be searched in another.
 
-You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](./setup/detailed.md/#set-environment-variables).
+You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](./setup/detailed.md/#environment-variable-management).
 
 ## Storing Some Files
 
