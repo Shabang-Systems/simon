@@ -1,5 +1,7 @@
 # Setup Details
-To set up Simon, please follow the [quick start instructions](../start.md). This document aims to provide some specific pointers to each step of the quick start guide. **This page is not meant to be read from start to finish**, *refer to specific sections only as needed*.
+**To set up Simon, please follow the [quick start instructions](../start.md).** This document aims to provide some specific pointers to each step of the quick start guide. 
+
+This page is not meant to be read from start to finish, refer to specific sections only as needed.
 
 ## Database Self-Hosting
 FYI: on the sidebar, you can find setup guides available for a selection of cloud databases. If you want to self-host your PostgresSQL instance, read on.

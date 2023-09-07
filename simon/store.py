@@ -23,7 +23,7 @@ class Datastore:
         self.__context = context
         self.__ingester = OCRIngester(context)
 
-    def store_file(self, path:str, title:str=None):
+    def store_file(self, path:str, title:str=None, source:str=None):
         """Ingest a single document from local files (PDF, websites, etc.)
 
         Parameters
@@ -33,6 +33,8 @@ class Datastore:
         title : optional, str
             The title of the document you are storing, which is
             exposed to the LLM.
+        source : optional, str
+            Any metadata
 
         Returns
         -------
@@ -40,9 +42,9 @@ class Datastore:
             The hash of the newly indexed document.
         """
         
-        return self.__ingester.ingest_file(path, title)
+        return self.__ingester.ingest_file(path, title, source)
 
-    def store_remote(self, uri:str, title:str=None):
+    def store_remote(self, uri:str, title:str=None, source:str=None):
         """Ingest a single document from the internet (PDF, websites, etc.)
 
         Parameters
@@ -52,6 +54,8 @@ class Datastore:
         title : optional, str
             The title of the document you are storing, which is
             exposed to the LLM.
+        source : optional, str
+            Any metadata
 
         Returns
         -------
@@ -59,7 +63,7 @@ class Datastore:
             The hash of the newly indexed document.
         """
         
-        return self.__ingester.ingest_remote(uri, title)
+        return self.__ingester.ingest_remote(uri, title, source)
 
     def store_text(self, text:str, title:str, source=None):
         """Write a bit of text into the store
