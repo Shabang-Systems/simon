@@ -52,6 +52,8 @@ ds.store_file("/Users/test/file.txt", title="Test File")
 ds.store_text("Hello, this is the text I'm storing.", "Title of the Text", "{metadata: can go here}")
 ```
 
+To learn more about ingestion from custom ingesters to our embarrassingly parallel ingest tooling, [head on over to the ingest overview page](./ingest/store.md)!
+
 <!-- We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder](https://github.com/Shabang-Systems/simon/tree/main/examples/ingest) for tutorials on how to store everything from S3 buckets to Google Drive files. -->
 
 ## Search Those Files
@@ -69,5 +71,7 @@ results = s.brainstorm("chickens are a species that")
 # LLM Answer and Extractive Question-Answering ("Quoting")
 results = s.query("what are chickens?")
 ```
+
+To learn more about search, including how to perform a boring keyword search or to stream your LLM output, [head on over to the ingest overview page](./search/search.md)!
 
 That's it! Simple as that. Want to learn more? Check out the items in the left side bar to learn about each of the main concepts outlined in this quick start document.
