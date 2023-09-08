@@ -22,12 +22,19 @@ pip install simon-search
 import simon
 
 # connect to your database
-context = simon.create_context("project_name", "sk-your_open_ai_api_key",
-                               {"host": "your_db_host.com",
-                                "port": 5432,
-                                "user": "postgres",
-                                "password": "super secure, or None",
-                                "database": "dbname"})
+context = simon.create_context(
+  "PROJECT_NAME",               # an arbitrary string id to silo your data.
+                                # (store and search are per-project.)
+  "sk-YOUR_OPENAI_API_KEY",     # must support GPT-4
+
+  # postgres options. get these from your postgres provider.
+  { "host": "your_db_host.com",
+    "port": 5432,
+    "user": "your_username",
+    "password": "password", or None,
+    "database": "your_database_name"
+  }
+)
 
 # if needed, provision the database
 simon.setup(context) # do this *only once once per new database*!!
