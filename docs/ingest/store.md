@@ -9,8 +9,8 @@ import simon
 
 # context = simon.create_context(...)
 
-# Create datastore
-ds = simon.Datastore(context)
+# Create a data handler
+ds = simon.Dataspore(context)
 ```
 
 ### Storing Data
@@ -53,8 +53,6 @@ ds.delete(hash)
 
 Most of the search facilities of Simon will also give you the `hash` of the document it returns as a result, so you don't have to database the hash separately.
 
-### Getting Data
-
 ## `title` vs `source`
 `title` is given to the search engine and LLM to be indexed and reasoned about; `source` is a metadata field only given back to you to help you carry additional info.
 
@@ -67,3 +65,8 @@ We have three best-practice recommendations:
 3. We recommend making `source` a JSON encoded string
 
 ## Advanced Concepts
+Instead of ingesting a single document, a single webpage, etc. using `Datastore`, you can have deep customizations into the search functionality of Simon by changing how your documents are indexed. 
+
+Especially: if you are ingesting more than 1G of documents, we recommend you **not** use `Datastore`. 
+
+Head on on over to the [custom ingestion](./lowlevel.md) document to learn more.
