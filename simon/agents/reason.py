@@ -2,6 +2,7 @@
 reason.py
 The natural language reasoning engine.
 """
+from langchain.prompts import StringPromptTemplate
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.output_parsers import CommaSeparatedListOutputParser
@@ -60,26 +61,20 @@ When coming up with your Response, don't just bundle tags [3] in the end of your
 You maybe provided resources that are entirely irrelavent. If so, *don't include them!* Use your best judgement to select resources and answers that will help you answer the question. Fact check the resources; if something doesn't make sense, don't include it. 
 
 Begin!
-"""
 
-HUMAN_TEMPLATE = """
 Knowledge: 
 {kb}
 
 Query:
 {input}
-"""
 
-AI_TEMPLATE="""
 Thought:
 """
 
-class ReasonPromptFormatter(BaseChatPromptTemplate):
-    def format_messages(self, **kwargs):
-        return [SystemMessage(content=SYSTEM_TEMPLATE),
-                HumanMessage(content=HUMAN_TEMPLATE.format(kb=kwargs["kb"],
-                                                           input=kwargs["input"])),
-                AIMessage(content=AI_TEMPLATE)]
+class ReasonPromptFormatter(StringPromptTemplate):
+    def format(self, **kwargs):
+        return SYSTEM_TEMPLATE.format(kb=kwargs["kb"],
+                                      input=kwargs["input"])
 
 class ReasonOutputParser(BaseOutputParser):
     def parse(self, str):
