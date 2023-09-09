@@ -55,7 +55,7 @@ def make_open_ai(openai_api_key:str=None):
 
 
 def create_context(uid:str, openai_api_key:str=None,
-                   db_config:dict=None):
+                   db_config:dict=None, threeonly=False):
     """Quickstart function to build a Simon context with OpenAI
 
     Parameters
@@ -83,7 +83,10 @@ def create_context(uid:str, openai_api_key:str=None,
     cnx = connect(**db_config)
 
     # build a context!
-    context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
+    if not threeonly:
+        context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
+    else:
+        context = AgentContext(gpt3, gpt3, embedding, cnx, uid)
 
     return context
 
