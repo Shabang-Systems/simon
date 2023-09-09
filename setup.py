@@ -31,6 +31,7 @@ setup(
     extras_require={
         "web": ["Flask==2.3.2", "gunicorn==21.2.0",
                 "flask_cors==4.0.0", "Requests==2.31.0"],
+        "asr": ["openai-whisper==20230314"]
     },
     include_package_data=True,
     package_data={
