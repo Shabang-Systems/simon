@@ -26,6 +26,8 @@ Here are few examples of successful conversions:
 - "What is a celender" => "calendar"
 - "I'm traveling to Singapore next week! What should I do?" => "activites in Singapore"
 - "Who should I visit in Bangkok?" => "people I know in Bangkok"
+- "books that are bad" => "bad books"
+- "common disagreements" => "disagreements"
 
 Here are some examples of things that shouldn't come up:
 - "What's an eigenvalue?" should NOT be converted to "eigenvalues definition", instead it should be "eigenvalues"

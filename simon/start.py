@@ -15,13 +15,15 @@ L = logging.getLogger("simon")
 from .models import *
 from .environment import get_env_vars, get_db_config
 
-def make_open_ai(openai_api_key:str=None):
+def make_open_ai(openai_api_key:str=None, oai_config:dict=None):
     """Create OpenAI configuration
 
     Parameters
     ----------
     openai_api_key : optional, str
         OpenAI API key to use, or read from enviroment variable.
+    oai_config : optional, str
+        Openai configuration, used for Azure
 
     Returns
     -------
@@ -29,17 +31,18 @@ def make_open_ai(openai_api_key:str=None):
         The context that used for all other Simon operations.
     """
 
-    if (not openai_api_key):
+    if (not openai_api_key) and (not oai_config):
         env_vars = get_env_vars()
         oai_config = env_vars.get('OAI_CONFIG')
     else:
-        oai_config = {}
-        oai_config["openai_api_key"] = openai_api_key
+        if not oai_config:
+            oai_config = {}
+            oai_config["openai_api_key"] = openai_api_key
 
     # create openai stuff
     if oai_config and oai_config.get("openai_api_type", "") == "azure":
-        L.warn("Simon's Azure API is *UNSTABLE* PRE_ALPHA as of now. Expect things to break.")
-        L.warn("We recommend you use the public OpenAI Services, if possible.")
+        L.warning("Simon's Azure Intelligence Service API is *UNSTABLE* ALPHA as of now. Expect things to break.")
+        L.warning("We recommend you use the public OpenAI Endpoint, if possible.")
         gpt3 = AzureChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, **oai_config,
                                deployment_name="gpt-35-turbo")
         gpt4 = AzureChatOpenAI(model_name="gpt-4", temperature=0, **oai_config,
@@ -55,7 +58,7 @@ def make_open_ai(openai_api_key:str=None):
 
 
 def create_context(uid:str, openai_api_key:str=None,
-                   db_config:dict=None, threeonly=False):
+                   db_config:dict=None, oai_config:dict=None):
     """Quickstart function to build a Simon context with OpenAI
 
     Parameters
@@ -67,6 +70,9 @@ def create_context(uid:str, openai_api_key:str=None,
     db_config : optional, dict
         Posgres configuration to use (keys used to seed Posgres), or
         read from enviroment variables.
+    oai_config : optional, dict
+        Full OpenAI Config
+
 
     Returns
     -------
@@ -77,16 +83,13 @@ def create_context(uid:str, openai_api_key:str=None,
     if (not db_config):
         db_config = get_db_config()
 
-    (gpt3, gpt4, embedding) = make_open_ai(openai_api_key)
+    (gpt3, gpt4, embedding) = make_open_ai(openai_api_key, oai_config)
 
     # create db instance
     cnx = connect(**db_config)
 
     # build a context!
-    if not threeonly:
-        context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
-    else:
-        context = AgentContext(gpt3, gpt3, embedding, cnx, uid)
+    context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
 
     return context
 

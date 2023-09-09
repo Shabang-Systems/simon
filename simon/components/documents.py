@@ -83,8 +83,10 @@ def __chunk(text):
     sentences = sent_tokenize_d(text)
      
     # makes groups of 5 sentences, joined, as the chunks
-    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+3]).strip().replace("\n", " ")).strip()
+    parsed_chunks = [re.sub(r" +", " "," ".join(sentences[i:i+3]).strip()).strip()
                         for i in range(0, len(sentences), 3)]
+    # then, find paragraphs
+    parsed_chunks = [j for i in parsed_chunks for j in i.split("\n\n")]
 
     # and also create the bigger document
     parsed_text = "\n".join(parsed_chunks)
@@ -581,7 +583,11 @@ def bulk_index(documents:List[ParsedDocument], context:AgentContext):
 
     # create embeddings in bulk
     L.debug(f"embedding {len(embed_text)} chunks...")
-    embeddings = context.embedding.embed_documents(embed_text)
+    embeddings = []
+
+    for i in range(0, len(embed_text), 16):
+        chunk = embed_text[i:i+16]
+        embeddings += context.embedding.embed_documents(chunk)
 
     # slice the embeddings in
     for i, em in zip(updates, embeddings):

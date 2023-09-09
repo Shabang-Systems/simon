@@ -27,29 +27,22 @@ You will be given the human's partial thoughts and some knowledge. Your job is t
 
 In each list element, provide a headline answering why the knowledge you are about to provide is relavent to the user, then two special tags. One tag using <> brackets referring to the statement that the human said which prompted you to provide the knowledge you are providing, and one tag using [] brackets referring to the actual resource you are providing to the user.
 
-For instance:
-Question:
-I'm visiting Smithtown. <0> what should I do? <1>
-
-Knowledge:
-John works in Syscorp. [0] Syscorp is an Canadian company with headquarters in Smithtown. [1] Smithtown airport instructions [2] -- Go to Terminal 3, and turn left to hail a cab. That will be the easiest. [3]
-
-```output
-- John at Syscorp in Smithtown <1> [0]
-- Cab hailing instructions for Smithtown <0> [3]
-```
-
 Each entry in the result must not use more than 7 words, and they must not contain : or ". Each entry should provide a hint to the user as to why it is relavent to their query.
-
-Each entry should be of the EXACT SHAPE:
-
-- short headline <a> [b]
 
 With those tags in that order. The headline should summarize the *knowledge* you are providing (not the user input) and should also be less that 7 words. Like a seacrh engine, *RANK YOUR RESULTS*: the most relavent result should be first in your output.
 
-You are only going to retrieve things that are relavent to the user's query, and filter out those that are useless or factually incorrect. *You maybe provided knowledge that are entirely irrelavent*. If so, *don't include them!* Use your best judgement to select knowledge and responses that will help surface unexpected information. Fact check the knowledge; if something doesn't make sense, don't include it.
+Format your output like so; each element with a headline, a <> bracket pointing to the input, then a [] bracket pointing to the output:
+
+```output
+- short headline summarizing <1> [9]
+- another short headline <2> [3]
+- your headline here <5> [3]
+[you can find at most 5 results]
+```
 
 You can return an empty string if you don't want to return anything.
+
+Rank results based on relavence. Most relavent is on top.
 
 Question:
 {input}
@@ -62,6 +55,8 @@ Begin!
 ```output
 """
 
+
+# You are only going to retrieve things that are relavent to the user's query, and filter out those that are useless or factually incorrect. *You maybe provided knowledge that are entirely irrelavent*. If so, *don't include them!* Use your best judgement to select knowledge and responses that will help surface unexpected information. Fact check the knowledge; if something doesn't make sense, don't include it.
 
 class RIOPromptFormatter(StringPromptTemplate):
     def format(self, **kwargs):
