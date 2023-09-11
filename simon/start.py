@@ -74,7 +74,7 @@ def create_context(uid:str, openai_api_key:str=None,
     oai_config : optional, dict
         Full OpenAI Config
     ssl : optional, bool
-        Whether to connect to SSL.
+        Whether to forcibly connect to SSL.
 
     Returns
     -------
