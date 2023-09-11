@@ -1,7 +1,7 @@
 # Quick Start
 Let's get semantic searching, as promised, in 10 lines of code!
 
-## Prerequisites
+## Gather Your Tools
 1. PostgresQL 15 with the Vector Plugin
     - A cloud service like [neon](./setup/Cloud-Databases/neon.md), [supabase](./setup/Cloud-Databases/supabase.md), [digital ocean](./setup/Cloud-Databases/digital-ocean.md) is probably easiest
     - OR, you can also [self host the database following these instructions](./setup/detailed.md/#database-self-hosting)
