@@ -58,7 +58,8 @@ def make_open_ai(openai_api_key:str=None, oai_config:dict=None):
 
 
 def create_context(uid:str, openai_api_key:str=None,
-                   db_config:dict=None, oai_config:dict=None):
+                   db_config:dict=None, oai_config:dict=None,
+                   ssl:bool=False):
     """Quickstart function to build a Simon context with OpenAI
 
     Parameters
@@ -72,7 +73,8 @@ def create_context(uid:str, openai_api_key:str=None,
         read from enviroment variables.
     oai_config : optional, dict
         Full OpenAI Config
-
+    ssl : optional, bool
+        Whether to connect to SSL.
 
     Returns
     -------
@@ -86,7 +88,10 @@ def create_context(uid:str, openai_api_key:str=None,
     (gpt3, gpt4, embedding) = make_open_ai(openai_api_key, oai_config)
 
     # create db instance
-    cnx = connect(**db_config)
+    if ssl:
+        cnx = connect(**db_config, sslmode='require')
+    else:
+        cnx = connect(**db_config)
 
     # build a context!
     context = AgentContext(gpt3, gpt4, embedding, cnx, uid)
