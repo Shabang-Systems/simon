@@ -1,0 +1,805 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../start/">
+      
+      
+        <link rel="next" href="../context/">
+      
+      
+      <link rel="icon" href="../../favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.3.1">
+    
+    
+      
+        <title>Setup Details - #!/Simon</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.046329b4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CIBM+Plex+Mono:400,400i,700,700i&amp;display=fallback">
+
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CIBM+Plex+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"IBM Plex Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../styles/global.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="none" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#setup-details" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      <header>
+    <div class="header-container bg-gray-100" style="height: 50px">
+        <div class="heading"><a href="/">#!/Simon</a></div>
+    </div>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="#!/Simon" class="md-nav__button md-logo" aria-label="#!/Simon" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    #!/Simon
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Setup
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Setup
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Setup Details
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Setup Details
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-self-hosting" class="md-nav__link">
+    Database Self-Hosting
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    Java
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variable-management" class="md-nav__link">
+    Environment Variable Management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-provisioning" class="md-nav__link">
+    Database Provisioning
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Provisioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-provisioning-with-the-library" class="md-nav__link">
+    Option 1: Provisioning with the library
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-provisioning-with-the-cli-setup-script" class="md-nav__link">
+    Option 2: Provisioning with the CLI setup script
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../context/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom LLM/Connection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Cloud Databases
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Cloud Databases
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Cloud-Databases/digital-ocean/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Ocean
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Cloud-Databases/neon/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    neon.tech
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Cloud-Databases/supabase/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supabase
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Ingest
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Ingest
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ingest/store/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ingest/lowlevel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom/Bulk Ingestion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Search
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Search
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../search/search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../search/streaming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Streaming Search Results
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../search/rest/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    REST Search API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../help/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting and Giving Help
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-self-hosting" class="md-nav__link">
+    Database Self-Hosting
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    Java
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variable-management" class="md-nav__link">
+    Environment Variable Management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-provisioning" class="md-nav__link">
+    Database Provisioning
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Provisioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-provisioning-with-the-library" class="md-nav__link">
+    Option 1: Provisioning with the library
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-provisioning-with-the-cli-setup-script" class="md-nav__link">
+    Option 2: Provisioning with the CLI setup script
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="setup-details">Setup Details</h1>
+<p><strong>To set up Simon, please follow the <a href="../../start/">quick start instructions</a>.</strong> This document aims to provide some specific pointers to each step of the quick start guide. </p>
+<p>This page is not meant to be read from start to finish, refer to specific sections only as needed.</p>
+<h2 id="database-self-hosting">Database Self-Hosting</h2>
+<p>FYI: on the sidebar, you can find setup guides available for a selection of cloud databases. If you want to self-host your PostgresSQL instance, read on.</p>
+<ol>
+<li>
+<p>You will need to first setup an instance of Postgresql (<strong>version 15</strong>) on either a remote server or on your local machine.</p>
+<ul>
+<li>To set it up on your local machine, follow <a href="https://www.postgresql.org/download/">the instructions available here</a>.</li>
+<li>If setting up remotely, identify and follow the instructions of your cloud provider.</li>
+</ul>
+</li>
+<li>
+<p>After setting up postgres, install the <code>vector</code> plugin <a href="https://github.com/pgvector/pgvector">available here</a> (and already installed on most major cloud providers—just find instructions on how to enable it) to support Simon. </p>
+</li>
+<li>
+<p>Get the postgres connection credentials (for local installations, they are often <code>localhost:5432</code>, username <code>postgres</code> and no password; please refer to your distribution's instructions) and OpenAI credentials, and keep it for use in the steps below. </p>
+</li>
+<li>
+<p>Start your PostgreSQL instance, and be sure it's ready to receive requests!</p>
+</li>
+</ol>
+<!-- To set it up on your local machine, follow [the instructions available here](https://www.postgresql.org/download/). If setting up remotely, identify and follow the instructions of your cloud provider. -->
+
+<!-- After setting up postgres, install the `vector` plugin [available here](https://github.com/pgvector/pgvector) (and already installed on most major cloud providers—just find instructions on how to enable it) to support Simon.  -->
+
+<!-- You will also need OpenAI credentials. This will be available be either with the OpenAI public API, or Azure OpenAI Services. -->
+
+<!-- Get the postgres connection credentials (for local installations, they are often `localhost:5432`, username `postgres` and no password; please refer to your distribution's instructions) and OpenAI credentials, and keep it for use in the steps below.  -->
+
+<h2 id="java">Java</h2>
+<p>If you would like to perform OCR or textual extraction from PDFs/impges with Simon, you optionally need Java installed/available to run <code>Tika</code> which is used for fetching/manipulating external data.</p>
+<p>Check that it's available:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>java<span class="w"> </span>-version
+</span></code></pre></div>
+<p>If not, install is system dependent. Quick fix for Ubuntu + Debian-based distros: <code>sudo apt install default-jre</code>. For macOS, run <code>brew install java</code> and be sure to follow the "Next Steps"/"Caveats" instructions afterwards.</p>
+<h2 id="environment-variable-management">Environment Variable Management</h2>
+<p><code>simon.create_context</code> requires some {OpenAI, database} secrets. In lieu of providing them directly to the function, you can store these in a <code>.env</code> file or just set them as environment variables.</p>
+<p>To do so, populate <a href="https://github.com/Shabang-Systems/simon/blob/main/.env.example">a new file named <code>.env</code> following this template</a> and place it in the directory where you run python.</p>
+<p>In lieu of creating an <code>.env</code> file, you can also use the <code>export</code> directive in your bash shell to set all of the environment variables <a href="https://github.com/Shabang-Systems/simon/blob/main/.env.example">listed in the file above for the current shell session</a>.</p>
+<p>Values set in your shell will override those in the <code>.env</code> file.</p>
+<h2 id="database-provisioning">Database Provisioning</h2>
+<p>You need to manually seed the database schema when you're first setting up. There are two options available to help you provision your database.</p>
+<h3 id="option-1-provisioning-with-the-library">Option 1: Provisioning with the library</h3>
+<p>You can provision Simon with Simon itself; to do so, follow the <a href="../../start/#connect-to-database">steps available here the quickstart guide</a>.</p>
+<h3 id="option-2-provisioning-with-the-cli-setup-script">Option 2: Provisioning with the CLI setup script</h3>
+<p>In addition to the programmatic setup above, if you are using the <code>.env</code> file to store your credentials, we also built a CLI setup script to set up the tool on your behalf.</p>
+<p>To do this, fill out the environment variables found in <code>.env.example</code> <a href="https://github.com/Shabang-Systems/simon/blob/main/.env.example">available at this link</a> into the <code>.env</code> file in any local directory, then run in the <em>same directory</em> in which you have your <code>.env</code> file:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>simon-setup
+</span></code></pre></div>
+<p>to setup your database. If the program exits without error, you are good to go.</p>
+<p>As with before, you can use the <code>export</code> directive in your bash shell or inline variable configuration to override or obviate the need to create an <code>.env</code> file:</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <div class="footer p-3" style="font-size: 9px">
+    <div style="color: var(--grey); margin-bottom: 10px">
+        <code style="opacity: 0.8;">© 2023 Shabang Systems, LLC and various open source contributors. Built with ❤️ and <a href="https://www.jklsnt.com/" style="border: 0">🥗</a> in the SF Bay Area.</code>
+    </div>
+</div>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "navigation.tracking", "navigation.expand", "toc.follow", "navigation.sections"], "search": "../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>
