@@ -18,7 +18,7 @@ with pathlib.Path(os.path.join(os.path.dirname(__file__),
 
 setup(
     name = "simon-search",
-    version = "0.0.1.post4",
+    version = "0.0.1.post5",
     author = "Shabang Systems, LLC",
     author_email = "hello@shabang.io",
     description = "A pipeline which allows for the ingestion, storage, and processing of a large body of textual information with LLMs.",
