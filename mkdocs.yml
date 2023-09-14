@@ -1,4 +1,5 @@
 site_name: "#!/Simon"
+site_url: https://simon.shabang.io/
 theme:
   features:
     - content.code.annotate

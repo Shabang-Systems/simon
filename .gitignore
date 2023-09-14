@@ -24,3 +24,5 @@ scratchpad.py
 /build/
 /dist/
 /simon_search.egg-info/
+
+/site
