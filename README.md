@@ -24,7 +24,7 @@ Check out 🌐 [this online demo of the tool](https://wikisearch.shabang.io/) an
 You can get the package from PyPi.
 
 ```bash
-pip install simon-search
+pip install simon-search -U
 ```
 
 ### Connect to Database

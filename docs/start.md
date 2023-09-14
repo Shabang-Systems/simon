@@ -13,7 +13,7 @@ Let's get semantic searching, as promised, in 10 lines of code!
 You can get the package from PyPi.
 
 ```bash
-pip install simon-search
+pip install simon-search -U
 ```
 
 ## Connect to Database
