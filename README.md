@@ -9,7 +9,7 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
   <img src="https://i.imgur.com/lIn55Ck.png" />
 </p>
 
-Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
+Check out 🌐 [this online demo of the tool](https://wikisearch.shabang.io/) and browse 📖 [the full documentation](https://simon.shabang.io/start/)!
 
 ## 🏃 Quick Start
 ### Gather Your Tools
