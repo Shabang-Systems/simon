@@ -5,7 +5,7 @@ template: noside.html
 
 # 
 
-<span style="font-family: 'Open Sans', sans-serif; font-size: 30px">**#!/Shabang** | <span>Simon</span></span>
+<a style="font-family: 'Open Sans', sans-serif; font-size: 30px; cursor:pointer; border:0" href="/">**#!/Shabang** | <span>Simon</span></a>
 <img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="15%" style="float:right; transform: translate(0, 15px)"/>
 
 **AI Search: your data + 10 lines of code.**
