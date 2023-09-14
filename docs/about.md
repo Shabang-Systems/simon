@@ -10,11 +10,19 @@ template: noside.html
 
 **AI Search: your data + 10 lines of code.**
 
-## Contributors
+We are an open-source project licensed under TODO, developed by Shabang Systems, LLC.
 
-We are always looking for more friends to build together. If you are interested, please reach out! Simply [open a Discussion](https://github.com/Shabang-Systems/simon/discussions), and we will be in touch.
+## Getting Help
+The best way to get your questions answered quickly is by [searching and posting on our discussion boards](https://github.com/Shabang-Systems/simon/discussions). Please do reach out! We love to hear everything from your questions, your feedback, or just to show-off a cool demo.
 
-Our project is **Licensed under TODO**, whose exact terms are [available here](https://github.com/Shabang-Systems/simon/blob/main/LICENSE).
+Are you trying to integrate Simon into your bigger project? We would love to help. Please write to us: [hello@shabang.io](mailto:hello@shabang.io); we would love to shape our tools to help you and provide support.
+
+## Giving Help
+Would you be so kind to [give us a star on GitHub](https://github.com/Shabang-Systems/simon)? 
+
+We are a small open source foundry; if you would love to make Simon better, we would love your help. If you are willing and able to [raise an issue](https://github.com/Shabang-Systems/simon/issues), [send a PR](https://github.com/Shabang-Systems/simon/pulls), or [buy us coffee](https://github.com/sponsors/Shabang-Systems), we will be ecstatic. 
+
+Don't know where to start contributing? [Reach out on the discussion boards](https://github.com/Shabang-Systems/simon/discussions), and one of us will be super happy to get back to you.
 
 ## Reaching out
 If you want to share a specific use case, get more tailored support, or just want to chat, reach out to us at [hello@shabang.io](mailto:hello@shabang.io)! We would love to help.
