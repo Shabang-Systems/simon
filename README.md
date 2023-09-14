@@ -42,7 +42,7 @@ context = simon.create_context(
   { "host": "your_db_host.com",
     "port": 5432,
     "user": "your_username",
-    "password": "password", or None,
+    "password": "password", # or None
     "database": "your_database_name"
   }
 )
