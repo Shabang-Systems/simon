@@ -11,15 +11,14 @@ Hello! Welcome to Simon. Simon is a Python library that powers your entire seman
 
 Check out [this online demo of the tool!](https://wikisearch.shabang.io/)
 
-## Quick Start
-Are you ready to ~~rock 🪨~~ Simon? Let's do it.
-
-- Pre-reqs
-    - PostgreSQL 15 database with the Vector plugin. A service like [supabase.io](https://github.com/Shabang-Systems/simon/wiki/Supabase-Database-Setup) or [neon.tech](https://github.com/Shabang-Systems/simon/wiki/Neon-Database-Setup) is easiest, but you can also [self host](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#self-hosted-database).
-    - An [OpenAI GPT-4 API key](https://platform.openai.com/account/api-keys)
-    - Optional: [Java](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#java), if you want to use Simon's OCR.
-
-After that, we can get started!
+## 🏃 Quick Start
+### Gather Your Tools
+1. PostgresQL 15 with the Vector Plugin
+    - A cloud service like [neon](https://simon.shabang.io/setup/Cloud-Databases/neon/), [supabase](https://simon.shabang.io/setup/Cloud-Databases/supabase/), [digital ocean](https://simon.shabang.io/setup/Cloud-Databases/digital-ocean/) is probably easiest
+    - OR, you can also [self host the database following these instructions](https://simon.shabang.io/setup/detailed/#database-self-hosting)
+2. [OpenAI API key](https://platform.openai.com/account/api-keys)
+3. Python 3.9 or above. We recommend Python 3.11.
+3. Optional: [Java](https://simon.shabang.io/setup/detailed/#java) if you want to use Simon's built in OCR tooling
 
 ### Install the Package
 You can get the package from PyPi.
@@ -40,11 +39,11 @@ context = simon.create_context(
   "sk-YOUR_OPENAI_API_KEY",     # must support GPT-4
 
   # postgres options. get these from your postgres provider.
-  { "host": "YOUR_DB_HOST.com",
+  { "host": "your_db_host.com",
     "port": 5432,
-    "user": "YOUR_USERNAME",
-    "password": "PASSWORD, or None",
-    "database": "YOUR_DATABASE_NAME"
+    "user": "your_username",
+    "password": "password", or None,
+    "database": "your_database_name"
   }
 )
 
@@ -52,7 +51,9 @@ context = simon.create_context(
 simon.setup(context) # do this *only once once per new database*!!
 ```
 
-You can also [store the OpenAI key and Database info as environment variables or in a `.env`](https://github.com/Shabang-Systems/simon/wiki/Detailed-Setup-Guide#set-environment-variables).
+The `project_name` is an arbitrary string you supply as the "folder"/"index" in the database where your data get stored. That is, the data ingested for one project cannot be searched in another.
+
+You optionally can store the OpenAI key and Database info in an `.env` file or as Bash shell variables [following these instructions](https://simon.shabang.io/setup/detailed/#environment-variable-management).
 
 ### Storing Some Files
 
@@ -69,10 +70,12 @@ ds.store_file("/Users/test/file.txt", title="Test File")
 ds.store_text("Hello, this is the text I'm storing.", "Title of the Text", "{metadata: can go here}")
 ```
 
+To learn more about ingestion, [head on over to the ingest overview page](https://simon.shabang.io/ingest/store/)!
+
 <!-- We also have advanced ingestors and lower level APIs to bulk read lots of data; check out [the ingest recipes folder](https://github.com/Shabang-Systems/simon/tree/main/examples/ingest) for tutorials on how to store everything from S3 buckets to Google Drive files. -->
 
 ### Search Those Files
-We all know why you came here: search!
+We all know why you came here: search! 
 
 ```python
 s = simon.Search(context)
@@ -81,18 +84,21 @@ s = simon.Search(context)
 results = s.search("chicken habits")
 
 # Recommendation (check out the demo: https://wikisearch.shabang.io/)
-results = s.brainstorm("chickens are a species that")
+results = s.brainstorm("chickens are a species that") 
 
 # LLM Answer and Extractive Question-Answering ("Quoting")
 results = s.query("what are chickens?")
 ```
 
-That's it! Simple as that. Want to learn more? Read the [full tutorial](https://github.com/Shabang-Systems/simon/blob/main/examples/tutorial.py) to learn about the overall organization of the package.
+To learn more about search, including how to perform a boring keyword search or to stream your LLM output, [head on over to the search overview page](https://simon.shabang.io/search/search/)!
 
-<!-- Check out the [the examples folder](https://github.com/Shabang-Systems/simon/tree/main/examples/) for diving deep into Simon---speeding up your ingest, building a minimal REST-API, or fine tuning the LLM outputs: anything under the sun! -->
+That's it! Simple as that. 
 
-## Friends!
-We are always looking for more friends to build together. If you are interested, please reach out by... CONTRIBUTING! Simply open a PR/Issue/Discussion, and we will be in touch.
+## 📖 Full Documentation
+Check out the full documentation [available here](https://simon.shabang.io/) available here: from customizing your LLM, a REST API, and streaming your search results---
+
+## 🙌 Friends!
+We are always looking for more friends to build together. If you are interested in learning more, getting enterprise support, or just want to chat, [visit this page](https://simon.shabang.io/about/).
 
 <img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%"/>
 
