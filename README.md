@@ -95,10 +95,12 @@ To learn more about search, including how to perform a boring keyword search or 
 That's it! Simple as that. 
 
 ## 📖 Full Documentation
-Check out the full documentation [available here](https://simon.shabang.io/) available here: from customizing your LLM, a REST API, and streaming your search results---
+Check out the full documentation [available here](https://simon.shabang.io/) available here: from customizing your LLM, a REST API, and streaming your search results—we've got you covered.
 
 ## 🙌 Friends!
-We are always looking for more friends to build together. If you are interested in learning more, getting enterprise support, or just want to chat, [visit this page](https://simon.shabang.io/about/).
+We are always looking for more friends to build together. If you are interested in learning more, getting enterprise support, or just want to chat, [visit this page](https://simon.shabang.io/about/). 
+
+If you have a question about the package, please feel free to [post a discussion](https://github.com/Shabang-Systems/simon/discussions).
 
 <img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%"/>
 
