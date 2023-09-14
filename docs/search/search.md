@@ -8,6 +8,8 @@ import simon
 s = simon.Search(context)
 ```
 
+## One Package, Three Searches 
+
 There are three main types of searches you can perform, each with increasing LLM/algorithmic complexity and time output takes to generate.
 
 1. Simple semantic search
@@ -16,7 +18,7 @@ There are three main types of searches you can perform, each with increasing LLM
 
 It is important to note that, because all three search processes uses the same prefetch system, [streaming the output](./streaming.md) will result in methods 2 and 3 taking the same time to yield the first search result as method 1.
 
-## Simple Semantic Search
+### Simple Semantic Search
 This is the most general and the quickest search mechanism out of the suite of searches with Simon. It only performs two steps: 1. linguistic and intent cleanup 2. semantic search
 
 That is, this tool uses no recommendation or relevant passage extraction.
@@ -47,7 +49,7 @@ This simple semantic search is only recommended if downstream processing/filteri
 
 As the query mechanism returns the top ~20 most relavent results---no matter their degree of relevance---this function will always return results as long as there are data in ingested.
 
-## Text-based recommendation ("Brainstorm")
+### Text-based recommendation ("Brainstorm")
 In addition to the cleanup and search process of Simple Semantic search, the recommendation engine has a LLM layer which ensures that the returned results are relavent to your search query. It is intended to recommend search results based on the input text, and it will perform matching between relavent areas of your INPUT and OUTPUT
 
 You can use this to build a recommendation engine! Ingest some product info, pass the user's search query, and see it run.
@@ -83,7 +85,7 @@ And the result looks like this:
 
 If no relevant results are found, an empty array will be returned.
 
-## Full LLM search + QA
+### Full LLM search + QA
 This step is a classic retrial-augmented generation, with a search result spin: LLM answer, extractive answering, and search results. 
 
 To do this type of search:
@@ -117,3 +119,10 @@ And the result looks like this:
 }
 ```
 
+## Learning More
+There are two additional ways of interfacing with the search API:
+
+1. [streaming search results](./streaming.md)
+2. [using a built-in REST API](./rest.md)
+
+Each of these are explored in the documents linked above.
