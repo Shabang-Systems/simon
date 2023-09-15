@@ -511,6 +511,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    REST Search API
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -520,6 +531,100 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-more-simon" class="md-nav__link">
+    Install (More!) Simon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-environment" class="md-nav__link">
+    Setup Environment
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-api" class="md-nav__link">
+    Run the API!
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-documentation" class="md-nav__link">
+    Endpoint Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-query-and-get-brainstorm" class="md-nav__link">
+    GET /query and GET /brainstorm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-search" class="md-nav__link">
+    GET /search
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-endpoints" class="md-nav__link">
+    Additional Endpoints
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-your-own" class="md-nav__link">
+    Building Your Own
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -572,6 +677,89 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    Getting Started
+  </a>
+  
+    <nav class="md-nav" aria-label="Getting Started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-more-simon" class="md-nav__link">
+    Install (More!) Simon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-environment" class="md-nav__link">
+    Setup Environment
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-api" class="md-nav__link">
+    Run the API!
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-documentation" class="md-nav__link">
+    Endpoint Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-query-and-get-brainstorm" class="md-nav__link">
+    GET /query and GET /brainstorm
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-search" class="md-nav__link">
+    GET /search
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-endpoints" class="md-nav__link">
+    Additional Endpoints
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-your-own" class="md-nav__link">
+    Building Your Own
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -586,6 +774,101 @@
 
 
 <h1 id="rest-search-api">REST Search API</h1>
+<p>So you want to serve your searches on a Web/JS app? We've got you covered. Simon offers a bare-bones REST API that you can host to get you on your way. </p>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="install-more-simon">Install (More!) Simon</h3>
+<p>There are additional packages (think: Flask) which Simon needs to function as a REST API. To install them, run:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>simon-search<span class="o">[</span>web<span class="o">]</span><span class="w"> </span>-U
+</span></code></pre></div>
+<h3 id="setup-environment">Setup Environment</h3>
+<p>Create a new folder in which you would like to run Simon's API from. In that folder, please set up an environments file containing your database/OpenAI credentials <a href="../../setup/detailed/#environment-variable-management">following these instructions</a>. You can also expose those variables using bash variables.</p>
+<h3 id="run-the-api">Run the API!</h3>
+<p>When you are ready, you can get started to run the API. In the same folder for which you have setup the environments file, execute:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gunicorn simon.api:rest --bind 0.0.0.0:PORT -w WORKERS
+</span></code></pre></div>
+<p>where <code>PORT</code> is the point number you wish to bind to, and <code>WORKERS</code> is the number of parallel workers to bind to.</p>
+<h2 id="endpoint-documentation">Endpoint Documentation</h2>
+<p>There are three stable endpoints that Simon's API offers, and each of them do a search task.</p>
+<h3 id="get-query-and-get-brainstorm"><code>GET /query</code> and <code>GET /brainstorm</code></h3>
+<p>These endpoints performs the <a href="../search/#full-llm-search-qa">full LLM search query</a> and the <a href="../search/#text-based-recommendation-brainstorm">LLM recommendation</a> queries respectively, and takes the following arguments.</p>
+<table>
+<thead>
+<tr>
+<th>Query Parameter</th>
+<th>Type</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code></td>
+<td><code>str</code></td>
+<td>The query you wish to answer</td>
+</tr>
+<tr>
+<td><code>response</code></td>
+<td><code>Optional[str]</code></td>
+<td>Provide the string "streaming" to get a streaming response</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Type</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authorization</td>
+<td>Bearer</td>
+<td>Provide the Project ID ("UID") to <code>simon.create_context</code> as the bearer token</td>
+</tr>
+</tbody>
+</table>
+<p>Without passing the <code>response=streaming</code> parameter, this endpoint returns the same exact JSON object in the body as the Python API. The structure of that JSON is outlined here: <a href="../search/#full-llm-search-qa"><code>/query</code></a>, <a href="../search/#text-based-recommendation-brainstorm"><code>/brainstorm</code></a>.</p>
+<p>If you passed the <code>response=streaming</code> parameter, this endpoint will return an HTTP stream, with each chunk containing the same format as a chunk from the <a href="../streaming/">Python streaming generator API</a> of Simon.</p>
+<h3 id="get-search"><code>GET /search</code></h3>
+<p>This endpoint performs the <a href="../search/#simple-semantic-search">simple semantic search</a>, and takes the following arguments.</p>
+<table>
+<thead>
+<tr>
+<th>Query Parameter</th>
+<th>Type</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code></td>
+<td><code>str</code></td>
+<td>The query you wish to answer</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Type</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authorization</td>
+<td>Bearer</td>
+<td>Provide the Project ID ("UID") to <code>simon.create_context</code> as the bearer token</td>
+</tr>
+</tbody>
+</table>
+<p>This endpoint returns the same exact JSON object in the body as the Python API. The structure of that JSON is outlined <a href="../search/#simple-semantic-search">here</a>.</p>
+<h3 id="additional-endpoints">Additional Endpoints</h3>
+<p>Additionally, the endpoints <code>store_file</code>, <code>store_text</code>, and <code>forget</code> are available for data management but is not stable as of now. Feel free to browse <a href="https://github.com/Shabang-Systems/simon/blob/main/simon/api.py">the API source</a> for a sense of how they work, but we heavily discourage the use of them.</p>
+<h2 id="building-your-own">Building Your Own</h2>
+<p>We understand Simon's built-in REST API is limiting in many ways (i.e.: no authentication, no security, no parallelization). Fortunately, you can bootstrap off of our code to build your own! Simply <a href="https://github.com/Shabang-Systems/simon/blob/main/simon/api.py">copy this file</a>, containing the source code of the bare-bones Flask-based API—and add customizations to your heart's content.</p>
 
 
 

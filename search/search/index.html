@@ -508,22 +508,42 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#one-package-three-searches" class="md-nav__link">
+    One Package, Three Searches
+  </a>
+  
+    <nav class="md-nav" aria-label="One Package, Three Searches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#simple-semantic-search" class="md-nav__link">
     Simple Semantic Search
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#text-based-recommendation" class="md-nav__link">
-    Text-based recommendation
+        
+          <li class="md-nav__item">
+  <a href="#text-based-recommendation-brainstorm" class="md-nav__link">
+    Text-based recommendation ("Brainstorm")
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-llm-search-qa" class="md-nav__link">
+    Full LLM search + QA
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-llm-search-qa" class="md-nav__link">
-    Full LLM search + QA
+  <a href="#learning-more" class="md-nav__link">
+    Learning More
   </a>
   
 </li>
@@ -630,22 +650,42 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#one-package-three-searches" class="md-nav__link">
+    One Package, Three Searches
+  </a>
+  
+    <nav class="md-nav" aria-label="One Package, Three Searches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#simple-semantic-search" class="md-nav__link">
     Simple Semantic Search
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#text-based-recommendation" class="md-nav__link">
-    Text-based recommendation
+        
+          <li class="md-nav__item">
+  <a href="#text-based-recommendation-brainstorm" class="md-nav__link">
+    Text-based recommendation ("Brainstorm")
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-llm-search-qa" class="md-nav__link">
+    Full LLM search + QA
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-llm-search-qa" class="md-nav__link">
-    Full LLM search + QA
+  <a href="#learning-more" class="md-nav__link">
+    Learning More
   </a>
   
 </li>
@@ -671,6 +711,7 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">s</span> <span class="o">=</span> <span class="n">simon</span><span class="o">.</span><span class="n">Search</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
 </span></code></pre></div>
+<h2 id="one-package-three-searches">One Package, Three Searches</h2>
 <p>There are three main types of searches you can perform, each with increasing LLM/algorithmic complexity and time output takes to generate.</p>
 <ol>
 <li>Simple semantic search</li>
@@ -678,13 +719,88 @@
 <li>Full search with LLM answering </li>
 </ol>
 <p>It is important to note that, because all three search processes uses the same prefetch system, <a href="../streaming/">streaming the output</a> will result in methods 2 and 3 taking the same time to yield the first search result as method 1.</p>
-<h2 id="simple-semantic-search">Simple Semantic Search</h2>
-<p>This is the most general and the quickest search mechanism out of the suite of searches with Simon. It only performs the linguistic cleanup + semantic search---no recommendation or relevant passage extraction.</p>
+<h3 id="simple-semantic-search">Simple Semantic Search</h3>
+<p>This is the most general and the quickest search mechanism out of the suite of searches with Simon. It only performs two steps: 1. linguistic and intent cleanup 2. semantic search</p>
+<p>That is, this tool uses no recommendation or relevant passage extraction.</p>
 <p>To do this:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>result = s.search(&quot;your query&quot;)
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;your query&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="text-based-recommendation">Text-based recommendation</h2>
-<h2 id="full-llm-search-qa">Full LLM search + QA</h2>
+<p>The result takes the following schema:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">[</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">chu</span><span class="kc">n</span><span class="err">k</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">te</span><span class="err">x</span><span class="kc">t</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">relave</span><span class="kc">nt</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">            </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">source</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">            </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">hash</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">resource</span><span class="p">,</span><span class="w"> </span><span class="err">used</span><span class="w"> </span><span class="kc">f</span><span class="err">or</span><span class="w"> </span><span class="err">dele</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">/edi</span><span class="kc">t</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">            </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="kc">t</span><span class="err">i</span><span class="kc">tle</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="p">}</span><span class="w"> </span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="err">...</span><span class="w"> </span><span class="p">[</span><span class="err">sor</span><span class="kc">te</span><span class="err">d</span><span class="w"> </span><span class="err">by</span><span class="w"> </span><span class="err">relave</span><span class="kc">n</span><span class="err">ce</span><span class="p">]</span><span class="w"> </span><span class="err">...</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>This simple semantic search is only recommended if downstream processing/filtering is applied. For instance, for a simple text highlight application, this search technique would suffice.</p>
+<p>As the query mechanism returns the top ~20 most relavent results---no matter their degree of relevance---this function will always return results as long as there are data in ingested.</p>
+<h3 id="text-based-recommendation-brainstorm">Text-based recommendation ("Brainstorm")</h3>
+<p>In addition to the cleanup and search process of Simple Semantic search, the recommendation engine has a LLM layer which ensures that the returned results are relavent to your search query. It is intended to recommend search results based on the input text, and it will perform matching between relavent areas of your INPUT and OUTPUT</p>
+<p>You can use this to build a recommendation engine! Ingest some product info, pass the user's search query, and see it run.</p>
+<p>To do this type of search:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">brainstorm</span><span class="p">(</span><span class="s2">&quot;your query that can be up to 200 words here&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>And the result looks like this:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">[</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="nt">&quot;headline&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">LLM</span><span class="w"> </span><span class="err">ge</span><span class="kc">nerate</span><span class="err">d</span><span class="w"> </span><span class="err">headli</span><span class="kc">ne</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">        </span><span class="nt">&quot;relavent_input&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">quo</span><span class="kc">te</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="err">your</span><span class="w"> </span><span class="err">INPUT</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">mo</span><span class="kc">t</span><span class="err">iva</span><span class="kc">te</span><span class="err">d</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">resul</span><span class="kc">t</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">&quot;resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">            </span><span class="nt">&quot;quote&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">quo</span><span class="kc">te</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="err">`chu</span><span class="kc">n</span><span class="err">k.</span><span class="kc">te</span><span class="err">x</span><span class="kc">t</span><span class="err">`</span><span class="w"> </span><span class="err">below</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">relave</span><span class="kc">nt</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">d</span><span class="w"> </span><span class="err">which</span><span class="w"> </span><span class="err">ma</span><span class="kc">t</span><span class="err">ched</span><span class="w"> </span><span class="err">wi</span><span class="kc">t</span><span class="err">h</span><span class="w"> </span><span class="err">`relave</span><span class="kc">nt</span><span class="err">_me</span><span class="kc">ta</span><span class="err">da</span><span class="kc">ta</span><span class="err">`</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">            </span><span class="nt">&quot;chunck&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">                </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">chu</span><span class="kc">n</span><span class="err">k</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">te</span><span class="err">x</span><span class="kc">t</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">relave</span><span class="kc">nt</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">                </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">                    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">source</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">                    </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">hash</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">resource</span><span class="p">,</span><span class="w"> </span><span class="err">used</span><span class="w"> </span><span class="kc">f</span><span class="err">or</span><span class="w"> </span><span class="err">dele</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">/edi</span><span class="kc">t</span><span class="p">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">                    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="kc">t</span><span class="err">i</span><span class="kc">tle</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">                </span><span class="p">}</span><span class="w"> </span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="err">...</span><span class="w"> </span><span class="p">[</span><span class="err">sor</span><span class="kc">te</span><span class="err">d</span><span class="w"> </span><span class="err">by</span><span class="w"> </span><span class="err">relave</span><span class="kc">n</span><span class="err">ce</span><span class="p">]</span><span class="w"> </span><span class="err">...</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>If no relevant results are found, an empty array will be returned.</p>
+<h3 id="full-llm-search-qa">Full LLM search + QA</h3>
+<p>This step is a classic retrial-augmented generation, with a search result spin: LLM answer, extractive answering, and search results. </p>
+<p>To do this type of search:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;write a rap about this thing I want to search&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>And the result looks like this:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="nt">&quot;llm&#39;s answers to your queries [2], along with numerical source tags [3].&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">&quot;search_results&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">            </span><span class="nt">&quot;headline&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">LLM</span><span class="w"> </span><span class="err">ge</span><span class="kc">nerate</span><span class="err">d</span><span class="w"> </span><span class="err">headli</span><span class="kc">ne</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">            </span><span class="nt">&quot;resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">                </span><span class="nt">&quot;quote&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">quo</span><span class="kc">te</span><span class="w"> </span><span class="kc">fr</span><span class="err">om</span><span class="w"> </span><span class="err">`chu</span><span class="kc">n</span><span class="err">k.</span><span class="kc">te</span><span class="err">x</span><span class="kc">t</span><span class="err">`</span><span class="w"> </span><span class="err">below</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">relave</span><span class="kc">nt</span><span class="w"> </span><span class="err">a</span><span class="kc">n</span><span class="err">d</span><span class="w"> </span><span class="err">which</span><span class="w"> </span><span class="err">ma</span><span class="kc">t</span><span class="err">ched</span><span class="w"> </span><span class="err">wi</span><span class="kc">t</span><span class="err">h</span><span class="w"> </span><span class="err">`relave</span><span class="kc">nt</span><span class="err">_me</span><span class="kc">ta</span><span class="err">da</span><span class="kc">ta</span><span class="err">`</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">                </span><span class="nt">&quot;chunck&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">                    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">chu</span><span class="kc">n</span><span class="err">k</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">te</span><span class="err">x</span><span class="kc">t</span><span class="w"> </span><span class="kc">t</span><span class="err">ha</span><span class="kc">t</span><span class="w"> </span><span class="err">is</span><span class="w"> </span><span class="err">relave</span><span class="kc">nt</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">                    </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">                        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">source</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">                        </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">hash</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">resource</span><span class="p">,</span><span class="w"> </span><span class="err">used</span><span class="w"> </span><span class="kc">f</span><span class="err">or</span><span class="w"> </span><span class="err">dele</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="err">/edi</span><span class="kc">t</span><span class="p">,</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">                        </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">Op</span><span class="kc">t</span><span class="err">io</span><span class="kc">nal</span><span class="p">[</span><span class="err">s</span><span class="kc">tr</span><span class="p">]</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="kc">t</span><span class="err">i</span><span class="kc">tle</span><span class="w"> </span><span class="err">you</span><span class="w"> </span><span class="err">provided</span><span class="w"> </span><span class="err">duri</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">i</span><span class="kc">n</span><span class="err">ges</span><span class="kc">t</span><span class="p">,</span><span class="w"> </span><span class="err">or</span><span class="w"> </span><span class="kc">null</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">                    </span><span class="p">}</span><span class="w"> </span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">            </span><span class="p">}</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">        </span><span class="err">...</span><span class="w"> </span><span class="p">[</span><span class="err">sor</span><span class="kc">te</span><span class="err">d</span><span class="w"> </span><span class="err">by</span><span class="w"> </span><span class="err">relave</span><span class="kc">n</span><span class="err">ce</span><span class="p">]</span><span class="w"> </span><span class="err">...</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="learning-more">Learning More</h2>
+<p>There are two additional ways of interfacing with the search API:</p>
+<ol>
+<li><a href="../streaming/">streaming search results</a></li>
+<li><a href="../rest/">using a built-in REST API</a></li>
+</ol>
+<p>Each of these are explored in the documents linked above.</p>
 
 
 
