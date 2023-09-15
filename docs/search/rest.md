@@ -25,23 +25,40 @@ where `PORT` is the point number you wish to bind to, and `WORKERS` is the numbe
 ## Endpoint Documentation
 There are three stable endpoints that Simon's API offers, and each of them do a search task.
 
-### `GET /query`
-This endponit performs the [full LLM search query](./search.md#full-llm-search-qa), and takes the following arguments.
+### `GET /query` and `GET /brainstorm`
+These endpoints performs the [full LLM search query](./search.md#full-llm-search-qa) and the [LLM recommendation](./search.md#text-based-recommendation-brainstorm) queries respectively, and takes the following arguments.
 
 | Query Parameter | Type            | Use                                                        |
 |-----------------|-----------------|------------------------------------------------------------|
 | `q`             | `str`           | The query you wish to answer                               |
 | `response`      | `Optional[str]` | Provide the string "streaming" to get a streaming response |
 
-| Header        | Type   | Use                                                           |
-|---------------|--------|---------------------------------------------------------------|
-| Authorization | Bearer | Provide the Project ID ("UID") to `simon.create_context` as the bearer token  |
+| Header        | Type   | Use                                                                          |
+|---------------|--------|------------------------------------------------------------------------------|
+| Authorization | Bearer | Provide the Project ID ("UID") to `simon.create_context` as the bearer token |
+
+Without passing the `response=streaming` parameter, this endpoint returns the same exact JSON object in the body as the Python API. The structure of that JSON is outlined here: [`/query`](./search.md#full-llm-search-qa), [`/brainstorm`](./search.md#text-based-recommendation-brainstorm).
+
+If you passed the `response=streaming` parameter, this endpoint will return an HTTP stream, with each chunk containing the same format as a chunk from the [Python streaming generator API](./streaming.md) of Simon.
+
+### `GET /search`
+This endpoint performs the [simple semantic search](./search.md#simple-semantic-search), and takes the following arguments.
+
+| Query Parameter | Type            | Use                                                        |
+|-----------------|-----------------|------------------------------------------------------------|
+| `q`             | `str`           | The query you wish to answer                               |
+
+| Header        | Type   | Use                                                                          |
+|---------------|--------|------------------------------------------------------------------------------|
+| Authorization | Bearer | Provide the Project ID ("UID") to `simon.create_context` as the bearer token |
+
+This endpoint returns the same exact JSON object in the body as the Python API. The structure of that JSON is outlined [here](./search.md#simple-semantic-search).
 
 ### Additional Endpoints
 Additionally, the endpoints `store_file`, `store_text`, and `forget` are available for data management but is not stable as of now. Feel free to browse [the API source](https://github.com/Shabang-Systems/simon/blob/main/simon/api.py) for a sense of how they work, but we heavily discourage the use of them.
 
 ## Building Your Own
-We understand Simon's built-in REST API is limiting in many ways (i.e.: no authentication, no security, no parallelization). Fortunately, you can bootstrap off of our code to build your own! Simply [copy this file](https://github.com/Shabang-Systems/simon/blob/main/simon/api.py), containing the source code of the bare-bones Flask-based API---and add customizations to your heart's content.
+We understand Simon's built-in REST API is limiting in many ways (i.e.: no authentication, no security, no parallelization). Fortunately, you can bootstrap off of our code to build your own! Simply [copy this file](https://github.com/Shabang-Systems/simon/blob/main/simon/api.py), containing the source code of the bare-bones Flask-based API—and add customizations to your heart's content.
 
 
 
