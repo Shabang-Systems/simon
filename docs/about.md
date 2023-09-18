@@ -10,7 +10,7 @@ template: noside.html
 
 **AI Search: your data + 10 lines of code.**
 
-Simon is open-source project licensed under TODO, developed by Shabang Systems, LLC.
+Simon is open-source project licensed under Apache 2.0, developed by Shabang Systems, LLC.
 
 ## Getting Help
 The best way to get your questions answered quickly is by [searching and posting on our discussion boards](https://github.com/Shabang-Systems/simon/discussions). Please do reach out! We love to hear everything from your questions, your feedback, or just to show-off a cool demo.
