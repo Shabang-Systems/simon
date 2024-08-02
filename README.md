@@ -102,8 +102,6 @@ We are always looking for more friends to build together. If you are interested 
 
 If you have a question about the package, please feel free to [post a discussion](https://github.com/Shabang-Systems/simon/discussions).
 
-<img src="https://mktdplp102wuda.azureedge.net/org-f4f78f7fa763412990f7f7ed79822b61/ba042d2e-95c0-ec11-983e-000d3a33908e/B2tXV68nr_6lraxPmSTeJsZ0O366bCH3mVOxHcDfKcY%21" width="20%"/>
-
 ---
 
-(C) 2023 Shabang Systems, LLC. Built with ❤️ and 🥗 in the SF Bay Area
+(C) 2024 Shabang Systems, LLC. Built with ❤️ and 🥗 in the SF Bay Area
