@@ -2,82 +2,82 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://simon.shabang.io/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/about/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/help/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/start/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/ingest/lowlevel/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/ingest/store/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/ingest/Special-Ingesters/ocr/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/ingest/Special-Ingesters/text/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/search/rest/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/search/search/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/search/streaming/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/setup/context/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/setup/detailed/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/setup/Cloud-Databases/digital-ocean/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/setup/Cloud-Databases/neon/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://simon.shabang.io/setup/Cloud-Databases/supabase/</loc>
-         <lastmod>2023-09-18</lastmod>
+         <lastmod>2024-08-02</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
